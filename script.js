@@ -327,6 +327,9 @@ function updateDistrictFromAddress(addressText) {
    DOMContentLoaded INITIALIZATION
 ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
+  initResponsibleBranchSelect();
+});
+
   /* ---------- BUSINESS SELECTS ---------- */
   const bo = document.getElementById("businessObjectType");
   const at = document.getElementById("activityType");
