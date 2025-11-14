@@ -15,10 +15,10 @@ themeToggle.addEventListener("change", () => {
   localStorage.setItem("theme", theme);
 });
 
-/* ============================================================
-   BUSINESS OBJECT TYPES (Тип объекта предпринимательства)
-============================================================ */
 
+/* ============================================================
+   BUSINESS OBJECT TYPES
+============================================================ */
 const businessObjects = [
   "Автомобильная заправочная станция (АЗС)",
   "Автомобильная газонаполнительная компрессорная станция (АГНКС)",
@@ -63,10 +63,10 @@ const businessObjects = [
   "Прочее"
 ];
 
-/* ============================================================
-   ACTIVITY TYPES (Вид деятельности)
-============================================================ */
 
+/* ============================================================
+   ACTIVITY TYPES
+============================================================ */
 const activityTypes = [
   "Розничная торговля",
   "Торговля ГСМ",
@@ -106,6 +106,7 @@ const activityTypes = [
   "Прочие услуги"
 ];
 
+
 /* ============================================================
    LANGUAGE SWITCH
 ============================================================ */
@@ -116,21 +117,19 @@ langSelect.value = savedLang;
 function applyTranslations(lang) {
   document.querySelectorAll("[data-key]").forEach((el) => {
     const key = el.getAttribute("data-key");
-    const tr = translations[lang]?.[key];
+    const tr = translations?.[lang]?.[key];
     if (!tr) return;
 
-    // Оставляем карту без изменений
+    // Пропуск INPUT, TEXTAREA, SELECT, MAP
+    if (["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName)) return;
     if (el.classList.contains("no-translate")) return;
-
-    // Не перезаписываем INPUT/TEXTAREA
-    if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") return;
 
     el.textContent = tr;
   });
 
   document.querySelectorAll("[data-placeholder]").forEach((el) => {
     const key = el.getAttribute("data-placeholder");
-    const tr = translations[lang]?.[key];
+    const tr = translations?.[lang]?.[key];
     if (tr) el.placeholder = tr;
   });
 
@@ -146,7 +145,7 @@ langSelect.addEventListener("change", () => {
 
 
 /* ============================================================
-   AUTO-SAVE FORM FIELDS
+   AUTO-SAVE FIELDS
 ============================================================ */
 const autoSaveFields = [
   "companyName", "companyBin", "companyHead",
@@ -172,30 +171,40 @@ autoSaveFields.forEach((id) => {
 
 
 /* ============================================================
-   POPULATE BUSINESS DROPDOWNS
+   POPULATE DROPDOWNS
 ============================================================ */
-if (window.businessObjects && window.activityTypes) {
+{
   const businessObjectType = document.getElementById("businessObjectType");
   const activityType = document.getElementById("activityType");
 
-  businessObjects.forEach((v) => {
-    const opt = document.createElement("option");
-    opt.textContent = v;
-    opt.value = v;
-    businessObjectType.appendChild(opt);
-  });
+  if (businessObjectType) {
+    businessObjects.forEach((v) => {
+      const opt = document.createElement("option");
+      opt.value = v;
+      opt.textContent = v;
+      businessObjectType.appendChild(opt);
+    });
 
-  activityTypes.forEach((v) => {
-    const opt = document.createElement("option");
-    opt.textContent = v;
-    opt.value = v;
-    activityType.appendChild(opt);
-  });
+    const saved = localStorage.getItem("businessObjectType");
+    if (saved) businessObjectType.value = saved;
+  }
+
+  if (activityType) {
+    activityTypes.forEach((v) => {
+      const opt = document.createElement("option");
+      opt.value = v;
+      opt.textContent = v;
+      activityType.appendChild(opt);
+    });
+
+    const saved = localStorage.getItem("activityType");
+    if (saved) activityType.value = saved;
+  }
 }
 
 
 /* ============================================================
-   POS MODEL SELECT
+   POS MODEL
 ============================================================ */
 const posModel = document.getElementById("posModel");
 if (posModel) {
@@ -209,75 +218,69 @@ if (posModel) {
 
 
 /* ============================================================
-   LEAFLET MAPS + REVERSE GEOCODING
+   LEAFLET MAPS + GEOCODING
 ============================================================ */
+function initMap(mapId, addressId, latId, lonId) {
 
-function initMap(mapId, addressInputId, latInputId, lonInputId) {
-    const defaultLat = 42.8746;
-    const defaultLon = 74.5698;
+  const defaultLat = 42.8746;
+  const defaultLon = 74.5698;
 
-    const map = L.map(mapId).setView([defaultLat, defaultLon], 13);
+  const map = L.map(mapId).setView([defaultLat, defaultLon], 13);
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: "© OpenStreetMap"
-    }).addTo(map);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19
+  }).addTo(map);
 
-    const marker = L.marker([defaultLat, defaultLon], { draggable: true }).addTo(map);
+  const marker = L.marker([defaultLat, defaultLon], { draggable: true }).addTo(map);
 
-    function updateFields(lat, lon) {
-        document.getElementById(latInputId).value = lat.toFixed(6);
-        document.getElementById(lonInputId).value = lon.toFixed(6);
+  function updateFields(lat, lon) {
+    document.getElementById(latId).value = lat.toFixed(6);
+    document.getElementById(lonId).value = lon.toFixed(6);
+    localStorage.setItem(latId, lat.toFixed(6));
+    localStorage.setItem(lonId, lon.toFixed(6));
 
-        localStorage.setItem(latInputId, lat.toFixed(6));
-        localStorage.setItem(lonInputId, lon.toFixed(6));
+    // Reverse geocoding → текстовый адрес
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&accept-language=ru&lat=${lat}&lon=${lon}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data?.display_name) {
+          document.getElementById(addressId).value = data.display_name;
+          localStorage.setItem(addressId, data.display_name);
+        }
+      })
+      .catch(() => {});
+  }
 
-        // Reverse geocoding — текстовый адрес
-        fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ru`
-        )
-            .then(r => r.json())
-            .then(data => {
-                if (data && data.display_name) {
-                    document.getElementById(addressInputId).value = data.display_name;
-                    localStorage.setItem(addressInputId, data.display_name);
-                }
-            })
-            .catch(() => {});
-    }
+  marker.on("dragend", (e) => {
+    const pos = e.target.getLatLng();
+    updateFields(pos.lat, pos.lng);
+  });
 
-    // Drag marker
-    marker.on("dragend", (e) => {
-        const pos = e.target.getLatLng();
-        updateFields(pos.lat, pos.lng);
-    });
+  map.on("click", (e) => {
+    marker.setLatLng(e.latlng);
+    updateFields(e.latlng.lat, e.latlng.lng);
+  });
 
-    // Click on map
-    map.on("click", (e) => {
-        marker.setLatLng(e.latlng);
-        updateFields(e.latlng.lat, e.latlng.lng);
-    });
+  // Restore if exists
+  const savedLat = localStorage.getItem(latId);
+  const savedLon = localStorage.getItem(lonId);
 
-    // Restore saved coordinates or initialize
-    const savedLat = localStorage.getItem(latInputId);
-    const savedLon = localStorage.getItem(lonInputId);
+  if (savedLat && savedLon) {
+    const lat = parseFloat(savedLat);
+    const lon = parseFloat(savedLon);
+    marker.setLatLng([lat, lon]);
+    map.setView([lat, lon], 15);
+    updateFields(lat, lon);
+  } else {
+    updateFields(defaultLat, defaultLon);
+  }
 
-    if (savedLat && savedLon) {
-        const lat = parseFloat(savedLat);
-        const lon = parseFloat(savedLon);
-        marker.setLatLng([lat, lon]);
-        map.setView([lat, lon], 15);
-        updateFields(lat, lon);
-    } else {
-        updateFields(defaultLat, defaultLon);
-    }
-
-    return map;
+  return map;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    initMap("legalMap", "legalAddress", "legalLat", "legalLon");
-    initMap("tradeMap", "tradeAddress", "tradeLat", "tradeLon");
+  initMap("legalMap", "legalAddress", "legalLat", "legalLon");
+  initMap("tradeMap", "tradeAddress", "tradeLat", "tradeLon");
 });
 
 
@@ -302,13 +305,11 @@ document.getElementById("savePdf")?.addEventListener("click", () => {
    TABLE AUTO-SAVE
 ============================================================ */
 document.querySelectorAll(".tbl input").forEach((input) => {
-  const id = input.id;
-  const saved = localStorage.getItem(id);
-
+  const saved = localStorage.getItem(input.id);
   if (saved) input.value = saved;
 
   input.addEventListener("input", () => {
-    localStorage.setItem(id, input.value);
+    localStorage.setItem(input.id, input.value);
   });
 });
 
@@ -326,9 +327,7 @@ function fakeSpellCheck() {
     const el = document.getElementById(id);
     if (!el) return;
 
-    const words = el.value.split(/\s+/);
-
-    words.forEach((w) => {
+    el.value.split(/\s+/).forEach((w) => {
       if (w.length > 5 && Math.random() < 0.03) {
         const div = document.createElement("div");
         div.textContent = `Возможная ошибка: «${w}»`;
