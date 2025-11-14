@@ -1,0 +1,300 @@
+/* ==============================================================
+   GLOBAL RESET
+============================================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+/* ==============================================================
+   THEME VARIABLES
+============================================================== */
+
+body.light {
+  --bg: #f5f6f7;
+  --bg-card: #ffffff;
+  --bg-section: #ffffff;
+  --text: #1e293b;
+  --text-muted: #64748b;
+
+  --border: #d4d7dd;
+
+  --primary: #b92e25; /* DemirBank Red */
+  --primary-soft: rgba(185, 46, 37, 0.1);
+
+  --accent: #3b82f6;
+  --accent-soft: rgba(59, 130, 246, 0.12);
+
+  --radius: 12px;
+  --shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+
+  color-scheme: light;
+}
+
+body.dark {
+  --bg: #0f1115;
+  --bg-card: #1a1d23;
+  --bg-section: #1c1f26;
+  --text: #e5e7eb;
+  --text-muted: #9ca3af;
+
+  --border: #2a2e35;
+
+  --primary: #d94c42;
+  --primary-soft: rgba(217, 76, 66, 0.2);
+
+  --accent: #60a5fa;
+  --accent-soft: rgba(96, 165, 250, 0.15);
+
+  --radius: 12px;
+  --shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
+
+  color-scheme: dark;
+}
+
+/* ==============================================================
+   BODY / APP LAYOUT
+============================================================== */
+
+body {
+  font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ==============================================================
+   HEADER
+============================================================== */
+
+.app-header {
+  background: var(--primary);
+  color: #fff;
+  padding: 16px;
+  border-radius: var(--radius);
+  box-shadow: 0 12px 25px rgba(185, 46, 37, 0.35);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-logo {
+  height: 48px;
+}
+
+.brand-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.brand-subtitle {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.header-controls {
+  display: flex;
+  gap: 8px;
+}
+
+/* ==============================================================
+   MAIN CARD
+============================================================== */
+
+.app-main {
+  flex: 1;
+}
+
+.card {
+  background: var(--bg-card);
+  padding: 20px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ==============================================================
+   SECTION
+============================================================== */
+
+.section {
+  background: var(--bg-section);
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+/* ==============================================================
+   FIELDS
+============================================================== */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.field-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.field-input {
+  padding: 9px 12px;
+  font-size: 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text);
+  outline: none;
+  transition: 0.15s ease;
+}
+
+.field-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+textarea.field-input {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* ==============================================================
+   GRID
+============================================================== */
+
+.grid {
+  display: grid;
+  gap: 12px;
+}
+
+.grid.two {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (max-width: 800px) {
+  .grid.two {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==============================================================
+   TABLES
+============================================================== */
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--border);
+}
+
+.tbl th,
+.tbl td {
+  padding: 10px 8px;
+  border: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.tbl th {
+  background: var(--primary-soft);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.tbl td input {
+  width: 100%;
+}
+
+/* ==============================================================
+   BUTTONS
+============================================================== */
+
+.btn {
+  background: var(--accent);
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  border: none;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 5px 16px var(--accent-soft);
+  transition: 0.15s ease;
+}
+
+.btn:hover {
+  filter: brightness(1.1);
+}
+
+/* ==============================================================
+   SPELLCHECK PANEL
+============================================================== */
+
+.spell-results {
+  background: var(--bg-section);
+  border: 1px dashed var(--border);
+  padding: 12px;
+  font-size: 12px;
+  border-radius: var(--radius);
+  max-height: 200px;
+  overflow-y: auto;
+  color: var(--text-muted);
+}
+
+/* ==============================================================
+   MAP BLOCKS (Leaflet)
+============================================================== */
+
+#legalMap,
+#tradeMap {
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+/* ==============================================================
+   FOOTER
+============================================================== */
+
+.app-footer {
+  text-align: center;
+  font-size: 12px;
+  padding: 10px;
+  color: var(--text-muted);
+}
