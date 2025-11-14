@@ -575,35 +575,46 @@ function initMap(mapId, addressInputId, latInputId, lonInputId) {
   });
 }
 /* ============================================================
-   SIGNATURE PAD
+   SIGNATURE PAD (ПОДПИСЬ ПАЛЬЦЕМ / СТИЛУСОМ)
 ============================================================ */
 function initSignaturePad() {
-  const canvas = document.getElementById("signaturePad");
-  const clearBtn = document.getElementById("signatureClear");
-  const hiddenInput = document.getElementById("signatureData");
+  var canvas = document.getElementById("signaturePad");
+  var clearBtn = document.getElementById("signatureClear");
+  var hiddenInput = document.getElementById("signatureData");
 
-  if (!canvas || !canvas.getContext) return;
+  if (!canvas || !canvas.getContext) {
+    return; // если блока нет – тихо выходим, ничего не ломаем
+  }
 
-  const ctx = canvas.getContext("2d");
-  let drawing = false;
+  var ctx = canvas.getContext("2d");
+  var drawing = false;
 
   ctx.lineWidth = 2;
   ctx.lineCap = "round";
   ctx.strokeStyle = "#000";
 
   function getPos(e) {
-    const rect = canvas.getBoundingClientRect();
-    const point = e.touches ? e.touches[0] : e;
+    var rect = canvas.getBoundingClientRect();
+    var clientX, clientY;
+
+    if (e.touches && e.touches.length > 0) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+
     return {
-      x: point.clientX - rect.left,
-      y: point.clientY - rect.top
+      x: clientX - rect.left,
+      y: clientY - rect.top
     };
   }
 
   function startDraw(e) {
     e.preventDefault();
     drawing = true;
-    const pos = getPos(e);
+    var pos = getPos(e);
     ctx.beginPath();
     ctx.moveTo(pos.x, pos.y);
   }
@@ -611,7 +622,7 @@ function initSignaturePad() {
   function moveDraw(e) {
     if (!drawing) return;
     e.preventDefault();
-    const pos = getPos(e);
+    var pos = getPos(e);
     ctx.lineTo(pos.x, pos.y);
     ctx.stroke();
   }
@@ -625,40 +636,44 @@ function initSignaturePad() {
 
   function saveSignature() {
     if (!hiddenInput) return;
-    const dataUrl = canvas.toDataURL("image/png");
+
+    var dataUrl = canvas.toDataURL("image/png");
     hiddenInput.value = dataUrl;
 
-    const pdfImg = document.getElementById("pdf_signature");
-    if (pdfImg) {
+    var pdfImg = document.getElementById("pdf_signature");
+    if (pdfImg && dataUrl) {
       pdfImg.src = dataUrl;
     }
   }
 
-  // Pointer / touch / mouse
-  canvas.addEventListener("pointerdown", startDraw);
-  canvas.addEventListener("pointermove", moveDraw);
-  canvas.addEventListener("pointerup", endDraw);
-  canvas.addEventListener("pointerleave", endDraw);
-
-  // На всякий случай — поддержка старых touch/mouse
+  // Мышь (ПК)
   canvas.addEventListener("mousedown", startDraw);
   canvas.addEventListener("mousemove", moveDraw);
   window.addEventListener("mouseup", endDraw);
 
+  // Тач (телефон/планшет)
   canvas.addEventListener("touchstart", startDraw, { passive: false });
   canvas.addEventListener("touchmove", moveDraw, { passive: false });
   canvas.addEventListener("touchend", endDraw, { passive: false });
 
+  // Очистка подписи
   if (clearBtn) {
-    clearBtn.addEventListener("click", () => {
+    clearBtn.addEventListener("click", function () {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       if (hiddenInput) hiddenInput.value = "";
-      const pdfImg = document.getElementById("pdf_signature");
-      if (pdfImg) pdfImg.removeAttribute("src");
+      var pdfImg = document.getElementById("pdf_signature");
+      if (pdfImg) {
+        pdfImg.removeAttribute("src");
+      }
     });
   }
 }
 
+/* Инициализируем подпись отдельным обработчиком,
+   чтобы вообще не трогать твой существующий DOMContentLoaded */
+document.addEventListener("DOMContentLoaded", function () {
+  initSignaturePad();
+});
 /* ============================================================
    ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ JSON
 ============================================================ */
