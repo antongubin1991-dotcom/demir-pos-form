@@ -72,18 +72,39 @@
         </section>
 
         <!-- 2. КОНТАКТЫ -->
-        <section class="section">
-          <h2 class="section-title" data-key="sec_contacts">Контактные данные</h2>
+                <section class="section">
+          <h2 class="section-title">Контакты</h2>
 
           <div class="grid two">
             <label class="field">
-              <span class="field-label">Телефон</span>
-              <input id="phone" class="field-input" type="tel">
+              <span class="field-label">Email клиента</span>
+              <input name="email" type="email" class="field-input" />
             </label>
-
             <label class="field">
-              <span class="field-label">E-mail</span>
-              <input id="email" class="field-input" type="email">
+              <span class="field-label">Ответственное лицо</span>
+              <input name="contactPerson" type="text" class="field-input" />
+            </label>
+          </div>
+
+          <div class="grid two">
+            <label class="field">
+              <span class="field-label">Телефон (городской)</span>
+              <input name="phone" type="tel" class="field-input" placeholder="+996..." />
+            </label>
+            <label class="field">
+              <span class="field-label">Телефон мобильный</span>
+              <input name="mobilePhone" type="tel" class="field-input" placeholder="+996..." />
+            </label>
+          </div>
+
+          <div class="grid two">
+            <label class="field">
+              <span class="field-label">Время работы (с)</span>
+              <input name="workFrom" type="time" class="field-input" />
+            </label>
+            <label class="field">
+              <span class="field-label">Время работы (до)</span>
+              <input name="workTo" type="time" class="field-input" />
             </label>
           </div>
         </section>
