@@ -420,7 +420,9 @@ document.addEventListener("DOMContentLoaded", () => {
   initMap("legalMap", "legalAddress", "legalLat", "legalLon");
   initMap("tradeMap", "tradeAddress", "tradeLat", "tradeLon");
 });
-
+  /* ---------- SIGNATURE PAD ---------- */
+  initSignaturePad();
+});
 /* ============================================================
    LEAFLET MAP + REVERSE GEOCODING
 ============================================================ */
