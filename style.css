@@ -236,6 +236,14 @@ body {
               background-color .15s ease, transform .05s ease;
 }
 
+/* FIX — делаем <select> рабочим */
+select.field-input {
+  appearance: auto;
+  -webkit-appearance: auto;
+  -moz-appearance: auto;
+  cursor: pointer;
+}
+
 .field-input::placeholder {
   color: rgba(148,163,184,0.9);
 }
@@ -257,7 +265,6 @@ textarea.field-input {
   resize: vertical;
   min-height: 80px;
 }
-
 /* ============================================================
    TABLES
 ============================================================ */
