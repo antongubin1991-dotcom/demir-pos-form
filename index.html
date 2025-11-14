@@ -5,234 +5,100 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title data-key="title">Demir POS Form</title>
 
-  <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
 
-  <!-- Leaflet Maps -->
+  <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-  <!-- html2pdf -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
-  <!-- Translations + Logic -->
-  <script src="translations.js"></script>
+  <script defer src="translations.js"></script>
   <script defer src="script.js"></script>
 </head>
-
 <body class="light">
   <div class="app">
 
-    <!-- ========================= HEADER ========================= -->
+    <!-- HEADER -->
     <header class="app-header">
       <div class="brand">
-        <img src="logo.png" class="brand-logo" alt="DemirBank" />
-        <div class="brand-text">
-          <div class="brand-title" data-key="form_title">Demir POS Form</div>
-          <div class="brand-subtitle" data-key="form_subtitle">Анкета для установки POS терминала</div>
+        <img src="logo.png" class="brand-logo" alt="Demir">
+        <div>
+          <div class="brand-title">Demir POS</div>
+          <div class="brand-subtitle">Форма установки POS-терминала</div>
         </div>
       </div>
 
       <div class="header-controls">
-        <!-- Language -->
+        <select id="themeToggle" class="field-input">
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+
         <select id="langSelect" class="field-input">
           <option value="ru">RU</option>
           <option value="kg">KG</option>
           <option value="en">EN</option>
         </select>
-
-        <!-- Theme -->
-        <select id="themeToggle" class="field-input">
-          <option value="light" data-key="theme_light">Light</option>
-          <option value="dark" data-key="theme_dark">Dark</option>
-        </select>
       </div>
     </header>
 
-
-    <!-- ========================= MAIN CARD ========================= -->
+    <!-- MAIN -->
     <main class="app-main">
       <div class="card">
 
-        <!-- ========================= 1. КОМПАНИЯ ========================= -->
-        <section class="section">
-          <h2 class="section-title" data-key="sec_company">Информация о компании</h2>
-
-          <label class="field">
-            <span class="field-label" data-key="lbl_company_name">Название организации</span>
-            <input id="companyName" class="field-input" type="text" data-placeholder="ph_company_name">
-          </label>
-
-          <label class="field">
-            <span class="field-label" data-key="lbl_company_bin">ИНН / БИН</span>
-            <input id="companyBin" class="field-input" type="text">
-          </label>
-
-          <label class="field">
-            <span class="field-label" data-key="lbl_company_head">ФИО руководителя</span>
-            <input id="companyHead" class="field-input" type="text">
-          </label>
-
-          <div class="grid two">
-            <label class="field">
-              <span class="field-label" data-key="lbl_phone">Телефон</span>
-              <input id="phone" class="field-input" type="text">
-            </label>
-
-            <label class="field">
-              <span class="field-label" data-key="lbl_email">Email</span>
-              <input id="email" class="field-input" type="email">
-            </label>
-          </div>
-
-          <label class="field">
-            <span class="field-label" data-key="lbl_manager">Сотрудник привлекший клиента</span>
-            <input id="manager" class="field-input" type="text">
-          </label>
-        </section>
-
-
-        <!-- ========================= 2. АДРЕСА ========================= -->
-        <section class="section">
-          <h2 class="section-title" data-key="sec_address">Адреса</h2>
-
-          <!-- Юридический адрес -->
-          <label class="field">
-            <span class="field-label" data-key="lbl_legal_address">Юридический адрес</span>
-            <input id="legalAddress" class="field-input" type="text">
-          </label>
-
-          <div class="grid two">
-            <label class="field">
-              <span class="field-label">LAT</span>
-              <input id="legalLat" class="field-input" type="text" readonly>
-            </label>
-            <label class="field">
-              <span class="field-label">LON</span>
-              <input id="legalLon" class="field-input" type="text" readonly>
-            </label>
-          </div>
-
-          <div id="legalMap" class="map-box no-translate"></div>
-
-          <hr class="divider">
-
-          <!-- Торговая точка -->
-          <label class="field">
-            <span class="field-label" data-key="lbl_trade_address">Адрес торговой точки</span>
-            <input id="tradeAddress" class="field-input" type="text">
-          </label>
-
-          <div class="grid two">
-            <label class="field">
-              <span class="field-label">LAT</span>
-              <input id="tradeLat" class="field-input" type="text" readonly>
-            </label>
-            <label class="field">
-              <span class="field-label">LON</span>
-              <input id="tradeLon" class="field-input" type="text" readonly>
-            </label>
-          </div>
-
-          <div id="tradeMap" class="map-box no-translate"></div>
-        </section>
-
-
-        <!-- ========================= 3. ВИДЫ ДЕЯТЕЛЬНОСТИ ========================= -->
+        <!-- BUSINESS SECTION -->
         <section class="section">
           <h2 class="section-title" data-key="sec_business">Вид деятельности</h2>
 
           <label class="field">
             <span class="field-label" data-key="lbl_business_object">Тип объекта предпринимательства</span>
-            <select id="businessObjectType" class="field-input">
-              <!-- Заполняется в script.js -->
-            </select>
+            <select id="businessObjectType" class="field-input"></select>
           </label>
 
           <label class="field">
             <span class="field-label" data-key="lbl_activity_type">Вид деятельности</span>
-            <select id="activityType" class="field-input">
-              <!-- Заполняется в script.js -->
-            </select>
+            <select id="activityType" class="field-input"></select>
           </label>
         </section>
 
-
-        <!-- ========================= 4. POS-МОДЕЛЬ ========================= -->
+        <!-- LEGAL ADDRESS -->
         <section class="section">
-          <h2 class="section-title" data-key="sec_pos">POS терминал</h2>
+          <h2 class="section-title" data-key="sec_address_legal">Юридический адрес</h2>
 
-          <label class="field">
-            <span class="field-label" data-key="lbl_pos_model">Модель POS</span>
-            <select id="posModel" class="field-input">
-              <option value="aishino">Aishino A90</option>
-              <option value="ingenico">Ingenico</option>
-              <option value="beko">Beko</option>
-              <option value="kozen">Kozen</option>
-            </select>
-          </label>
-        </section>
+          <input id="legalAddress" class="field-input" data-placeholder="legal_address">
 
+          <div id="legalMap" class="map-box no-translate"></div>
 
-        <!-- ========================= 5. ОПИСАНИЕ ========================= -->
-        <section class="section">
-          <h2 class="section-title" data-key="sec_description">Описание</h2>
-          <textarea id="description" class="field-input" rows="4"></textarea>
-        </section>
-
-
-        <!-- ========================= 6. ТАБЛИЦЫ КОМИССИЙ ========================= -->
-        <section class="section">
-          <h2 class="section-title" data-key="sec_commissions">Комиссии и скидки</h2>
-
-          <div class="table-wrap">
-            <table class="tbl">
-              <thead>
-                <tr>
-                  <th data-key="tbl_service">Услуга</th>
-                  <th data-key="tbl_percent">%</th>
-                  <th data-key="tbl_fix">Фикс</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td data-key="tbl_acquiring">Эквайринг</td>
-                  <td><input id="acq_percent" class="cell" type="text"></td>
-                  <td><input id="acq_fix" class="cell" type="text"></td>
-                </tr>
-                <tr>
-                  <td data-key="tbl_qr">QR-платежи</td>
-                  <td><input id="qr_percent" class="cell" type="text"></td>
-                  <td><input id="qr_fix" class="cell" type="text"></td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="grid two">
+            <input id="legalLat" class="field-input" placeholder="Lat">
+            <input id="legalLon" class="field-input" placeholder="Lon">
           </div>
         </section>
 
-
-        <!-- ========================= SPELLCHECK ========================= -->
+        <!-- TRADE ADDRESS -->
         <section class="section">
-          <h2 class="section-title" data-key="sec_spellcheck">Проверка орфографии</h2>
-          <div id="spellcheckPanel" class="spell-results no-translate"></div>
+          <h2 class="section-title" data-key="sec_address_trade">Адрес торговой точки</h2>
+
+          <input id="tradeAddress" class="field-input" data-placeholder="trade_address">
+
+          <div id="tradeMap" class="map-box no-translate"></div>
+
+          <div class="grid two">
+            <input id="tradeLat" class="field-input" placeholder="Lat">
+            <input id="tradeLon" class="field-input" placeholder="Lon">
+          </div>
         </section>
 
+        <!-- SPELLCHECK -->
+        <section class="section">
+          <h2>Проверка текста</h2>
+          <div id="spellcheckPanel" class="spell-results"></div>
+        </section>
 
-        <!-- ========================= ACTIONS ========================= -->
-        <div class="actions">
-          <button id="savePdf" class="btn" data-key="btn_pdf">Сохранить PDF</button>
-        </div>
-
+        <button id="savePdf" class="btn">Сохранить PDF</button>
       </div>
     </main>
 
-
-    <!-- ========================= FOOTER ========================= -->
-    <footer class="app-footer">
-      <div>DemirBank © 2025</div>
-      <div data-key="footer_text">Форма подачи заявки на установку POS</div>
-    </footer>
-
+    <footer class="app-footer">DemirBank — POS Form</footer>
   </div>
 </body>
 </html>
