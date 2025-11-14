@@ -156,7 +156,7 @@ const responsibleBranches = [
    INIT RESPONSIBLE BRANCH DROPDOWN
 ============================================================ */
 function initResponsibleBranchSelect() {
-  const select = document.getElementById("responsibleBranch");
+  const select = document.getElementById("responsibleBranches");
   select.innerHTML = ""; // Clear
 
   responsibleBranches.forEach(branch => {
