@@ -7,9 +7,12 @@
 
   <link rel="stylesheet" href="style.css" />
 
-  <!-- Leaflet -->
+  <!-- Leaflet (карты) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <!-- html2pdf для PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <script defer src="translations.js"></script>
   <script defer src="script.js"></script>
@@ -45,170 +48,383 @@
     <main class="app-main">
       <div class="card">
 
-        <!-- BUSINESS SECTION -->
+        <!-- 1. КОМПАНИЯ -->
+        <section class="section">
+          <h2 class="section-title" data-key="sec_company">Данные компании</h2>
+
+          <div class="grid two">
+            <label class="field">
+              <span class="field-label">Наименование компании / ТСП</span>
+              <input id="companyName" class="field-input" type="text">
+            </label>
+
+            <label class="field">
+              <span class="field-label">ИНН / БИН</span>
+              <input id="companyBin" class="field-input" type="text">
+            </label>
+          </div>
+
+          <div class="grid two">
+            <label class="field">
+              <span class="field-label">Руководитель</span>
+              <input id="companyHead" class="field-input" type="text">
+            </label>
+
+            <label class="field">
+              <span class="field-label">Сотрудник, привлекший клиента</span>
+              <input id="manager" class="field-input" type="text">
+            </label>
+          </div>
+        </section>
+
+        <!-- 2. КОНТАКТЫ -->
+        <section class="section">
+          <h2 class="section-title" data-key="sec_contacts">Контактные данные</h2>
+
+          <div class="grid two">
+            <label class="field">
+              <span class="field-label">Телефон</span>
+              <input id="phone" class="field-input" type="tel">
+            </label>
+
+            <label class="field">
+              <span class="field-label">E-mail</span>
+              <input id="email" class="field-input" type="email">
+            </label>
+          </div>
+        </section>
+
+        <!-- 3. POS + КОМИССИИ + СКИДКИ -->
+        <section class="section">
+          <h2 class="section-title" data-key="sec_pos">POS-терминал и условия</h2>
+
+          <!-- Модель POS -->
+          <label class="field">
+            <span class="field-label">Модель POS / тип решения</span>
+            <select id="posModel" class="field-input">
+              <option value="">— выбрать —</option>
+              <option value="SoftPOS">SoftPOS</option>
+              <option value="Ingenico">Ingenico</option>
+              <option value="New9220">New9220</option>
+              <option value="New8210">New8210</option>
+              <option value="Kozen">Kozen</option>
+            </select>
+          </label>
+
+          <hr class="divider">
+
+          <!-- Комиссии -->
+          <h3 class="section-title">Комиссии</h3>
+
+          <div class="table-wrap">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>Вид карты</th>
+                  <th>Комиссия, %</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Карты VISA, выпущенные ДКИБ</td>
+                  <td><input id="comm_visa_dkb" class="field-input" type="number" step="0.01" placeholder="%"></td>
+                </tr>
+                <tr>
+                  <td>Размер бонуса</td>
+                  <td><input id="comm_bonus_dkb" class="field-input" type="number" step="0.01" placeholder="%"></td>
+                </tr>
+                <tr>
+                  <td>Карты VISA, выпущенные другими банками</td>
+                  <td><input id="comm_visa_other" class="field-input" type="number" step="0.01" placeholder="%"></td>
+                </tr>
+                <tr>
+                  <td>Карты Элкарт, выпущенные ДКИБ</td>
+                  <td><input id="comm_elcart_dkb" class="field-input" type="number" step="0.01" placeholder="%"></td>
+                </tr>
+                <tr>
+                  <td>Карты Элкарт, выпущенные другими банками</td>
+                  <td><input id="comm_elcart_other" class="field-input" type="number" step="0.01" placeholder="%"></td>
+                </tr>
+                <tr>
+                  <td>Карты MasterCard, выпущенные ДКИБ</td>
+                  <td><input id="comm_mc_dkb" class="field-input" type="number" step="0.01" placeholder="%"></td>
+                </tr>
+                <tr>
+                  <td>Карты MasterCard, выпущенные другими банками</td>
+                  <td><input id="comm_mc_other" class="field-input" type="number" step="0.01" placeholder="%"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <hr class="divider">
+
+          <!-- Скидки -->
+          <h3 class="section-title">Скидки</h3>
+
+          <div class="table-wrap">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>Описание</th>
+                  <th>%</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Скидка на 10 карт</td>
+                  <td><input id="discount_10" class="field-input" type="number" step="0.01" placeholder="%"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 4. РАЙОН → УГНС -->
+        <section class="section">
+          <h2 class="section-title">Район и УГНС</h2>
+
+          <div class="grid two">
+            <label class="field">
+              <span class="field-label">Район</span>
+              <select id="district" class="field-input">
+                <option value="">— выбрать район —</option>
+                <!-- список районов будет заполняться/или можно сразу захардкодить в script.js -->
+              </select>
+            </label>
+
+            <label class="field">
+              <span class="field-label">Код УГНС</span>
+              <input id="ugnsCode" class="field-input" type="text" readonly>
+            </label>
+          </div>
+        </section>
+
+        <!-- 5. ВИД ДЕЯТЕЛЬНОСТИ -->
         <section class="section">
           <h2 class="section-title" data-key="sec_business">Вид деятельности</h2>
 
           <label class="field">
             <span class="field-label" data-key="lbl_business_object">Тип объекта предпринимательства</span>
-            <select id="businessObjectType" class="field-input"></select>
+            <select id="businessObjectType" class="field-input">
+              <!-- Заполняется в script.js -->
+            </select>
           </label>
 
           <label class="field">
             <span class="field-label" data-key="lbl_activity_type">Вид деятельности</span>
-            <select id="activityType" class="field-input"></select>
+            <select id="activityType" class="field-input">
+              <!-- Заполняется в script.js -->
+            </select>
           </label>
         </section>
 
-        <!-- LEGAL ADDRESS -->
+        <!-- 6. АДРЕСА (ЮР. И ТОРГОВЫЙ) -->
         <section class="section">
           <h2 class="section-title" data-key="sec_address_legal">Юридический адрес</h2>
 
-          <input id="legalAddress" class="field-input" data-placeholder="legal_address">
+          <label class="field">
+            <span class="field-label" data-key="legal_address">Юридический адрес</span>
+            <input id="legalAddress" class="field-input" data-placeholder="legal_address">
+          </label>
 
           <div id="legalMap" class="map-box no-translate"></div>
 
           <div class="grid two">
-            <input id="legalLat" class="field-input" placeholder="Lat">
-            <input id="legalLon" class="field-input" placeholder="Lon">
+            <label class="field">
+              <span class="field-label">Широта</span>
+              <input id="legalLat" class="field-input" placeholder="Lat">
+            </label>
+            <label class="field">
+              <span class="field-label">Долгота</span>
+              <input id="legalLon" class="field-input" placeholder="Lon">
+            </label>
           </div>
         </section>
 
-        <!-- TRADE ADDRESS -->
         <section class="section">
           <h2 class="section-title" data-key="sec_address_trade">Адрес торговой точки</h2>
 
-          <input id="tradeAddress" class="field-input" data-placeholder="trade_address">
+          <label class="field">
+            <span class="field-label" data-key="trade_address">Адрес торговой точки</span>
+            <input id="tradeAddress" class="field-input" data-placeholder="trade_address">
+          </label>
 
           <div id="tradeMap" class="map-box no-translate"></div>
 
           <div class="grid two">
-            <input id="tradeLat" class="field-input" placeholder="Lat">
-            <input id="tradeLon" class="field-input" placeholder="Lon">
+            <label class="field">
+              <span class="field-label">Широта</span>
+              <input id="tradeLat" class="field-input" placeholder="Lat">
+            </label>
+            <label class="field">
+              <span class="field-label">Долгота</span>
+              <input id="tradeLon" class="field-input" placeholder="Lon">
+            </label>
           </div>
         </section>
 
-        <!-- SPELLCHECK -->
+        <!-- 7. КОММЕНТАРИЙ -->
         <section class="section">
-          <h2>Проверка текста</h2>
+          <h2 class="section-title">Комментарий</h2>
+
+          <label class="field">
+            <span class="field-label" data-key="description">Комментарий</span>
+            <textarea id="description" class="field-input" rows="3"></textarea>
+          </label>
+        </section>
+
+        <!-- 8. ПРОВЕРКА ОРФОГРАФИИ -->
+        <section class="section">
+          <h2 class="section-title">Проверка текста</h2>
           <div id="spellcheckPanel" class="spell-results"></div>
         </section>
 
-        <button id="savePdf" class="btn">Сохранить PDF</button>
+        <!-- КНОПКА PDF -->
+        <section class="section">
+          <button id="savePdf" class="btn">Сохранить PDF</button>
+        </section>
+
       </div>
     </main>
 
     <footer class="app-footer">DemirBank — POS Form</footer>
   </div>
+
   <!-- ============================================================
-     ОФИЦИАЛЬНЫЙ PDF-ДОКУМЕНТ (СКРЫТЫЙ)
-============================================================ -->
-<div id="pdfDocument" style="display:none; font-family: 'Times New Roman', serif; padding: 20px;">
+       ОФИЦИАЛЬНЫЙ PDF-ДОКУМЕНТ (СКРЫТЫЙ)
+  ============================================================ -->
+  <div id="pdfDocument" style="display:none; font-family: 'Times New Roman', serif; padding: 20px;">
 
-  <h2 style="text-align:center; font-size:20px; margin-bottom:20px;">
-    ЗАЯВЛЕНИЕ НА УСТАНОВКУ POS-ТЕРМИНАЛА
-  </h2>
+    <h2 style="text-align:center; font-size:20px; margin-bottom:20px;">
+      ЗАЯВЛЕНИЕ НА УСТАНОВКУ POS-ТЕРМИНАЛА
+    </h2>
 
-  <table style="width:100%; border-collapse: collapse; margin-bottom:18px;">
-    <tr>
-      <td style="width:250px; font-weight:bold;">Наименование торговой точки:</td>
-      <td id="pdf_companyName" style="border-bottom:1px solid #000;"></td>
-    </tr>
-    <tr>
-      <td style="font-weight:bold;">ИНН/БИН:</td>
-      <td id="pdf_companyBin" style="border-bottom:1px solid #000;"></td>
-    </tr>
-    <tr>
-      <td style="font-weight:bold;">Руководитель:</td>
-      <td id="pdf_companyHead" style="border-bottom:1px solid #000;"></td>
-    </tr>
-    <tr>
-      <td style="font-weight:bold;">Контактный телефон:</td>
-      <td id="pdf_phone" style="border-bottom:1px solid #000;"></td>
-    </tr>
-    <tr>
-      <td style="font-weight:bold;">E-mail:</td>
-      <td id="pdf_email" style="border-bottom:1px solid #000;"></td>
-    </tr>
-  </table>
+    <table style="width:100%; border-collapse: collapse; margin-bottom:18px;">
+      <tr>
+        <td style="width:250px; font-weight:bold;">Наименование торговой точки:</td>
+        <td id="pdf_companyName" style="border-bottom:1px solid #000;"></td>
+      </tr>
+      <tr>
+        <td style="font-weight:bold;">ИНН/БИН:</td>
+        <td id="pdf_companyBin" style="border-bottom:1px solid #000;"></td>
+      </tr>
+      <tr>
+        <td style="font-weight:bold;">Руководитель:</td>
+        <td id="pdf_companyHead" style="border-bottom:1px solid #000;"></td>
+      </tr>
+      <tr>
+        <td style="font-weight:bold;">Сотрудник, привлекший клиента:</td>
+        <td id="pdf_manager" style="border-bottom:1px solid #000;"></td>
+      </tr>
+      <tr>
+        <td style="font-weight:bold;">Контактный телефон:</td>
+        <td id="pdf_phone" style="border-bottom:1px solid #000;"></td>
+      </tr>
+      <tr>
+        <td style="font-weight:bold;">E-mail:</td>
+        <td id="pdf_email" style="border-bottom:1px solid #000;"></td>
+      </tr>
+    </table>
 
-  <h3 style="margin:8px 0;">Адреса:</h3>
-  <table style="width:100%; border-collapse: collapse; margin-bottom:18px;">
-    <tr>
-      <td style="width:200px; font-weight:bold;">Юридический адрес:</td>
-      <td id="pdf_legalAddress" style="border-bottom:1px solid #000;"></td>
-    </tr>
-    <tr>
-      <td style="font-weight:bold;">Адрес торговой точки:</td>
-      <td id="pdf_tradeAddress" style="border-bottom:1px solid #000;"></td>
-    </tr>
-  </table>
+    <h3 style="margin:8px 0;">Адреса:</h3>
+    <table style="width:100%; border-collapse: collapse; margin-bottom:18px;">
+      <tr>
+        <td style="width:200px; font-weight:bold;">Юридический адрес:</td>
+        <td id="pdf_legalAddress" style="border-bottom:1px solid #000;"></td>
+      </tr>
+      <tr>
+        <td style="font-weight:bold;">Адрес торговой точки:</td>
+        <td id="pdf_tradeAddress" style="border-bottom:1px solid #000;"></td>
+      </tr>
+    </table>
 
-  <h3 style="margin:8px 0;">Деятельность:</h3>
-  <table style="width:100%; border-collapse: collapse; margin-bottom:18px;">
-    <tr>
-      <td style="width:300px; font-weight:bold;">Тип объекта предпринимательства:</td>
-      <td id="pdf_businessObjectType" style="border-bottom:1px solid #000;"></td>
-    </tr>
-    <tr>
-      <td style="font-weight:bold;">Вид деятельности:</td>
-      <td id="pdf_activityType" style="border-bottom:1px solid #000;"></td>
-    </tr>
-    <tr>
-      <td style="font-weight:bold;">Модель POS-терминала:</td>
-      <td id="pdf_posModel" style="border-bottom:1px solid #000;"></td>
-    </tr>
-  </table>
+    <h3 style="margin:8px 0;">Деятельность:</h3>
+    <table style="width:100%; border-collapse: collapse; margin-bottom:18px;">
+      <tr>
+        <td style="width:300px; font-weight:bold;">Тип объекта предпринимательства:</td>
+        <td id="pdf_businessObjectType" style="border-bottom:1px solid #000;"></td>
+      </tr>
+      <tr>
+        <td style="font-weight:bold;">Вид деятельности:</td>
+        <td id="pdf_activityType" style="border-bottom:1px solid #000;"></td>
+      </tr>
+      <tr>
+        <td style="font-weight:bold;">Модель POS-терминала:</td>
+        <td id="pdf_posModel" style="border-bottom:1px solid #000;"></td>
+      </tr>
+      <tr>
+        <td style="font-weight:bold;">Район / УГНС:</td>
+        <td id="pdf_district_ugns" style="border-bottom:1px solid #000;"></td>
+      </tr>
+    </table>
 
-  <h3 style="margin:12px 0;">Комиссии:</h3>
+    <h3 style="margin-top:12px; margin-bottom:6px;">Комиссии:</h3>
+    <table style="width:100%; border-collapse: collapse; margin-bottom:20px;">
+      <tr>
+        <th style="border:1px solid #000; padding:6px;">Вид карты</th>
+        <th style="border:1px solid #000; padding:6px;">Комиссия, %</th>
+      </tr>
+      <tr>
+        <td style="border:1px solid #000; padding:6px;">Карты VISA, выпущенные ДКИБ</td>
+        <td id="pdf_comm_visa_dkb" style="border:1px solid #000; padding:6px;"></td>
+      </tr>
+      <tr>
+        <td style="border:1px solid #000; padding:6px;">Размер бонуса</td>
+        <td id="pdf_comm_bonus_dkb" style="border:1px solid #000; padding:6px;"></td>
+      </tr>
+      <tr>
+        <td style="border:1px solid #000; padding:6px;">Карты VISA, выпущенные другими банками</td>
+        <td id="pdf_comm_visa_other" style="border:1px solid #000; padding:6px;"></td>
+      </tr>
+      <tr>
+        <td style="border:1px solid #000; padding:6px;">Карты Элкарт, выпущенные ДКИБ</td>
+        <td id="pdf_comm_elcart_dkb" style="border:1px solid #000; padding:6px;"></td>
+      </tr>
+      <tr>
+        <td style="border:1px solid #000; padding:6px;">Карты Элкарт, выпущенные другими банками</td>
+        <td id="pdf_comm_elcart_other" style="border:1px solid #000; padding:6px;"></td>
+      </tr>
+      <tr>
+        <td style="border:1px solid #000; padding:6px;">Карты MasterCard, выпущенные ДКИБ</td>
+        <td id="pdf_comm_mc_dkb" style="border:1px solid #000; padding:6px;"></td>
+      </tr>
+      <tr>
+        <td style="border:1px solid #000; padding:6px;">Карты MasterCard, выпущенные другими банками</td>
+        <td id="pdf_comm_mc_other" style="border:1px solid #000; padding:6px;"></td>
+      </tr>
+    </table>
 
-  <table style="width:100%; border-collapse: collapse; margin-bottom:20px;">
-    <tr>
-      <th style="border:1px solid #000; padding:6px;">Тип операции</th>
-      <th style="border:1px solid #000; padding:6px;">Размер комиссии (%)</th>
-    </tr>
-    <tr>
-      <td style="border:1px solid #000; padding:6px;">VISA / MasterCard</td>
-      <td id="pdf_comm_card" style="border:1px solid #000; padding:6px;"></td>
-    </tr>
-    <tr>
-      <td style="border:1px solid #000; padding:6px;">Элкарт</td>
-      <td id="pdf_comm_elcart" style="border:1px solid #000; padding:6px;"></td>
-    </tr>
-  </table>
+    <h3 style="margin-top:12px; margin-bottom:6px;">Скидки:</h3>
+    <table style="width:100%; border-collapse: collapse; margin-bottom:20px;">
+      <tr>
+        <th style="border:1px solid #000; padding:6px;">Описание</th>
+        <th style="border:1px solid #000; padding:6px;">%</th>
+      </tr>
+      <tr>
+        <td style="border:1px solid #000; padding:6px;">Скидка на 10 карт</td>
+        <td id="pdf_discount_10" style="border:1px solid #000; padding:6px;"></td>
+      </tr>
+    </table>
 
+    <h3 style="margin:12px 0;">Комментарий:</h3>
+    <div id="pdf_description" style="min-height:40px; border-bottom:1px solid #000;"></div>
 
-  <h3 style="margin:12px 0;">Скидки:</h3>
+    <br><br>
 
-  <table style="width:100%; border-collapse: collapse; margin-bottom:20px;">
-    <tr>
-      <th style="border:1px solid #000; padding:6px;">Описание</th>
-      <th style="border:1px solid #000; padding:6px;">%</th>
-    </tr>
-    <tr>
-      <td style="border:1px solid #000; padding:6px;">Скидка на 10 карт</td>
-      <td id="pdf_discount_10" style="border:1px solid #000; padding:6px;"></td>
-    </tr>
-  </table>
+    <table style="width:100%; margin-top:40px;">
+      <tr>
+        <td style="width:50%; text-align:center;">
+          ____________________ / ____________________
+          <br>Подпись руководителя / ФИО
+        </td>
+        <td style="width:50%; text-align:center;">
+          «____» __________ 20____ г.
+        </td>
+      </tr>
+    </table>
 
-  <h3 style="margin:12px 0;">Комментарий:</h3>
-  <div id="pdf_description" style="min-height:40px; border-bottom:1px solid #000;"></div>
-
-  <br><br>
-
-  <table style="width:100%; margin-top:40px;">
-    <tr>
-      <td style="width:50%; text-align:center;">
-        ____________________ / ____________________
-        <br>Подпись руководителя / ФИО
-      </td>
-      <td style="width:50%; text-align:center;">
-        «____» __________ 20____ г.
-      </td>
-    </tr>
-  </table>
-
-</div>
+  </div>
 
 </body>
 </html>
