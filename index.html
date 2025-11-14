@@ -47,6 +47,53 @@
     <main class="app-main">
       <div class="card">
 
+        <!-- ==========================
+             БЛОК 1 — Тип заявки
+        ============================== -->
+        <section class="section">
+          <h2 class="section-title">Тип заявки и договор</h2>
+
+          <div class="grid two">
+            <label class="field">
+              <span class="field-label">Номер договора</span>
+              <input name="contractNumber" type="text" class="field-input" />
+            </label>
+            <label class="field">
+              <span class="field-label">Дата договора</span>
+              <input name="contractDate" type="date" class="field-input" />
+            </label>
+          </div>
+
+          <div class="grid two">
+            <label class="field">
+              <span class="field-label">Номер заявки (c/n)</span>
+              <input name="applicationNumber" type="text" class="field-input" />
+            </label>
+            <label class="field">
+              <span class="field-label">Дата заявки</span>
+              <input name="applicationDate" type="date" class="field-input" />
+            </label>
+          </div>
+
+          <div class="grid two">
+            <fieldset class="field">
+              <legend class="field-label">Тип заявки</legend>
+              <div class="chips">
+                <label class="chip"><input type="checkbox" name="requestType" value="new" /> Новый терминал(ы)</label>
+                <label class="chip"><input type="checkbox" name="requestType" value="replace" /> Замена терминала</label>
+                <label class="chip"><input type="checkbox" name="requestType" value="updateData" /> Смена данных</label>
+                <label class="chip"><input type="checkbox" name="requestType" value="qr" /> QR / QR Landing</label>
+              </div>
+            </fieldset>
+            <fieldset class="field">
+              <legend class="field-label">POS-терминал</legend>
+              <div class="chips">
+                <label class="chip"><input type="checkbox" name="terminalType" value="withKKM" /> С ККМ</label>
+                <label class="chip"><input type="checkbox" name="terminalType" value="withoutKKM" /> Без ККМ</label>
+              </div>
+            </fieldset>
+          </div>
+        </section>
         <!-- 1. КОМПАНИЯ -->
         <section class="section">
           <h2 class="section-title" data-key="sec_company">Данные компании</h2>
