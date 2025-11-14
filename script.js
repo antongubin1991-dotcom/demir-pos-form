@@ -18,9 +18,9 @@ if (themeToggle) {
 }
 
 /* ============================================================
-   SLK ENDPOINT
+   SLK ENDPOINT (URL ДЛЯ ОТПРАВКИ JSON)
 ============================================================ */
-const SLK_ENDPOINT = "";
+const SLK_ENDPOINT = ""; // например: "https://slk.goodoo.kg/api/demir-pos-form"
 
 /* ============================================================
    BUSINESS OBJECT TYPES
@@ -96,11 +96,11 @@ const activityTypes = [
   "Розничная торговля прочими товарами",
   "Услуги медицинских лабораторий / центров",
   "Услуги общественного питания",
-  "Услуги сетей быстрого питания",
+  "Услуги сетей быстрого питания (фаст-фуд)",
   "Услуги салонов красоты",
   "Услуги нотариусов / адвокатов",
   "Услуги автомоек",
-  "Услуги гостиниц / коттеджей",
+  "Услуги гостиниц / домов отдыха / коттеджей",
   "Услуги СТО",
   "Услуги по доставке",
   "Услуги по обучению",
@@ -110,7 +110,7 @@ const activityTypes = [
   "Услуги фотосалонов",
   "Услуги караоке / клубов",
   "Услуги интернет-клубов",
-  "Услуги по аренде",
+  "Услуги по сдаче в аренду имущества",
   "Прочие услуги"
 ];
 
@@ -118,29 +118,51 @@ const activityTypes = [
    RESPONSIBLE BRANCHES
 ============================================================ */
 const responsibleBranches = [
-  "СК Авангард", "СК Ала-Бука", "СК Асанбай", "СК Азия Молл",
-  "СК Бета-2", "СК Бишкек-Парк", "СК Глобус", "СК Глобус-2",
-  "СК Глобус-3", "СК Глобус-4", "СК Гранд Комфорт", "СК Джал",
-  "СК Дордой-Плаза", "СК Эркиндик", "СК Карвен", "СК Имарат",
-  "СК Фрунзе-Ош", "СК Чолпон-Ата", "СК Чуй, 243",
-  "Ф-л «ДКИБ-Бейшеналиева»", "Ф-л «ДКИБ-Главный»",
-  "Ф-л «ДКИБ-Жалал-Абад»", "Ф-л «ДКИБ-Каракол»",
-  "Ф-л «ДКИБ-Кызыл-Кия»", "Ф-л «ДКИБ-М.Горький»",
-  "Ф-л «ДКИБ-Манас»", "Ф-л «ДКИБ-Нарын»",
-  "Ф-л «ДКИБ-Ош»", "Ф-л «ДКИБ-Ош-Датка»",
-  "Ф-л «ДКИБ-Талас»", "Ф-л «ДКИБ-Центр»",
-  "Ф-л «ДКИБ-ЦУМ»", "Ф-л «ДКИБ-Южный»"
+  "СК Авангард",
+  "СК Ала-Бука",
+  "СК Асанбай",
+  "СК Азия Молл",
+  "СК Бета-2",
+  "СК Бишкек-Парк",
+  "СК Глобус",
+  "СК Глобус-2",
+  "СК Глобус-3",
+  "СК Глобус-4",
+  "СК Гранд Комфорт",
+  "СК Джал",
+  "СК Дордой-Плаза",
+  "СК Эркиндик",
+  "СК Карвен",
+  "СК Имарат",
+  "СК Фрунзе-Ош",
+  "СК Чолпон-Ата",
+  "СК Чуй, 243",
+  "Ф-л «ДКИБ-Бейшеналиева»",
+  "Ф-л «ДКИБ-Главный»",
+  "Ф-л «ДКИБ-Жалал-Абад»",
+  "Ф-л «ДКИБ-Каракол»",
+  "Ф-л «ДКИБ-Кызыл-Кия»",
+  "Ф-л «ДКИБ-М.Горький»",
+  "Ф-л «ДКИБ-Манас»",
+  "Ф-л «ДКИБ-Нарын»",
+  "Ф-л «ДКИБ-Ош»",
+  "Ф-л «ДКИБ-Ош-Датка»",
+  "Ф-л «ДКИБ-Талас»",
+  "Ф-л «ДКИБ-Центр»",
+  "Ф-л «ДКИБ-ЦУМ»",
+  "Ф-л «ДКИБ-Южный»"
 ];
 
 /* ============================================================
-   INIT RESPONSIBLE BRANCH SELECT
+   INIT RESPONSIBLE BRANCH DROPDOWN
 ============================================================ */
 function initResponsibleBranchesSelect() {
   const select = document.getElementById("responsibleBranches");
   if (!select) return;
 
   select.innerHTML = "";
-  responsibleBranches.forEach(branch => {
+
+  responsibleBranches.forEach((branch) => {
     const opt = document.createElement("option");
     opt.value = branch;
     opt.textContent = branch;
@@ -149,13 +171,32 @@ function initResponsibleBranchesSelect() {
 }
 
 /* ============================================================
-   DISTRICTS DATA
+   DISTRICTS → UGNS
 ============================================================ */
 const districtsData = [
   { code: "001", name: "Октябрьский район" },
   { code: "002", name: "Ленинский район" },
   { code: "003", name: "Свердловский район" },
   { code: "004", name: "Первомайский район" },
+
+  { code: "034", name: "Ак-Талинский район" },
+  { code: "035", name: "Ат-Башинский район" },
+  { code: "036", name: "Кочкорский район" },
+  { code: "037", name: "Жумгальский район" },
+  { code: "038", name: "Нарынский район" },
+  { code: "039", name: "Сузакский район" },
+  { code: "040", name: "Ноокенский район" },
+  { code: "041", name: "Ала-Букинский район" },
+  { code: "042", name: "Токтогульский район" },
+  { code: "043", name: "Аксыйский район" },
+  { code: "044", name: "Тогуз-Тороузский район" },
+  { code: "045", name: "Базар-Коргонский район" },
+  { code: "047", name: "Чаткалский район" },
+  { code: "048", name: "г. Джалал-Абад" },
+  { code: "049", name: "г. Таш-Кумыр" },
+  { code: "050", name: "г. Майлы-Суу" },
+  { code: "052", name: "г. Кара-Куль" },
+
   { code: "007", name: "Иссык-Атинский район" },
   { code: "008", name: "Жайылский район" },
   { code: "009", name: "Аламудунский район" },
@@ -174,7 +215,26 @@ const districtsData = [
   { code: "022", name: "Кара-Буринский район" },
   { code: "023", name: "Манасский район" },
   { code: "024", name: "г. Талас" },
+
+  { code: "025", name: "г. Чуй-Токмок" },
+  { code: "026", name: "г. Нарын" },
+  { code: "027", name: "г. Баткен" },
   { code: "028", name: "г. Бишкек" },
+  { code: "029", name: "УККН Юг" },
+  { code: "030", name: "Кадамжайский район" },
+  { code: "031", name: "г. Кызыл-Кия" },
+  { code: "032", name: "г. Ош" },
+  { code: "033", name: "г. Сулюкта" },
+
+  { code: "055", name: "Алайский район" },
+  { code: "056", name: "Чон-Алайский район" },
+  { code: "057", name: "Араванский район" },
+  { code: "058", name: "Баткенский район" },
+  { code: "059", name: "Кара-Сууйский район" },
+  { code: "060", name: "Лейлекский район" },
+
+  { code: "997", name: "УККН Юг (крупные налогоплательщики, юг)" },
+  { code: "998", name: "СЭЗ Бишкек" },
   { code: "999", name: "УККН (крупные налогоплательщики)" }
 ];
 
@@ -190,9 +250,17 @@ if (langSelect) {
   function applyTranslations(lang) {
     document.querySelectorAll("[data-key]").forEach((el) => {
       if (["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName)) return;
+      if (el.classList.contains("no-translate")) return;
+
       const key = el.getAttribute("data-key");
       const tr = window.translations?.[lang]?.[key];
       if (tr) el.textContent = tr;
+    });
+
+    document.querySelectorAll("[data-placeholder]").forEach((el) => {
+      const key = el.getAttribute("data-placeholder");
+      const tr = window.translations?.[lang]?.[key];
+      if (tr) el.placeholder = tr;
     });
 
     localStorage.setItem("lang", lang);
@@ -206,11 +274,12 @@ if (langSelect) {
 }
 
 /* ============================================================
-   AUTO SAVE
+   AUTO-SAVE FIELDS
 ============================================================ */
 const autoSaveFields = [
-  "companyName", "companyBin", "companyHead", "companyHeadInn",
-  "manager", "phone", "email", "posModel",
+  "companyName", "companyBin", "companyHead", "companyHeadInn", "manager",
+  "phone", "email",
+  "posModel",
   "comm_visa_dkb", "comm_bonus_dkb", "comm_visa_other",
   "comm_elcart_dkb", "comm_elcart_other",
   "comm_mc_dkb", "comm_mc_other",
@@ -222,7 +291,7 @@ const autoSaveFields = [
   "description"
 ];
 
-autoSaveFields.forEach(id => {
+autoSaveFields.forEach((id) => {
   const el = document.getElementById(id);
   if (!el) return;
 
@@ -235,120 +304,194 @@ autoSaveFields.forEach(id => {
 });
 
 /* ============================================================
-   AUTODETECT DISTRICT
+   ОПРЕДЕЛЕНИЕ РАЙОНА/УГНС ПО АДРЕСУ ТОРГОВОЙ ТОЧКИ
 ============================================================ */
 function updateDistrictFromAddress(addressText) {
   if (!addressText) return;
+
   const districtSelect = document.getElementById("district");
-  const ugns = document.getElementById("ugnsCode");
-  if (!districtSelect || !ugns) return;
+  const ugnsInput = document.getElementById("ugnsCode");
+  if (!districtSelect || !ugnsInput) return;
 
   const text = addressText.toLowerCase();
-  const match = districtsData.find(d => text.includes(d.name.toLowerCase()));
+
+  const match = districtsData.find((d) =>
+    text.includes(d.name.toLowerCase())
+  );
+
   if (match) {
     districtSelect.value = match.code;
-    ugns.value = match.code;
+    ugnsInput.value = match.code;
     localStorage.setItem("district", match.code);
     localStorage.setItem("ugnsCode", match.code);
   }
 }
 
 /* ============================================================
-   DOM READY
+   DOMContentLoaded INITIALIZATION
 ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
+  // Ответственный филиал
   initResponsibleBranchesSelect();
 
+  /* ---------- BUSINESS SELECTS ---------- */
   const bo = document.getElementById("businessObjectType");
+  const at = document.getElementById("activityType");
+
   if (bo) {
-    businessObjects.forEach(v => {
+    businessObjects.forEach((v) => {
       const opt = document.createElement("option");
       opt.value = v;
       opt.textContent = v;
       bo.appendChild(opt);
     });
+
+    const savedBO = localStorage.getItem("businessObjectType");
+    if (savedBO) bo.value = savedBO;
   }
 
-  const at = document.getElementById("activityType");
   if (at) {
-    activityTypes.forEach(v => {
+    activityTypes.forEach((v) => {
       const opt = document.createElement("option");
       opt.value = v;
       opt.textContent = v;
       at.appendChild(opt);
     });
+
+    const savedAT = localStorage.getItem("activityType");
+    if (savedAT) at.value = savedAT;
   }
 
+  /* ---------- DISTRICTS / UGNS (заполнение списка) ---------- */
   const districtSelect = document.getElementById("district");
-  if (districtSelect) {
-    districtsData.forEach(d => {
+  const ugnsInput = document.getElementById("ugnsCode");
+
+  if (districtSelect && ugnsInput) {
+    districtsData.forEach((d) => {
       const opt = document.createElement("option");
       opt.value = d.code;
       opt.textContent = d.name;
       districtSelect.appendChild(opt);
     });
+
+    const savedDistrict = localStorage.getItem("district");
+    const savedUgns = localStorage.getItem("ugnsCode");
+
+    if (savedDistrict) {
+      districtSelect.value = savedDistrict;
+      ugnsInput.value = savedUgns || savedDistrict;
+    }
+
+    districtSelect.addEventListener("change", () => {
+      const code = districtSelect.value;
+      ugnsInput.value = code;
+      localStorage.setItem("district", code);
+      localStorage.setItem("ugnsCode", code);
+    });
   }
 
+  /* ---------- POS MODEL ---------- */
+  const posModel = document.getElementById("posModel");
+  if (posModel) {
+    const savedPos = localStorage.getItem("posModel");
+    if (savedPos) posModel.value = savedPos;
+
+    posModel.addEventListener("change", () => {
+      localStorage.setItem("posModel", posModel.value);
+    });
+  }
+
+  /* ---------- TRADE ADDRESS → АВТО РАЙОН/УГНС ---------- */
+  const tradeAddress = document.getElementById("tradeAddress");
+  if (tradeAddress) {
+    tradeAddress.addEventListener("blur", () => {
+      updateDistrictFromAddress(tradeAddress.value);
+    });
+    tradeAddress.addEventListener("change", () => {
+      updateDistrictFromAddress(tradeAddress.value);
+    });
+
+    if (tradeAddress.value) {
+      updateDistrictFromAddress(tradeAddress.value);
+    }
+  }
+
+  /* ---------- LEAFLET MAPS ---------- */
   initMap("legalMap", "legalAddress", "legalLat", "legalLon");
   initMap("tradeMap", "tradeAddress", "tradeLat", "tradeLon");
 });
 
 /* ============================================================
-   LEAFLET MAP HANDLER
+   LEAFLET MAP + REVERSE GEOCODING
 ============================================================ */
-function initMap(mapId, addressId, latId, lonId) {
+function initMap(mapId, addressInputId, latInputId, lonInputId) {
   const mapDiv = document.getElementById(mapId);
   if (!mapDiv || typeof L === "undefined") return;
 
-  const defLat = 42.8746, defLon = 74.5698;
-  const savedLat = parseFloat(localStorage.getItem(latId) || defLat);
-  const savedLon = parseFloat(localStorage.getItem(lonId) || defLon);
+  const defaultLat = 42.8746;
+  const defaultLon = 74.5698;
+
+  const savedLat = parseFloat(localStorage.getItem(latInputId) || defaultLat);
+  const savedLon = parseFloat(localStorage.getItem(lonInputId) || defaultLon);
 
   const map = L.map(mapId).setView([savedLat, savedLon], 13);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19
+    maxZoom: 19,
+    attribution: "© OpenStreetMap"
   }).addTo(map);
 
   const marker = L.marker([savedLat, savedLon], { draggable: true }).addTo(map);
 
-  function updateFields(lat, lon, reverse = true) {
-    document.getElementById(latId).value = lat.toFixed(6);
-    document.getElementById(lonId).value = lon.toFixed(6);
-    localStorage.setItem(latId, lat.toFixed(6));
-    localStorage.setItem(lonId, lon.toFixed(6));
+  function updateFields(lat, lon, doReverse = true) {
+    const latEl = document.getElementById(latInputId);
+    const lonEl = document.getElementById(lonInputId);
+    const addrEl = document.getElementById(addressInputId);
 
-    if (reverse) {
-      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ru`)
-        .then(r => r.json())
-        .then(data => {
-          if (data.display_name) {
-            document.getElementById(addressId).value = data.display_name;
-            localStorage.setItem(addressId, data.display_name);
+    if (latEl) {
+      latEl.value = lat.toFixed(6);
+      localStorage.setItem(latInputId, lat.toFixed(6));
+    }
+    if (lonEl) {
+      lonEl.value = lon.toFixed(6);
+      localStorage.setItem(lonInputId, lon.toFixed(6));
+    }
 
-            if (addressId === "tradeAddress") {
+    if (doReverse && addrEl) {
+      fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ru`
+      )
+        .then((r) => r.json())
+        .then((data) => {
+          if (data && data.display_name) {
+            addrEl.value = data.display_name;
+            localStorage.setItem(addressInputId, data.display_name);
+
+            if (addressInputId === "tradeAddress") {
               updateDistrictFromAddress(data.display_name);
             }
           }
-        });
+        })
+        .catch(() => {});
     }
   }
 
+  // начальное состояние
   updateFields(savedLat, savedLon, true);
 
-  marker.on("dragend", e => {
+  marker.on("dragend", (e) => {
     const pos = e.target.getLatLng();
-    updateFields(pos.lat, pos.lng);
+    updateFields(pos.lat, pos.lng, true);
   });
 
-  map.on("click", e => {
+  map.on("click", (e) => {
     marker.setLatLng(e.latlng);
-    updateFields(e.latlng.lat, e.latlng.lng);
+    updateFields(e.latlng.lat, e.latlng.lng, true);
   });
 }
 
 /* ============================================================
-   JSON HELPERS
+   ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ JSON
 ============================================================ */
 function val(id) {
   const el = document.getElementById(id);
@@ -356,7 +499,7 @@ function val(id) {
 }
 
 function collectFormData() {
-  return {
+  const data = {
     company: {
       name: val("companyName"),
       bin: val("companyBin"),
@@ -410,33 +553,45 @@ function collectFormData() {
       createdAt: new Date().toISOString()
     }
   };
+
+  return data;
 }
 
-/* ============================================================
-   SLK SENDER
-============================================================ */
 async function sendToSLK(payload) {
   if (!SLK_ENDPOINT) {
-    console.log("JSON для SLK:", JSON.stringify(payload, null, 2));
+    console.log(
+      "JSON для SLK (SLK_ENDPOINT не настроен, payload):",
+      JSON.stringify(payload, null, 2)
+    );
     return;
   }
 
   try {
-    await fetch(SLK_ENDPOINT, {
+    const resp = await fetch(SLK_ENDPOINT, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify(payload)
     });
+
+    if (!resp.ok) {
+      console.error("SLK: HTTP error", resp.status);
+      return;
+    }
+
+    const data = await resp.json().catch(() => null);
+    console.log("SLK: успех", data);
   } catch (e) {
-    console.error("SLK ERROR:", e);
+    console.error("SLK: ошибка сети/JS", e);
   }
 }
 
 /* ============================================================
-   PDF GENERATOR
+   PDF EXPORT — FILL TEMPLATE
 ============================================================ */
 function fillPdfTemplate() {
-  const map = [
+  const pairs = [
     ["companyName", "pdf_companyName"],
     ["companyBin", "pdf_companyBin"],
     ["companyHead", "pdf_companyHead"],
@@ -459,39 +614,85 @@ function fillPdfTemplate() {
     ["discount_10", "pdf_discount_10"]
   ];
 
-  map.forEach(([src, dst]) => {
-    const s = document.getElementById(src);
-    const d = document.getElementById(dst);
-    if (d) d.textContent = s ? s.value : "";
+  pairs.forEach(([srcId, dstId]) => {
+    const srcEl = document.getElementById(srcId);
+    const dstEl = document.getElementById(dstId);
+    if (!dstEl) return;
+
+    dstEl.textContent = srcEl ? (srcEl.value || "") : "";
   });
 
+  // Район + УГНС
+  const districtSelect = document.getElementById("district");
+  const ugnsInput = document.getElementById("ugnsCode");
+  const pdfDistrict = document.getElementById("pdf_district_ugns");
+
+  if (pdfDistrict && districtSelect && ugnsInput) {
+    const code = ugnsInput.value || "";
+    const opt = districtSelect.options[districtSelect.selectedIndex];
+    const name = opt ? opt.text : "";
+    if (name && code) {
+      pdfDistrict.textContent = `${name} (код ${code})`;
+    } else {
+      pdfDistrict.textContent = name || code || "";
+    }
+  }
+
+  // Дата заполнения
   const pdfDate = document.getElementById("pdf_date");
   if (pdfDate) {
     const d = new Date();
-    pdfDate.textContent =
-      `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${d.getFullYear()} г.`;
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const yyyy = d.getFullYear();
+    pdfDate.textContent = `${dd}.${mm}.${yyyy} г.`;
   }
 }
 
+/* ============================================================
+   PDF EXPORT — GENERATE + SLK JSON
+============================================================ */
 const savePdfBtn = document.getElementById("savePdf");
 if (savePdfBtn) {
   savePdfBtn.addEventListener("click", async () => {
-    const data = collectFormData();
-    await sendToSLK(data);
+    const formData = collectFormData();
+    await sendToSLK(formData);
+
     fillPdfTemplate();
 
     const pdfDoc = document.getElementById("pdfDocument");
-    html2pdf().set({
-      margin: 10,
-      filename: "Demir_POS_Form.pdf",
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
-    }).from(pdfDoc).save();
+    if (!pdfDoc) {
+      alert("PDF-шаблон не найден (pdfDocument).");
+      return;
+    }
+    if (typeof html2pdf === "undefined") {
+      alert("Модуль html2pdf не загружен. Проверьте подключение html2pdf.bundle.min.js.");
+      return;
+    }
+
+    const prevDisplay = pdfDoc.style.display;
+    pdfDoc.style.display = "block";
+
+    html2pdf()
+      .set({
+        margin: 10,
+        filename: "Demir_POS_Form.pdf",
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+      })
+      .from(pdfDoc)
+      .save()
+      .then(() => {
+        pdfDoc.style.display = prevDisplay || "none";
+      })
+      .catch(() => {
+        pdfDoc.style.display = prevDisplay || "none";
+      });
   });
 }
 
 /* ============================================================
-   SIMPLE SPELLCHECK
+   SIMPLE SPELLCHECK MOCK
 ============================================================ */
 const spellPanel = document.getElementById("spellcheckPanel");
 
@@ -499,14 +700,18 @@ function fakeSpellCheck() {
   if (!spellPanel) return;
   spellPanel.innerHTML = "";
 
-  ["companyName", "companyHead", "description"].forEach(id => {
+  const ids = ["companyName", "companyHead", "description"];
+
+  ids.forEach((id) => {
     const el = document.getElementById(id);
     if (!el || !el.value) return;
 
-    el.value.split(/\s+/).forEach(w => {
+    const words = el.value.split(/\s+/);
+
+    words.forEach((w) => {
       if (w.length > 6 && Math.random() < 0.03) {
         const div = document.createElement("div");
-        div.textContent = `Возможная ошибка: ${w}`;
+        div.textContent = `Возможная ошибка: «${w}»`;
         spellPanel.appendChild(div);
       }
     });
