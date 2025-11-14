@@ -403,13 +403,3 @@ textarea.field-input {
 .pdf-signature-line {
   margin-top: 6px;
 }
-/* ============================================================
-   FOOTER
-============================================================ */
-
-.app-footer {
-  text-align: center;
-  font-size: 12px;
-  padding: 10px;
-  color: var(--text-muted);
-}
