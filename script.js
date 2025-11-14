@@ -15,6 +15,7 @@ themeToggle.addEventListener("change", () => {
   localStorage.setItem("theme", theme);
 });
 
+
 /* ============================================================
    BUSINESS OBJECT TYPES
 ============================================================ */
@@ -32,24 +33,24 @@ const businessObjects = [
   "Кафе/Ресторан (200+ мест)",
   "Кафе/Ресторан (100–200 мест)",
   "Кафе/Ресторан (до 100 мест)",
-  "Сеть быстрого питания (фаст-фуд)",
-  "Бутик/Магазин в ТЦ (200+ кв.м.)",
-  "Бутик/Магазин в ТЦ (100–200 кв.м.)",
-  "Бутик/Магазин в ТЦ (50–100 кв.м.)",
-  "Бутик/Магазин в ТЦ (до 50 кв.м.)",
+  "Сеть быстрого питания",
+  "Бутик в ТЦ (200+ кв.м.)",
+  "Бутик в ТЦ (100–200 кв.м.)",
+  "Бутик в ТЦ (50–100 кв.м.)",
+  "Бутик в ТЦ (до 50 кв.м.)",
   "Ветеринарная клиника",
   "Аптека",
   "Платёжный терминал",
   "Вендинговый аппарат",
-  "Сауна / Баня",
+  "Сауна/Баня",
   "Бильярдный клуб",
   "Ночной клуб / Караоке",
-  "Автостоянка круглосуточная",
+  "Автостоянка 24/7",
   "Ломбард",
-  "Парикмахерская / Салон красоты",
+  "Салон красоты",
   "Стоматология",
   "Мойка авто",
-  "Гостиница / Дом отдыха / Коттедж",
+  "Гостиница / Коттедж",
   "СТО",
   "Вулканизация",
   "Нотариус / Адвокат",
@@ -61,6 +62,7 @@ const businessObjects = [
   "Спортивный зал",
   "Прочее"
 ];
+
 
 /* ============================================================
    ACTIVITY TYPES
@@ -104,6 +106,7 @@ const activityTypes = [
   "Прочие услуги"
 ];
 
+
 /* ============================================================
    LANGUAGE SWITCH
 ============================================================ */
@@ -113,7 +116,7 @@ langSelect.value = savedLang;
 
 function applyTranslations(lang) {
   document.querySelectorAll("[data-key]").forEach((el) => {
-    if (["SELECT", "INPUT", "TEXTAREA"].includes(el.tagName)) return;
+    if (["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName)) return;
     if (el.classList.contains("no-translate")) return;
 
     const key = el.getAttribute("data-key");
@@ -123,7 +126,8 @@ function applyTranslations(lang) {
 
   document.querySelectorAll("[data-placeholder]").forEach((el) => {
     const key = el.getAttribute("data-placeholder");
-    if (translations[lang]?.[key]) el.placeholder = translations[lang][key];
+    const tr = translations[lang]?.[key];
+    if (tr) el.placeholder = tr;
   });
 
   localStorage.setItem("lang", lang);
@@ -135,8 +139,9 @@ langSelect.addEventListener("change", () => {
   applyTranslations(langSelect.value);
 });
 
+
 /* ============================================================
-   AUTO-SAVE FORM
+   AUTO-SAVE FIELDS
 ============================================================ */
 const autoFields = [
   "companyName", "companyBin", "companyHead",
@@ -145,41 +150,41 @@ const autoFields = [
   "legalLat", "legalLon",
   "tradeLat", "tradeLon",
   "businessObjectType", "activityType",
-  "posModel", "description"
+  "posModel", "description",
+  "commission_card", "commission_elcart", "discount_10"
 ];
 
 autoFields.forEach((id) => {
   const el = document.getElementById(id);
   if (!el) return;
+
   const saved = localStorage.getItem(id);
   if (saved) el.value = saved;
+
   el.addEventListener("input", () => localStorage.setItem(id, el.value));
 });
 
+
 /* ============================================================
-   FILL SELECTS (business + activity)
+   FILL DROPDOWNS
 ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
   const bo = document.getElementById("businessObjectType");
   const at = document.getElementById("activityType");
 
-  if (bo) {
-    businessObjects.forEach(v => bo.append(new Option(v, v)));
-    const saved = localStorage.getItem("businessObjectType");
-    if (saved) bo.value = saved;
-    bo.addEventListener("change", () => localStorage.setItem("businessObjectType", bo.value));
-  }
+  businessObjects.forEach(v => bo.append(new Option(v, v)));
+  activityTypes.forEach(v => at.append(new Option(v, v)));
 
-  if (at) {
-    activityTypes.forEach(v => at.append(new Option(v, v)));
-    const saved = localStorage.getItem("activityType");
-    if (saved) at.value = saved;
-    at.addEventListener("change", () => localStorage.setItem("activityType", at.value));
-  }
+  const savedBO = localStorage.getItem("businessObjectType");
+  if (savedBO) bo.value = savedBO;
+
+  const savedAT = localStorage.getItem("activityType");
+  if (savedAT) at.value = savedAT;
 });
 
+
 /* ============================================================
-   LEAFLET MAPS WITH REVERSE GEOCODING
+   LEAFLET MAPS
 ============================================================ */
 function initMap(mapId, addressId, latId, lonId) {
   const map = L.map(mapId).setView([42.8746, 74.5698], 13);
@@ -199,10 +204,10 @@ function initMap(mapId, addressId, latId, lonId) {
 
     fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ru`)
       .then(r => r.json())
-      .then(data => {
-        if (data?.display_name) {
-          document.getElementById(addressId).value = data.display_name;
-          localStorage.setItem(addressId, data.display_name);
+      .then(d => {
+        if (d?.display_name) {
+          document.getElementById(addressId).value = d.display_name;
+          localStorage.setItem(addressId, d.display_name);
         }
       });
   }
@@ -217,12 +222,11 @@ function initMap(mapId, addressId, latId, lonId) {
     update(e.latlng.lat, e.latlng.lng);
   });
 
-  // Load saved
-  const slat = localStorage.getItem(latId);
-  const slon = localStorage.getItem(lonId);
-  if (slat && slon) {
-    const lat = parseFloat(slat);
-    const lon = parseFloat(slon);
+  const savedLat = localStorage.getItem(latId);
+  const savedLon = localStorage.getItem(lonId);
+
+  if (savedLat && savedLon) {
+    const lat = +savedLat, lon = +savedLon;
     marker.setLatLng([lat, lon]);
     map.setView([lat, lon], 15);
     update(lat, lon);
@@ -236,11 +240,40 @@ document.addEventListener("DOMContentLoaded", () => {
   initMap("tradeMap", "tradeAddress", "tradeLat", "tradeLon");
 });
 
+
 /* ============================================================
-   PDF EXPORT
+   PDF EXPORT — ОФИЦИАЛЬНЫЙ ШАБЛОН
 ============================================================ */
+
+function fillPdfTemplate() {
+  const fields = [
+    ["companyName", "pdf_companyName"],
+    ["companyBin", "pdf_companyBin"],
+    ["companyHead", "pdf_companyHead"],
+    ["phone", "pdf_phone"],
+    ["email", "pdf_email"],
+    ["legalAddress", "pdf_legalAddress"],
+    ["tradeAddress", "pdf_tradeAddress"],
+    ["businessObjectType", "pdf_businessObjectType"],
+    ["activityType", "pdf_activityType"],
+    ["posModel", "pdf_posModel"],
+    ["description", "pdf_description"],
+    ["commission_card", "pdf_comm_card"],
+    ["commission_elcart", "pdf_comm_elcart"],
+    ["discount_10", "pdf_discount_10"]
+  ];
+
+  fields.forEach(([src, dest]) => {
+    document.getElementById(dest).textContent =
+      document.getElementById(src)?.value || "";
+  });
+}
+
 document.getElementById("savePdf")?.addEventListener("click", () => {
-  const element = document.querySelector(".app-main");
+  fillPdfTemplate();
+
+  const pdfDoc = document.getElementById("pdfDocument");
+
   html2pdf()
     .set({
       margin: 10,
@@ -248,20 +281,23 @@ document.getElementById("savePdf")?.addEventListener("click", () => {
       html2canvas: { scale: 2 },
       jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
     })
-    .from(element)
+    .from(pdfDoc)
     .save();
 });
 
+
 /* ============================================================
-   SIMPLE SPELLCHECK MOCK
+   SIMPLE SPELLCHECK
 ============================================================ */
 const spellPanel = document.getElementById("spellcheckPanel");
 
 function fakeSpellCheck() {
   spellPanel.innerHTML = "";
+
   ["companyName", "companyHead", "description"].forEach(id => {
-    const text = document.getElementById(id)?.value || "";
-    text.split(/\s+/).forEach(w => {
+    const words = (document.getElementById(id)?.value || "").split(/\s+/);
+
+    words.forEach(w => {
       if (w.length > 6 && Math.random() < 0.03) {
         const div = document.createElement("div");
         div.textContent = `Возможная ошибка: "${w}"`;
