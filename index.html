@@ -294,137 +294,174 @@
   <!-- ============================================================
        ОФИЦИАЛЬНЫЙ PDF-ДОКУМЕНТ (СКРЫТЫЙ)
   ============================================================ -->
-  <div id="pdfDocument" style="display:none; font-family: 'Times New Roman', serif; padding: 20px;">
+  <div id="pdfDocument" style="display:none; font-family:'Times New Roman',serif; font-size:12pt; padding:20px; line-height:1.3;">
 
-    <h2 style="text-align:center; font-size:20px; margin-bottom:20px;">
-      ЗАЯВЛЕНИЕ НА УСТАНОВКУ POS-ТЕРМИНАЛА
-    </h2>
-
-    <table style="width:100%; border-collapse: collapse; margin-bottom:18px;">
-      <tr>
-        <td style="width:250px; font-weight:bold;">Наименование торговой точки:</td>
-        <td id="pdf_companyName" style="border-bottom:1px solid #000;"></td>
-      </tr>
-      <tr>
-        <td style="font-weight:bold;">ИНН/БИН:</td>
-        <td id="pdf_companyBin" style="border-bottom:1px solid #000;"></td>
-      </tr>
-      <tr>
-        <td style="font-weight:bold;">Руководитель:</td>
-        <td id="pdf_companyHead" style="border-bottom:1px solid #000;"></td>
-      </tr>
-      <tr>
-        <td style="font-weight:bold;">Сотрудник, привлекший клиента:</td>
-        <td id="pdf_manager" style="border-bottom:1px solid #000;"></td>
-      </tr>
-      <tr>
-        <td style="font-weight:bold;">Контактный телефон:</td>
-        <td id="pdf_phone" style="border-bottom:1px solid #000;"></td>
-      </tr>
-      <tr>
-        <td style="font-weight:bold;">E-mail:</td>
-        <td id="pdf_email" style="border-bottom:1px solid #000;"></td>
-      </tr>
-    </table>
-
-    <h3 style="margin:8px 0;">Адреса:</h3>
-    <table style="width:100%; border-collapse: collapse; margin-bottom:18px;">
-      <tr>
-        <td style="width:200px; font-weight:bold;">Юридический адрес:</td>
-        <td id="pdf_legalAddress" style="border-bottom:1px solid #000;"></td>
-      </tr>
-      <tr>
-        <td style="font-weight:bold;">Адрес торговой точки:</td>
-        <td id="pdf_tradeAddress" style="border-bottom:1px solid #000;"></td>
-      </tr>
-    </table>
-
-    <h3 style="margin:8px 0;">Деятельность:</h3>
-    <table style="width:100%; border-collapse: collapse; margin-bottom:18px;">
-      <tr>
-        <td style="width:300px; font-weight:bold;">Тип объекта предпринимательства:</td>
-        <td id="pdf_businessObjectType" style="border-bottom:1px solid #000;"></td>
-      </tr>
-      <tr>
-        <td style="font-weight:bold;">Вид деятельности:</td>
-        <td id="pdf_activityType" style="border-bottom:1px solid #000;"></td>
-      </tr>
-      <tr>
-        <td style="font-weight:bold;">Модель POS-терминала:</td>
-        <td id="pdf_posModel" style="border-bottom:1px solid #000;"></td>
-      </tr>
-      <tr>
-        <td style="font-weight:bold;">Район / УГНС:</td>
-        <td id="pdf_district_ugns" style="border-bottom:1px solid #000;"></td>
-      </tr>
-    </table>
-
-    <h3 style="margin-top:12px; margin-bottom:6px;">Комиссии:</h3>
-    <table style="width:100%; border-collapse: collapse; margin-bottom:20px;">
-      <tr>
-        <th style="border:1px solid #000; padding:6px;">Вид карты</th>
-        <th style="border:1px solid #000; padding:6px;">Комиссия, %</th>
-      </tr>
-      <tr>
-        <td style="border:1px solid #000; padding:6px;">Карты VISA, выпущенные ДКИБ</td>
-        <td id="pdf_comm_visa_dkb" style="border:1px solid #000; padding:6px;"></td>
-      </tr>
-      <tr>
-        <td style="border:1px solid #000; padding:6px;">Размер бонуса</td>
-        <td id="pdf_comm_bonus_dkb" style="border:1px solid #000; padding:6px;"></td>
-      </tr>
-      <tr>
-        <td style="border:1px solid #000; padding:6px;">Карты VISA, выпущенные другими банками</td>
-        <td id="pdf_comm_visa_other" style="border:1px solid #000; padding:6px;"></td>
-      </tr>
-      <tr>
-        <td style="border:1px solid #000; padding:6px;">Карты Элкарт, выпущенные ДКИБ</td>
-        <td id="pdf_comm_elcart_dkb" style="border:1px solid #000; padding:6px;"></td>
-      </tr>
-      <tr>
-        <td style="border:1px solid #000; padding:6px;">Карты Элкарт, выпущенные другими банками</td>
-        <td id="pdf_comm_elcart_other" style="border:1px solid #000; padding:6px;"></td>
-      </tr>
-      <tr>
-        <td style="border:1px solid #000; padding:6px;">Карты MasterCard, выпущенные ДКИБ</td>
-        <td id="pdf_comm_mc_dkb" style="border:1px solid #000; padding:6px;"></td>
-      </tr>
-      <tr>
-        <td style="border:1px solid #000; padding:6px;">Карты MasterCard, выпущенные другими банками</td>
-        <td id="pdf_comm_mc_other" style="border:1px solid #000; padding:6px;"></td>
-      </tr>
-    </table>
-
-    <h3 style="margin-top:12px; margin-bottom:6px;">Скидки:</h3>
-    <table style="width:100%; border-collapse: collapse; margin-bottom:20px;">
-      <tr>
-        <th style="border:1px solid #000; padding:6px;">Описание</th>
-        <th style="border:1px solid #000; padding:6px;">%</th>
-      </tr>
-      <tr>
-        <td style="border:1px solid #000; padding:6px;">Скидка на 10 карт</td>
-        <td id="pdf_discount_10" style="border:1px solid #000; padding:6px;"></td>
-      </tr>
-    </table>
-
-    <h3 style="margin:12px 0;">Комментарий:</h3>
-    <div id="pdf_description" style="min-height:40px; border-bottom:1px solid #000;"></div>
-
-    <br><br>
-
-    <table style="width:100%; margin-top:40px;">
-      <tr>
-        <td style="width:50%; text-align:center;">
-          ____________________ / ____________________
-          <br>Подпись руководителя / ФИО
-        </td>
-        <td style="width:50%; text-align:center;" id="pdf_date">
-  «____» __________ 20____ г.
-</td>
-      </tr>
-    </table>
-
+  <!-- ВЕРХНИЙ БЛОК: ВИД ЗАЯВКИ -->
+  <div style="margin-bottom:16px; font-size:11pt;">
+    <div>Новый терминал(ы) ________________________ Приложение № 1</div>
+    <div>
+      Замена POS-терминала(ов) (поломка или сервис) ________________________
+    </div>
+    <div style="padding-left:16px;">
+      к Договору № __________________ от «____» ______________ 20____ г.
+    </div>
+    <div>Смена данных (адрес, тел. и т.д.) ________________________________</div>
+    <div>QR / QR Landing _________________________________________________</div>
+    <div>POS терминал с ККМ ______________________________________________</div>
+    <div>POS терминал без ККМ ____________________________________________</div>
   </div>
 
+  <!-- ЗАГОЛОВОК ЗАЯВКИ + ДАТА / ГОРОД -->
+  <div style="text-align:center; font-weight:bold; font-size:14pt; margin-bottom:8px;">
+    Заявка на регистрацию пункта обслуживания c/n __________________
+  </div>
+
+  <div style="text-align:right; margin-bottom:16px; font-size:11pt;">
+    <span id="pdf_date">«____» __________ 20____ г.</span>&nbsp;&nbsp;&nbsp; г. Бишкек
+  </div>
+
+  <!-- ТЕКСТ-ПРОСЬБА -->
+  <p style="text-indent:20px; margin:0 0 16px 0; font-size:11pt;">
+    Просим Вас зарегистрировать пункт обслуживания в Процессинговом центре и обеспечить расходными
+    материалами в количестве согласно данной заявке.
+  </p>
+
+  <!-- ТИПЫ КАРТОЧЕК (просто строкой, как в оригинале) -->
+  <p style="margin:8px 0 16px 0; font-size:11pt;">
+    Типы карточек:&nbsp;&nbsp; Visa &nbsp;&nbsp; MasterCard &nbsp;&nbsp; Элкарт &nbsp;&nbsp; МИР
+    &nbsp;&nbsp; (нужное выделить)
+  </p>
+
+  <!-- БЛОК КОМПАНИИ -->
+  <h3 style="margin:12px 0 6px 0; font-size:12pt;">Данные торговой точки</h3>
+  <table style="width:100%; border-collapse:collapse; margin-bottom:12px; font-size:11pt;">
+    <tr>
+      <td style="width:260px; font-weight:bold;">Наименование торговой точки:</td>
+      <td id="pdf_companyName" style="border-bottom:1px solid #000;"></td>
+    </tr>
+    <tr>
+      <td style="font-weight:bold;">ИНН/БИН:</td>
+      <td id="pdf_companyBin" style="border-bottom:1px solid #000;"></td>
+    </tr>
+    <tr>
+      <td style="font-weight:bold;">Руководитель:</td>
+      <td id="pdf_companyHead" style="border-bottom:1px solid #000;"></td>
+    </tr>
+    <tr>
+      <td style="font-weight:bold;">Сотрудник, привлекший клиента:</td>
+      <td id="pdf_manager" style="border-bottom:1px solid #000;"></td>
+    </tr>
+    <tr>
+      <td style="font-weight:bold;">Контактный телефон:</td>
+      <td id="pdf_phone" style="border-bottom:1px solid #000;"></td>
+    </tr>
+    <tr>
+      <td style="font-weight:bold;">E-mail:</td>
+      <td id="pdf_email" style="border-bottom:1px solid #000;"></td>
+    </tr>
+  </table>
+
+  <!-- АДРЕСА -->
+  <h3 style="margin:10px 0 6px 0; font-size:12pt;">Адреса</h3>
+  <table style="width:100%; border-collapse:collapse; margin-bottom:12px; font-size:11pt;">
+    <tr>
+      <td style="width:220px; font-weight:bold;">Юридический адрес:</td>
+      <td id="pdf_legalAddress" style="border-bottom:1px solid #000;"></td>
+    </tr>
+    <tr>
+      <td style="font-weight:bold;">Адрес торговой точки:</td>
+      <td id="pdf_tradeAddress" style="border-bottom:1px solid #000;"></td>
+    </tr>
+    <tr>
+      <td style="font-weight:bold;">Район / УГНС:</td>
+      <td id="pdf_district_ugns" style="border-bottom:1px solid #000;"></td>
+    </tr>
+  </table>
+
+  <!-- ВИД ДЕЯТЕЛЬНОСТИ -->
+  <h3 style="margin:10px 0 6px 0; font-size:12pt;">Вид деятельности</h3>
+  <table style="width:100%; border-collapse:collapse; margin-bottom:12px; font-size:11pt;">
+    <tr>
+      <td style="width:280px; font-weight:bold;">Тип объекта предпринимательства:</td>
+      <td id="pdf_businessObjectType" style="border-bottom:1px solid #000;"></td>
+    </tr>
+    <tr>
+      <td style="font-weight:bold;">Вид деятельности:</td>
+      <td id="pdf_activityType" style="border-bottom:1px solid #000;"></td>
+    </tr>
+    <tr>
+      <td style="font-weight:bold;">Модель POS-терминала:</td>
+      <td id="pdf_posModel" style="border-bottom:1px solid #000;"></td>
+    </tr>
+  </table>
+
+  <!-- КОМИССИИ -->
+  <h3 style="margin:12px 0 6px 0; font-size:12pt;">Комиссии</h3>
+  <table style="width:100%; border-collapse:collapse; margin-bottom:16px; font-size:11pt;">
+    <tr>
+      <th style="border:1px solid #000; padding:6px; text-align:left;">Вид карты</th>
+      <th style="border:1px solid #000; padding:6px; text-align:center;">Комиссия, %</th>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000; padding:6px;">Карты VISA, выпущенные ДКИБ</td>
+      <td id="pdf_comm_visa_dkb" style="border:1px solid #000; padding:6px; text-align:center;"></td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000; padding:6px;">Размер бонуса</td>
+      <td id="pdf_comm_bonus_dkb" style="border:1px solid #000; padding:6px; text-align:center;"></td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000; padding:6px;">Карты VISA, выпущенные другими банками</td>
+      <td id="pdf_comm_visa_other" style="border:1px solid #000; padding:6px; text-align:center;"></td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000; padding:6px;">Карты Элкарт, выпущенные ДКИБ</td>
+      <td id="pdf_comm_elcart_dkb" style="border:1px solid #000; padding:6px; text-align:center;"></td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000; padding:6px;">Карты Элкарт, выпущенные другими банками</td>
+      <td id="pdf_comm_elcart_other" style="border:1px solid #000; padding:6px; text-align:center;"></td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000; padding:6px;">Карты MasterCard, выпущенные ДКИБ</td>
+      <td id="pdf_comm_mc_dkb" style="border:1px solid #000; padding:6px; text-align:center;"></td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000; padding:6px;">Карты MasterCard, выпущенные другими банками</td>
+      <td id="pdf_comm_mc_other" style="border:1px solid #000; padding:6px; text-align:center;"></td>
+    </tr>
+  </table>
+
+  <!-- СКИДКИ -->
+  <h3 style="margin:12px 0 6px 0; font-size:12pt;">Скидки</h3>
+  <table style="width:100%; border-collapse:collapse; margin-bottom:20px; font-size:11pt;">
+    <tr>
+      <th style="border:1px solid #000; padding:6px; text-align:left;">Описание</th>
+      <th style="border:1px solid #000; padding:6px; text-align:center;">%</th>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000; padding:6px;">Скидка на 10 карт</td>
+      <td id="pdf_discount_10" style="border:1px solid #000; padding:6px; text-align:center;"></td>
+    </tr>
+  </table>
+
+  <!-- КОММЕНТАРИЙ -->
+  <h3 style="margin:12px 0 6px 0; font-size:12pt;">Комментарий</h3>
+  <div id="pdf_description" style="min-height:40px; border-bottom:1px solid #000; margin-bottom:24px;"></div>
+
+  <!-- ПОДПИСИ -->
+  <table style="width:100%; margin-top:20px; font-size:11pt;">
+    <tr>
+      <td style="width:50%; text-align:center;">
+        ____________________ / ____________________<br/>
+        Подпись руководителя / ФИО
+      </td>
+      <td style="width:50%; text-align:center;">
+        ____________________ / ____________________<br/>
+        Сотрудник Банка
+      </td>
+    </tr>
+  </table>
+</div>
 </body>
 </html>
