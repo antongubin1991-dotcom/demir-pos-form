@@ -100,5 +100,115 @@
 
     <footer class="app-footer">DemirBank — POS Form</footer>
   </div>
+  <!-- ============================================================
+     ОФИЦИАЛЬНЫЙ PDF-ДОКУМЕНТ (СКРЫТЫЙ)
+============================================================ -->
+<div id="pdfDocument" style="display:none; font-family: 'Times New Roman', serif; padding: 20px;">
+
+  <h2 style="text-align:center; font-size:20px; margin-bottom:20px;">
+    ЗАЯВЛЕНИЕ НА УСТАНОВКУ POS-ТЕРМИНАЛА
+  </h2>
+
+  <table style="width:100%; border-collapse: collapse; margin-bottom:18px;">
+    <tr>
+      <td style="width:250px; font-weight:bold;">Наименование торговой точки:</td>
+      <td id="pdf_companyName" style="border-bottom:1px solid #000;"></td>
+    </tr>
+    <tr>
+      <td style="font-weight:bold;">ИНН/БИН:</td>
+      <td id="pdf_companyBin" style="border-bottom:1px solid #000;"></td>
+    </tr>
+    <tr>
+      <td style="font-weight:bold;">Руководитель:</td>
+      <td id="pdf_companyHead" style="border-bottom:1px solid #000;"></td>
+    </tr>
+    <tr>
+      <td style="font-weight:bold;">Контактный телефон:</td>
+      <td id="pdf_phone" style="border-bottom:1px solid #000;"></td>
+    </tr>
+    <tr>
+      <td style="font-weight:bold;">E-mail:</td>
+      <td id="pdf_email" style="border-bottom:1px solid #000;"></td>
+    </tr>
+  </table>
+
+  <h3 style="margin:8px 0;">Адреса:</h3>
+  <table style="width:100%; border-collapse: collapse; margin-bottom:18px;">
+    <tr>
+      <td style="width:200px; font-weight:bold;">Юридический адрес:</td>
+      <td id="pdf_legalAddress" style="border-bottom:1px solid #000;"></td>
+    </tr>
+    <tr>
+      <td style="font-weight:bold;">Адрес торговой точки:</td>
+      <td id="pdf_tradeAddress" style="border-bottom:1px solid #000;"></td>
+    </tr>
+  </table>
+
+  <h3 style="margin:8px 0;">Деятельность:</h3>
+  <table style="width:100%; border-collapse: collapse; margin-bottom:18px;">
+    <tr>
+      <td style="width:300px; font-weight:bold;">Тип объекта предпринимательства:</td>
+      <td id="pdf_businessObjectType" style="border-bottom:1px solid #000;"></td>
+    </tr>
+    <tr>
+      <td style="font-weight:bold;">Вид деятельности:</td>
+      <td id="pdf_activityType" style="border-bottom:1px solid #000;"></td>
+    </tr>
+    <tr>
+      <td style="font-weight:bold;">Модель POS-терминала:</td>
+      <td id="pdf_posModel" style="border-bottom:1px solid #000;"></td>
+    </tr>
+  </table>
+
+  <h3 style="margin:12px 0;">Комиссии:</h3>
+
+  <table style="width:100%; border-collapse: collapse; margin-bottom:20px;">
+    <tr>
+      <th style="border:1px solid #000; padding:6px;">Тип операции</th>
+      <th style="border:1px solid #000; padding:6px;">Размер комиссии (%)</th>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000; padding:6px;">VISA / MasterCard</td>
+      <td id="pdf_comm_card" style="border:1px solid #000; padding:6px;"></td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000; padding:6px;">Элкарт</td>
+      <td id="pdf_comm_elcart" style="border:1px solid #000; padding:6px;"></td>
+    </tr>
+  </table>
+
+
+  <h3 style="margin:12px 0;">Скидки:</h3>
+
+  <table style="width:100%; border-collapse: collapse; margin-bottom:20px;">
+    <tr>
+      <th style="border:1px solid #000; padding:6px;">Описание</th>
+      <th style="border:1px solid #000; padding:6px;">%</th>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000; padding:6px;">Скидка на 10 карт</td>
+      <td id="pdf_discount_10" style="border:1px solid #000; padding:6px;"></td>
+    </tr>
+  </table>
+
+  <h3 style="margin:12px 0;">Комментарий:</h3>
+  <div id="pdf_description" style="min-height:40px; border-bottom:1px solid #000;"></div>
+
+  <br><br>
+
+  <table style="width:100%; margin-top:40px;">
+    <tr>
+      <td style="width:50%; text-align:center;">
+        ____________________ / ____________________
+        <br>Подпись руководителя / ФИО
+      </td>
+      <td style="width:50%; text-align:center;">
+        «____» __________ 20____ г.
+      </td>
+    </tr>
+  </table>
+
+</div>
+
 </body>
 </html>
