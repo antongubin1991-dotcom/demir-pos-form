@@ -392,6 +392,22 @@
             <textarea id="description" class="field-input" rows="3"></textarea>
           </label>
         </section>
+        <section class="section">
+  <h2 class="section-title">Подпись заявителя</h2>
+
+  <div class="signature-block">
+    <canvas id="signaturePad" width="600" height="200"></canvas>
+
+    <div class="signature-actions">
+      <button type="button" id="signatureClear" class="btn secondary">
+        Очистить подпись
+      </button>
+    </div>
+
+    <!-- Сюда будет сохраняться картинка подписи (base64) -->
+    <input type="hidden" id="signatureData" name="signatureData" />
+  </div>
+</section>
         <!-- КНОПКА PDF -->
         <section class="section">
           <button id="savePdf" class="btn">Сохранить PDF</button>
