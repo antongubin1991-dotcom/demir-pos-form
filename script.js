@@ -192,7 +192,6 @@ if (langSelect) {
   langSelect.value = savedLang;
 
   function applyTranslations(lang) {
-    // Статические тексты
     document.querySelectorAll("[data-key]").forEach((el) => {
       if (["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName)) return;
       if (el.classList.contains("no-translate")) return;
@@ -202,7 +201,6 @@ if (langSelect) {
       if (tr) el.textContent = tr;
     });
 
-    // Плейсхолдеры
     document.querySelectorAll("[data-placeholder]").forEach((el) => {
       const key = el.getAttribute("data-placeholder");
       const tr = window.translations?.[lang]?.[key];
@@ -252,6 +250,32 @@ autoSaveFields.forEach((id) => {
 
 
 /* ============================================================
+   ФУНКЦИЯ: ОПРЕДЕЛИТЬ РАЙОН/УГНС ПО АДРЕСУ ТОРГОВОЙ ТОЧКИ
+============================================================ */
+function updateDistrictFromAddress(addressText) {
+  if (!addressText) return;
+
+  const districtSelect = document.getElementById("district");
+  const ugnsInput = document.getElementById("ugnsCode");
+  if (!districtSelect || !ugnsInput) return;
+
+  const text = addressText.toLowerCase();
+
+  // ищем по вхождению названия района в адрес
+  const match = districtsData.find((d) =>
+    text.includes(d.name.toLowerCase())
+  );
+
+  if (match) {
+    districtSelect.value = match.code;
+    ugnsInput.value = match.code;
+    localStorage.setItem("district", match.code);
+    localStorage.setItem("ugnsCode", match.code);
+  }
+}
+
+
+/* ============================================================
    DOMContentLoaded INITIALIZATION
 ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
@@ -283,12 +307,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (savedAT) at.value = savedAT;
   }
 
-  /* ---------- DISTRICTS / UGNS ---------- */
+  /* ---------- DISTRICTS / UGNS (заполнение списка) ---------- */
   const districtSelect = document.getElementById("district");
   const ugnsInput = document.getElementById("ugnsCode");
 
   if (districtSelect && ugnsInput) {
-    // Заполняем список районов
     districtsData.forEach((d) => {
       const opt = document.createElement("option");
       opt.value = d.code;
@@ -296,13 +319,15 @@ document.addEventListener("DOMContentLoaded", () => {
       districtSelect.appendChild(opt);
     });
 
-    // Восстановление сохранённого значения
     const savedDistrict = localStorage.getItem("district");
+    const savedUgns = localStorage.getItem("ugnsCode");
+
     if (savedDistrict) {
       districtSelect.value = savedDistrict;
-      ugnsInput.value = savedDistrict; // код УГНС совпадает с value
+      ugnsInput.value = savedUgns || savedDistrict;
     }
 
+    // если пользователь всё-таки меняет район руками
     districtSelect.addEventListener("change", () => {
       const code = districtSelect.value;
       ugnsInput.value = code;
@@ -320,6 +345,23 @@ document.addEventListener("DOMContentLoaded", () => {
     posModel.addEventListener("change", () => {
       localStorage.setItem("posModel", posModel.value);
     });
+  }
+
+  /* ---------- TRADE ADDRESS → АВТО РАЙОН/УГНС ---------- */
+  const tradeAddress = document.getElementById("tradeAddress");
+  if (tradeAddress) {
+    // при ручном изменении
+    tradeAddress.addEventListener("blur", () => {
+      updateDistrictFromAddress(tradeAddress.value);
+    });
+    tradeAddress.addEventListener("change", () => {
+      updateDistrictFromAddress(tradeAddress.value);
+    });
+
+    // попробовать визначить сразу из сохранённого адреса
+    if (tradeAddress.value) {
+      updateDistrictFromAddress(tradeAddress.value);
+    }
   }
 
   /* ---------- LEAFLET MAPS ---------- */
@@ -373,23 +415,28 @@ function initMap(mapId, addressInputId, latInputId, lonInputId) {
           if (data && data.display_name) {
             addrEl.value = data.display_name;
             localStorage.setItem(addressInputId, data.display_name);
+
+            // если это адрес торговой точки — обновляем район/УГНС
+            if (addressInputId === "tradeAddress") {
+              updateDistrictFromAddress(data.display_name);
+            }
           }
         })
         .catch(() => {});
     }
   }
 
-  // начальное обновление
-  updateFields(savedLat, savedLon);
+  // начальное состояние
+  updateFields(savedLat, savedLon, true);
 
   marker.on("dragend", (e) => {
     const pos = e.target.getLatLng();
-    updateFields(pos.lat, pos.lng);
+    updateFields(pos.lat, pos.lng, true);
   });
 
   map.on("click", (e) => {
     marker.setLatLng(e.latlng);
-    updateFields(e.latlng.lat, e.latlng.lng);
+    updateFields(e.latlng.lat, e.latlng.lng, true);
   });
 }
 
@@ -444,14 +491,40 @@ function fillPdfTemplate() {
       pdfDistrict.textContent = name || code || "";
     }
   }
+
+  // Дата заполнения (добавь в index.html элемент с id="pdf_date")
+  const pdfDate = document.getElementById("pdf_date");
+  if (pdfDate) {
+    const d = new Date();
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const yyyy = d.getFullYear();
+    pdfDate.textContent = `${dd}.${mm}.${yyyy} г.`;
+  }
 }
 
+
+/* ============================================================
+   PDF EXPORT — GENERATE
+============================================================ */
 const savePdfBtn = document.getElementById("savePdf");
 if (savePdfBtn) {
   savePdfBtn.addEventListener("click", () => {
     fillPdfTemplate();
+
     const pdfDoc = document.getElementById("pdfDocument");
-    if (!pdfDoc || typeof html2pdf === "undefined") return;
+    if (!pdfDoc) {
+      alert("PDF-шаблон не найден (pdfDocument).");
+      return;
+    }
+    if (typeof html2pdf === "undefined") {
+      alert("Модуль html2pdf не загружен. Проверьте подключение html2pdf.bundle.min.js.");
+      return;
+    }
+
+    // Клонируем скрытый документ, чтобы html2pdf нормально отрисовал
+    const clone = pdfDoc.cloneNode(true);
+    clone.style.display = "block";
 
     html2pdf()
       .set({
@@ -460,7 +533,7 @@ if (savePdfBtn) {
         html2canvas: { scale: 2 },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
       })
-      .from(pdfDoc)
+      .from(clone)
       .save();
   });
 }
