@@ -250,7 +250,7 @@ autoSaveFields.forEach((id) => {
 
 
 /* ============================================================
-   ФУНКЦИЯ: ОПРЕДЕЛИТЬ РАЙОН/УГНС ПО АДРЕСУ ТОРГОВОЙ ТОЧКИ
+   ОПРЕДЕЛЕНИЕ РАЙОНА/УГНС ПО АДРЕСУ ТОРГОВОЙ ТОЧКИ
 ============================================================ */
 function updateDistrictFromAddress(addressText) {
   if (!addressText) return;
@@ -261,7 +261,6 @@ function updateDistrictFromAddress(addressText) {
 
   const text = addressText.toLowerCase();
 
-  // ищем по вхождению названия района в адрес
   const match = districtsData.find((d) =>
     text.includes(d.name.toLowerCase())
   );
@@ -327,7 +326,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ugnsInput.value = savedUgns || savedDistrict;
     }
 
-    // если пользователь всё-таки меняет район руками
+    // если пользователь меняет район руками
     districtSelect.addEventListener("change", () => {
       const code = districtSelect.value;
       ugnsInput.value = code;
@@ -350,7 +349,6 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ---------- TRADE ADDRESS → АВТО РАЙОН/УГНС ---------- */
   const tradeAddress = document.getElementById("tradeAddress");
   if (tradeAddress) {
-    // при ручном изменении
     tradeAddress.addEventListener("blur", () => {
       updateDistrictFromAddress(tradeAddress.value);
     });
@@ -358,7 +356,6 @@ document.addEventListener("DOMContentLoaded", () => {
       updateDistrictFromAddress(tradeAddress.value);
     });
 
-    // попробовать визначить сразу из сохранённого адреса
     if (tradeAddress.value) {
       updateDistrictFromAddress(tradeAddress.value);
     }
@@ -492,7 +489,7 @@ function fillPdfTemplate() {
     }
   }
 
-  // Дата заполнения (добавь в index.html элемент с id="pdf_date")
+  // Дата заполнения
   const pdfDate = document.getElementById("pdf_date");
   if (pdfDate) {
     const d = new Date();
@@ -502,6 +499,7 @@ function fillPdfTemplate() {
     pdfDate.textContent = `${dd}.${mm}.${yyyy} г.`;
   }
 }
+
 
 
 /* ============================================================
@@ -522,9 +520,9 @@ if (savePdfBtn) {
       return;
     }
 
-    // Клонируем скрытый документ, чтобы html2pdf нормально отрисовал
-    const clone = pdfDoc.cloneNode(true);
-    clone.style.display = "block";
+    // ВАЖНО: временно показываем документ, чтобы не был высотой 0
+    const prevDisplay = pdfDoc.style.display;
+    pdfDoc.style.display = "block";
 
     html2pdf()
       .set({
@@ -533,8 +531,14 @@ if (savePdfBtn) {
         html2canvas: { scale: 2 },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
       })
-      .from(clone)
-      .save();
+      .from(pdfDoc)
+      .save()
+      .then(() => {
+        pdfDoc.style.display = prevDisplay || "none";
+      })
+      .catch(() => {
+        pdfDoc.style.display = prevDisplay || "none";
+      });
   });
 }
 
