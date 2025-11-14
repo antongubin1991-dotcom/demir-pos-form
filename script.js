@@ -24,20 +24,22 @@ const savedLang = localStorage.getItem("lang") || "ru";
 langSelect.value = savedLang;
 
 function applyTranslations(lang) {
-  // Replace text in elements with data-key
   document.querySelectorAll("[data-key]").forEach((el) => {
     const key = el.getAttribute("data-key");
-    if (translations[lang] && translations[lang][key]) {
-      el.textContent = translations[lang][key];
-    }
+    const tr = translations[lang]?.[key];
+    if (!tr) return;
+
+    // карты, кнопки и спец-элементы пропускаем
+    if (el.classList.contains("no-translate")) return;
+    if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") return;
+
+    el.textContent = tr;
   });
 
-  // Replace placeholders
   document.querySelectorAll("[data-placeholder]").forEach((el) => {
     const key = el.getAttribute("data-placeholder");
-    if (translations[lang] && translations[lang][key]) {
-      el.placeholder = translations[lang][key];
-    }
+    const tr = translations[lang]?.[key];
+    if (tr) el.placeholder = tr;
   });
 
   localStorage.setItem("lang", lang);
@@ -58,6 +60,8 @@ const fields = [
   "companyName", "companyBin", "companyHead",
   "phone", "email", "manager",
   "legalAddress", "tradeAddress",
+  "legalLat", "legalLon",
+  "tradeLat", "tradeLon",
   "businessObjectType", "activityType",
   "posModel", "description"
 ];
@@ -66,11 +70,9 @@ fields.forEach((id) => {
   const el = document.getElementById(id);
   if (!el) return;
 
-  // Load saved
   const saved = localStorage.getItem(id);
   if (saved) el.value = saved;
 
-  // Save on change
   el.addEventListener("input", () => {
     localStorage.setItem(id, el.value);
   });
@@ -78,7 +80,7 @@ fields.forEach((id) => {
 
 
 /* ============================================================
-   POS MODEL SELECT (WITH KOZEN)
+   POS MODEL SELECT
 ============================================================ */
 const posModel = document.getElementById("posModel");
 if (posModel) {
@@ -92,126 +94,73 @@ if (posModel) {
 
 
 /* ============================================================
-   LEAFLET MAP INITIALIZATION
-============================================================ */
-let legalMap, tradeMap;
-let legalMarker = null;
-let tradeMarker = null;
-
-function initMaps() {
-  /* ---------- LEGAL ADDRESS MAP ---------- */
-  const legalDiv = document.getElementById("legalMap");
-
-  if (legalDiv) {
-    legalMap = L.map("legalMap").setView([42.8746, 74.5698], 13);
-
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19
-    }).addTo(legalMap);
-
-    // Restore saved marker
-    const savedLegal = localStorage.getItem("legalAddress");
-    if (savedLegal && savedLegal.includes(",")) {
-      const [lat, lng] = savedLegal.split(",").map(Number);
-      legalMarker = L.marker([lat, lng]).addTo(legalMap);
-      legalMap.setView([lat, lng], 15);
-    }
-
-    legalMap.on("click", (e) => {
-      const { lat, lng } = e.latlng;
-
-      document.getElementById("legalAddress").value =
-        `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-      localStorage.setItem("legalAddress", `${lat},${lng}`);
-
-      if (legalMarker) legalMarker.remove();
-      legalMarker = L.marker([lat, lng]).addTo(legalMap);
-    });
-  }
-
-
-  /* ---------- TRADE ADDRESS MAP ---------- */
-  const tradeDiv = document.getElementById("tradeMap");
-
-  if (tradeDiv) {
-    tradeMap = L.map("tradeMap").setView([42.8746, 74.5698], 13);
-
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19
-    }).addTo(tradeMap);
-
-    const savedTrade = localStorage.getItem("tradeAddress");
-    if (savedTrade && savedTrade.includes(",")) {
-      const [lat, lng] = savedTrade.split(",").map(Number);
-      tradeMarker = L.marker([lat, lng]).addTo(tradeMap);
-      tradeMap.setView([lat, lng], 15);
-    }
-
-    tradeMap.on("click", (e) => {
-      const { lat, lng } = e.latlng;
-
-      document.getElementById("tradeAddress").value =
-        `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-      localStorage.setItem("tradeAddress", `${lat},${lng}`);
-
-      if (tradeMarker) tradeMarker.remove();
-      tradeMarker = L.marker([lat, lng]).addTo(tradeMap);
-    });
-  }
-}
-
-document.addEventListener("DOMContentLoaded", initMaps);
-
-/* ============================================================
-   MAPS + GEOCODING
+   LEAFLET MAPS + REVERSE GEOCODING
 ============================================================ */
 
 function initMap(mapId, addressInputId, latInputId, lonInputId) {
-    const map = L.map(mapId).setView([42.8746, 74.5698], 13);
+    const defaultLat = 42.8746;
+    const defaultLon = 74.5698;
+
+    const map = L.map(mapId).setView([defaultLat, defaultLon], 13);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '© OpenStreetMap',
+        maxZoom: 19,
+        attribution: "© OpenStreetMap"
     }).addTo(map);
 
-    const marker = L.marker([42.8746, 74.5698], { draggable: true }).addTo(map);
+    const marker = L.marker([defaultLat, defaultLon], { draggable: true }).addTo(map);
 
     function updateFields(lat, lon) {
         document.getElementById(latInputId).value = lat.toFixed(6);
         document.getElementById(lonInputId).value = lon.toFixed(6);
+        localStorage.setItem(latInputId, lat.toFixed(6));
+        localStorage.setItem(lonInputId, lon.toFixed(6));
 
-        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+        fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ru`
+        )
             .then(r => r.json())
             .then(data => {
-                if (data && data.display_name)
+                if (data && data.display_name) {
                     document.getElementById(addressInputId).value = data.display_name;
+                    localStorage.setItem(addressInputId, data.display_name);
+                }
             })
             .catch(() => {});
     }
 
-    // Маркер двигается → обновить
-    marker.on("dragend", e => {
-        const lat = e.target.getLatLng().lat;
-        const lon = e.target.getLatLng().lng;
-        updateFields(lat, lon);
+    marker.on("dragend", (e) => {
+        const pos = e.target.getLatLng();
+        updateFields(pos.lat, pos.lng);
     });
 
-    // Клик по карте → обновить
-    map.on("click", e => {
+    map.on("click", (e) => {
         marker.setLatLng(e.latlng);
         updateFields(e.latlng.lat, e.latlng.lng);
     });
 
-    // Первичное заполнение
-    updateFields(42.8746, 74.5698);
+    // restore saved values if present
+    const savedLat = localStorage.getItem(latInputId);
+    const savedLon = localStorage.getItem(lonInputId);
+
+    if (savedLat && savedLon) {
+        const lat = parseFloat(savedLat);
+        const lon = parseFloat(savedLon);
+        marker.setLatLng([lat, lon]);
+        map.setView([lat, lon], 15);
+        updateFields(lat, lon);
+    } else {
+        updateFields(defaultLat, defaultLon);
+    }
 
     return map;
 }
 
-// Инициализация двух карт
 document.addEventListener("DOMContentLoaded", () => {
     initMap("legalMap", "legalAddress", "legalLat", "legalLon");
     initMap("tradeMap", "tradeAddress", "tradeLat", "tradeLon");
 });
+
 
 /* ============================================================
    PDF EXPORT
@@ -231,7 +180,7 @@ document.getElementById("savePdf")?.addEventListener("click", () => {
 
 
 /* ============================================================
-   TABLES — AUTO SAVE
+   TABLE AUTO-SAVE
 ============================================================ */
 document.querySelectorAll(".tbl input").forEach((input) => {
   const id = input.id;
