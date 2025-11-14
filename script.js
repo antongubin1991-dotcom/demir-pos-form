@@ -155,7 +155,7 @@ const responsibleBranches = [
 /* ============================================================
    INIT RESPONSIBLE BRANCH DROPDOWN
 ============================================================ */
-function initResponsibleBranchSelect() {
+function initResponsibleBranchesSelect() {
   const select = document.getElementById("responsibleBranches");
   select.innerHTML = "";
 
