@@ -824,11 +824,27 @@ function fillPdfTemplate() {
 const savePdfBtn = document.getElementById("savePdf");
 if (savePdfBtn) {
   savePdfBtn.addEventListener("click", async () => {
+    // 1. Собираем JSON
     const formData = collectFormData();
+
+    // 2. Подготовим подпись для PDF (если есть)
+    const sigData = document.getElementById("signatureData")?.value;
+    const pdfSigImg = document.getElementById("pdf_signature");
+    if (pdfSigImg) {
+      if (sigData) {
+        pdfSigImg.src = sigData;
+      } else {
+        pdfSigImg.removeAttribute("src");
+      }
+    }
+
+    // 3. Отправляем в SLK (или просто логируем)
     await sendToSLK(formData);
 
+    // 4. Заполняем PDF-шаблон
     fillPdfTemplate();
 
+    // 5. Дальше твой html2pdf как был...
     const pdfDoc = document.getElementById("pdfDocument");
     if (!pdfDoc) {
       alert("PDF-шаблон не найден (pdfDocument).");
