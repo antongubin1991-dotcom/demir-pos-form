@@ -157,7 +157,7 @@ const responsibleBranches = [
 ============================================================ */
 function initResponsibleBranchSelect() {
   const select = document.getElementById("responsibleBranches");
-  select.innerHTML = ""; // Clear
+  select.innerHTML = "";
 
   responsibleBranches.forEach(branch => {
     const opt = document.createElement("option");
