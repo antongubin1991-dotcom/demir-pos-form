@@ -575,16 +575,14 @@ function initMap(mapId, addressInputId, latInputId, lonInputId) {
   });
 }
 /* ============================================================
-   SIGNATURE PAD (ПОДПИСЬ ПАЛЬЦЕМ / СТИЛУСОМ)
+   SIGNATURE PAD
 ============================================================ */
 function initSignaturePad() {
   var canvas = document.getElementById("signaturePad");
   var clearBtn = document.getElementById("signatureClear");
   var hiddenInput = document.getElementById("signatureData");
 
-  if (!canvas || !canvas.getContext) {
-    return; // если блока нет – тихо выходим, ничего не ломаем
-  }
+  if (!canvas || !canvas.getContext) return;
 
   var ctx = canvas.getContext("2d");
   var drawing = false;
@@ -605,9 +603,13 @@ function initSignaturePad() {
       clientY = e.clientY;
     }
 
+    // Масштаб: внутренний размер канваса vs CSS-размер
+    var scaleX = canvas.width / rect.width;
+    var scaleY = canvas.height / rect.height;
+
     return {
-      x: clientX - rect.left,
-      y: clientY - rect.top
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY
     };
   }
 
@@ -651,7 +653,7 @@ function initSignaturePad() {
   canvas.addEventListener("mousemove", moveDraw);
   window.addEventListener("mouseup", endDraw);
 
-  // Тач (телефон/планшет)
+  // Тач (телефон / планшет)
   canvas.addEventListener("touchstart", startDraw, { passive: false });
   canvas.addEventListener("touchmove", moveDraw, { passive: false });
   canvas.addEventListener("touchend", endDraw, { passive: false });
@@ -668,109 +670,6 @@ function initSignaturePad() {
     });
   }
 }
-
-/* Инициализируем подпись отдельным обработчиком,
-   чтобы вообще не трогать твой существующий DOMContentLoaded */
-document.addEventListener("DOMContentLoaded", function () {
-  initSignaturePad();
-});
-/* ============================================================
-   ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ JSON
-============================================================ */
-function val(id) {
-  const el = document.getElementById(id);
-  return el ? el.value.trim() : "";
-}
-
-function collectFormData() {
-  const data = {
-    company: {
-      name: val("companyName"),
-      bin: val("companyBin"),
-      headFio: val("companyHead"),
-      headInn: val("companyHeadInn")
-    },
-    contacts: {
-      phone: val("phone"),
-      email: val("email")
-    },
-    pos: {
-      model: val("posModel"),
-      commissions: {
-        visaDkb: val("comm_visa_dkb"),
-        bonusDkb: val("comm_bonus_dkb"),
-        visaOther: val("comm_visa_other"),
-        elcartDkb: val("comm_elcart_dkb"),
-        elcartOther: val("comm_elcart_other"),
-        mcDkb: val("comm_mc_dkb"),
-        mcOther: val("comm_mc_other")
-      },
-      discounts: {
-        discount10: val("discount_10")
-      }
-    },
-    region: {
-      districtCode: val("district"),
-      ugnsCode: val("ugnsCode")
-    },
-    business: {
-      objectType: val("businessObjectType"),
-      activityType: val("activityType")
-    },
-    addresses: {
-      legal: {
-        address: val("legalAddress"),
-        lat: val("legalLat"),
-        lon: val("legalLon")
-      },
-      trade: {
-        address: val("tradeAddress"),
-        lat: val("tradeLat"),
-        lon: val("tradeLon")
-      }
-    },
-    comment: val("description"),
-    manager: val("manager"),
-    meta: {
-      lang: localStorage.getItem("lang") || "ru",
-      theme: localStorage.getItem("theme") || "light",
-      createdAt: new Date().toISOString()
-    }
-  };
-
-  return data;
-}
-
-async function sendToSLK(payload) {
-  if (!SLK_ENDPOINT) {
-    console.log(
-      "JSON для SLK (SLK_ENDPOINT не настроен, payload):",
-      JSON.stringify(payload, null, 2)
-    );
-    return;
-  }
-
-  try {
-    const resp = await fetch(SLK_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!resp.ok) {
-      console.error("SLK: HTTP error", resp.status);
-      return;
-    }
-
-    const data = await resp.json().catch(() => null);
-    console.log("SLK: успех", data);
-  } catch (e) {
-    console.error("SLK: ошибка сети/JS", e);
-  }
-}
-
 /* ============================================================
    PDF EXPORT — FILL TEMPLATE
 ============================================================ */
