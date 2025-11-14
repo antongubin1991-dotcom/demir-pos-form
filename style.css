@@ -1,215 +1,285 @@
 /* ============================================================
-   GLOBAL RESET
+   GLOBAL THEME VARIABLES
+   light/dark — через классы body.light / body.dark
 ============================================================ */
+:root {
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --shadow-soft: 0 12px 30px rgba(15, 23, 42, 0.06);
+  --shadow-hard: 0 18px 45px rgba(15, 23, 42, 0.14);
+}
+
+/* Светлая тема (по умолчанию) */
+body.light {
+  --bg: #f5f6f8;
+  --bg-elevated: #ffffff;
+  --bg-section: #ffffff;
+  --bg-tag: #f3f4f6;
+  --bg-map: #f3f4f6;
+
+  --text: #111827;
+  --text-soft: #4b5563;
+  --muted: #6b7280;
+
+  --border: #e5e7eb;
+  --border-subtle: #e5e7eb;
+
+  --accent: #be2c1c;
+  --accent-soft: rgba(190, 44, 28, 0.12);
+  --accent-soft-strong: rgba(190, 44, 28, 0.18);
+  --accent-strong: #9a2217;
+
+  --success: #059669;
+  --danger: #dc2626;
+  --warning: #d97706;
+
+  --input-bg: #ffffff;
+  --input-bg-disabled: #f3f4f6;
+
+  --chip-bg: #f3f4f6;
+  --chip-text: #374151;
+}
+
+/* Тёмная тема (если понадобится) */
+body.dark {
+  --bg: #050816;
+  --bg-elevated: #0b1120;
+  --bg-section: #020617;
+  --bg-tag: #111827;
+  --bg-map: #020617;
+
+  --text: #f9fafb;
+  --text-soft: #e5e7eb;
+  --muted: #9ca3af;
+
+  --border: #1f2937;
+  --border-subtle: #111827;
+
+  --accent: #f97373; /* чуть светлее в тёмной теме */
+  --accent-soft: rgba(248, 113, 113, 0.16);
+  --accent-soft-strong: rgba(248, 113, 113, 0.25);
+  --accent-strong: #fecaca;
+
+  --success: #22c55e;
+  --danger: #f87171;
+  --warning: #facc15;
+
+  --input-bg: #020617;
+  --input-bg-disabled: #111827;
+
+  --chip-bg: #111827;
+  --chip-text: #e5e7eb;
+}
+
+/* ============================================================
+   RESET / BASE
+============================================================ */
+
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
+  height: 100%;
 }
 
-/* ============================================================
-   THEMES
-============================================================ */
-
-body.light {
-  --bg: #f5f6f7;
-  --bg-card: #ffffff;
-  --bg-section: #ffffff;
-
-  --text: #1e293b;
-  --text-muted: #64748b;
-
-  --border: #d4d7dd;
-
-  --primary: #be2c1c;
-  --primary-soft: rgba(190,44,28,0.14);
-
-  --accent: #be2c1c;
-  --accent-soft: rgba(190,44,28,0.18);
-
-  --radius: 12px;
-  --shadow: 0 10px 30px rgba(15,23,42,0.10);
-
-  color-scheme: light;
-}
-
-body.dark {
-  --bg: #0f1115;
-  --bg-card: #181a20;
-  --bg-section: #1b1e25;
-
-  --text: #e5e7eb;
-  --text-muted: #9ca3af;
-
-  --border: #2f3540;
-
-  --primary: #f97362;
-  --primary-soft: rgba(249,115,98,0.16);
-
-  --accent: #f97362;
-  --accent-soft: rgba(249,115,98,0.20);
-
-  --radius: 12px;
-  --shadow: 0 20px 40px rgba(0,0,0,0.55);
-
-  color-scheme: dark;
-}
-
-/* базовые стили для любого режима */
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
-               "Segoe UI", Roboto, sans-serif;
-  background: var(--bg);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(190, 44, 28, 0.08), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(15, 23, 42, 0.08), transparent 55%),
+    var(--bg);
   color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar слегка подчищаем */
+body::-webkit-scrollbar {
+  width: 8px;
+}
+body::-webkit-scrollbar-track {
+  background: transparent;
+}
+body::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.7);
+  border-radius: 999px;
 }
 
 /* ============================================================
-   LAYOUT
+   APP SHELL / LAYOUT
 ============================================================ */
 
 .app {
-  min-height: 100vh;
-  max-width: 1040px;
-  margin: 0 auto;
-  padding: 24px 16px 40px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  max-width: 1120px;
+  margin: 24px auto 40px;
+  padding: 0 16px 32px;
 }
 
-.app-main {
-  margin-top: 8px;
-}
-
-/* ============================================================
-   HEADER
-============================================================ */
-
+/* Шапка */
 .app-header {
-  background: linear-gradient(135deg, #be2c1c, #e04834);
-  color: #fff;
-  padding: 16px 20px;
+  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 50%, #fef2f2 100%);
   border-radius: 24px;
-  box-shadow: 0 18px 40px rgba(190,44,28,0.45);
-
+  padding: 18px 20px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
   gap: 16px;
+  box-shadow: var(--shadow-soft);
+  border: 1px solid rgba(248, 113, 113, 0.16);
+  margin-bottom: 18px;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
 }
 
-.brand-logo {
-  height: 40px;
-  width: auto;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.06);
-  padding: 4px;
+.logo-img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+
+.brand-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .brand-title {
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.brand-subtitle {
-  font-size: 12px;
-  opacity: 0.9;
-}
-
-.header-controls {
-  display: flex;
-  gap: 10px;
-}
-
-.header-controls select {
-  border-radius: 999px;
-  padding: 6px 12px;
-  border: none;
-  background: rgba(15,23,42,0.18);
-  color: #fff;
-  font-size: 13px;
-  outline: none;
-  cursor: pointer;
-}
-
-.header-controls select option {
-  color: #111827;
-}
-
-/* ============================================================
-   CARD / SECTIONS
-============================================================ */
-
-.card {
-  background: var(--bg-card);
-  padding: 20px 20px 24px;
-  border-radius: 24px;
-  box-shadow: var(--shadow);
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.section {
-  padding-top: 4px;
-  border-top: 1px solid rgba(148,163,184,0.25);
-}
-
-.section:first-of-type {
-  border-top: none;
-}
-
-.section-title {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 600;
-  margin: 0 0 12px;
+  letter-spacing: 0.02em;
   color: var(--text);
 }
 
+.brand-subtitle {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Панель действий справа от логотипа (язык, тема и т.п.) */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Небольшие селекты в шапке */
+.header-select {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  color: var(--text-soft);
+  outline: none;
+}
+
 /* ============================================================
-   GRID
+   MAIN CARD / CONTENT WRAPPER
 ============================================================ */
 
+.main-card {
+  margin-top: 18px;
+  border-radius: 24px;
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--border-subtle);
+  padding: 20px 18px 22px;
+}
+
+/* Можно использовать для шапки формы / шагов */
+.main-card-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+/* ============================================================
+   SECTION / GRID
+============================================================ */
+
+.section {
+  background: var(--bg-section);
+  border-radius: 16px;
+  padding: 16px 16px 14px;
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.03);
+  margin-bottom: 14px;
+}
+
+.section-title {
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-title::before {
+  content: "";
+  width: 4px;
+  height: 18px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--accent), var(--accent-strong));
+}
+
+/* Мелкие подзаголовки внутри секции (например "Комиссии") */
+.section-subtitle {
+  margin: 8px 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* Гриды */
 .grid {
   display: grid;
-  gap: 12px;
+  gap: 10px 14px;
 }
 
 .grid.two {
-  grid-template-columns: repeat(2, minmax(0,1fr));
-  gap: 12px 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-@media (max-width: 720px) {
-  .grid.two {
-    grid-template-columns: minmax(0,1fr);
-  }
+.grid.three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
 
+@media (max-width: 768px) {
   .app-header {
     flex-direction: column;
     align-items: flex-start;
+    gap: 10px;
   }
 
-  .header-controls {
-    align-self: stretch;
-    justify-content: flex-start;
-    flex-wrap: wrap;
+  .grid.two,
+  .grid.three {
+    grid-template-columns: 1fr;
+  }
+
+  .section {
+    padding: 14px 12px 12px;
   }
 }
 
 /* ============================================================
-   FIELDS
+   FORM FIELDS
 ============================================================ */
 
 .field {
@@ -219,8 +289,16 @@ body {
 }
 
 .field-label {
-  font-size: 13px;
-  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.field-label.required::after {
+  content: " *";
+  color: var(--accent);
 }
 
 .field-input {
@@ -228,111 +306,63 @@ body {
   padding: 9px 11px;
   border-radius: 10px;
   border: 1px solid var(--border);
-  background: var(--bg-section);
+  background: var(--input-bg);
   color: var(--text);
   font-size: 14px;
   outline: none;
-  transition: border-color .15s ease, box-shadow .15s ease,
-              background-color .15s ease, transform .05s ease;
-}
-
-/* FIX — делаем <select> рабочим */
-select.field-input {
-  appearance: auto;
-  -webkit-appearance: auto;
-  -moz-appearance: auto;
-  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease,
+    transform 0.05s ease;
+  appearance: none;
 }
 
 .field-input::placeholder {
-  color: rgba(148,163,184,0.9);
+  color: rgba(148, 163, 184, 0.9);
+}
+
+.field-input:hover {
+  border-color: rgba(148, 163, 184, 0.8);
 }
 
 .field-input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
-  background: #fff;
+  box-shadow: 0 0 0 2px var(--accent-soft);
+  background: #ffffff;
+  transform: translateY(-0.5px);
 }
 
 .field-input:disabled,
 .field-input[readonly] {
-  opacity: 0.75;
+  opacity: 0.8;
   cursor: default;
-  background: rgba(148,163,184,0.08);
+  background: var(--input-bg-disabled);
 }
 
+/* Textarea */
 textarea.field-input {
   resize: vertical;
   min-height: 80px;
 }
-/* ============================================================
-   TABLES
-============================================================ */
 
-.table-wrap {
-  width: 100%;
-  overflow-x: auto;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--bg-section);
+/* Селекты (под стрелку) */
+select.field-input {
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 15px) calc(50% - 3px),
+    calc(100% - 10px) calc(50% - 3px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 28px;
 }
 
-.tbl {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 520px;
-  font-size: 13px;
-}
-
-.tbl thead {
-  background: rgba(148,163,184,0.12);
-}
-
-.tbl th,
-.tbl td {
-  padding: 8px 10px;
-  text-align: left;
-  border-bottom: 1px solid rgba(226,232,240,0.9);
-}
-
-.tbl th {
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-.tbl tr:last-child td {
-  border-bottom: none;
-}
-
-.tbl input.field-input {
-  padding: 6px 8px;
-  font-size: 13px;
-}
-
-/* ============================================================
-   MAPS
-============================================================ */
-
-.map-box {
-  margin-top: 10px;
-  width: 100%;
-  height: 260px;
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  overflow: hidden;
-}
-
-/* ============================================================
-   SPELLCHECK PANEL
-============================================================ */
-
-.spell-results {
-  border-radius: 12px;
-  border: 1px dashed var(--border);
-  padding: 10px 12px;
-  font-size: 13px;
-  color: var(--text-muted);
-  min-height: 40px;
+/* Маленький hint под полем */
+.field-hint {
+  font-size: 11px;
+  color: var(--muted);
 }
 
 /* ============================================================
@@ -340,44 +370,184 @@ textarea.field-input {
 ============================================================ */
 
 .btn {
-  background: var(--primary);
-  padding: 10px 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
   border-radius: 999px;
-  border: none;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  box-shadow: 0 6px 18px var(--primary-soft);
-  transition: transform .08s ease, box-shadow .08s ease,
-              filter .12s ease;
+  background: #e5e7eb;
+  color: #111827;
+  text-decoration: none;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.08s ease,
+    border-color 0.15s ease;
 }
 
 .btn:hover {
-  filter: brightness(1.06);
-  transform: translateY(-1px);
-  box-shadow: 0 10px 26px var(--primary-soft);
+  transform: translateY(-0.5px);
 }
 
 .btn:active {
   transform: translateY(0);
-  box-shadow: 0 4px 12px var(--primary-soft);
+}
+
+/* Primary */
+.btn.primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: #ffffff;
+  box-shadow: 0 10px 22px var(--accent-soft);
+}
+
+.btn.primary:hover {
+  box-shadow: 0 12px 28px var(--accent-soft-strong);
+}
+
+/* Outline */
+.btn.secondary {
+  background: transparent;
+  color: var(--accent);
+  border-color: rgba(190, 44, 28, 0.35);
+  box-shadow: none;
+}
+
+.btn.secondary:hover {
+  background: var(--accent-soft);
+}
+
+/* Ghost / tertiary */
+.btn.ghost {
+  background: transparent;
+  color: var(--muted);
+  border-color: transparent;
+}
+
+.btn.sm {
+  padding: 5px 10px;
+  font-size: 12px;
 }
 
 /* ============================================================
-   MISC
+   TABLES (КОМИССИИ и т.п.)
 ============================================================ */
 
-.divider {
-  border: 0;
-  border-top: 1px solid var(--border);
-  margin: 16px 0;
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-section);
 }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+thead {
+  background: rgba(148, 163, 184, 0.08);
+}
+
+thead th {
+  padding: 8px 10px;
+  text-align: left;
+  font-weight: 500;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+
+tbody td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:nth-child(even) {
+  background: rgba(15, 23, 42, 0.012);
+}
+
+/* Поля ввода внутри таблиц */
+.table-wrap .field-input {
+  padding: 6px 8px;
+  font-size: 13px;
+}
+
+/* ============================================================
+   MAPS / LEAFLET
+============================================================ */
+
+.map-card {
+  border-radius: 16px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-map);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.map-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.map-container {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  min-height: 220px;
+  background: #d1d5db;
+}
+
+/* сам div карты */
+#legalMap,
+#tradeMap {
+  width: 100%;
+  min-height: 220px;
+}
+
+/* Leaflet popup чуть сгладим */
+.leaflet-popup-content-wrapper {
+  border-radius: 12px !important;
+}
+.leaflet-popup-tip {
+  border-radius: 4px !important;
+}
+
+/* ============================================================
+   SIGNATURE PAD
+============================================================ */
+
 .signature-block {
   border: 1px dashed var(--border);
-  border-radius: 10px;
+  border-radius: 14px;
   padding: 12px;
   background: var(--bg-section);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.signature-block-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .signature-block canvas {
@@ -385,21 +555,97 @@ textarea.field-input {
   max-width: 600px;
   height: 200px;
   background: #ffffff;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid var(--border);
   display: block;
-  touch-action: none; /* важно для пальца/стилуса */
+  touch-action: none;
 }
 
 .signature-actions {
-  margin-top: 8px;
-  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
 }
 
+/* Подпись в PDF */
 .pdf-signature-block {
   margin-top: 24px;
+  font-size: 13px;
+  color: var(--text);
 }
 
 .pdf-signature-line {
   margin-top: 6px;
+}
+
+/* ============================================================
+   SPELLCHECK PANEL
+============================================================ */
+
+#spellcheckPanel {
+  margin-top: 6px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(248, 250, 252, 0.8);
+  border: 1px dashed rgba(148, 163, 184, 0.7);
+  font-size: 12px;
+  color: var(--muted);
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+/* ============================================================
+   MISC / UTILS
+============================================================ */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: var(--chip-bg);
+  color: var(--chip-text);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.chip.accent {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* Блоки с небольшими заметками */
+.note {
+  font-size: 12px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(250, 250, 251, 0.9);
+  border: 1px solid var(--border-subtle);
+  color: var(--muted);
+}
+
+/* Небольшие ошибки под полями, если будешь валидировать */
+.field-error {
+  font-size: 11px;
+  color: var(--danger);
+  margin-top: 2px;
+}
+
+/* Печатный режим — убираем фон/тени */
+@media print {
+  body {
+    background: #ffffff;
+  }
+  .app {
+    margin: 0;
+    padding: 0;
+  }
+  .app-header,
+  .main-card,
+  .section {
+    box-shadow: none;
+    border-radius: 0;
+    border: none;
+  }
 }
