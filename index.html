@@ -281,10 +281,49 @@
           </label>
         </section>
 
-        <!-- ADDRESSES -->
         <section class="section">
-          <h2 class="section-title" data-key="sec_address">Адреса</h2>
+  <h2 class="section-title" data-key="sec_address">Адреса</h2>
 
+  <!-- ЮРИДИЧЕСКИЙ АДРЕС -->
+  <label class="field">
+    <span class="field-label" data-key="lbl_legal_address">Юридический адрес</span>
+    <input id="legalAddress" class="field-input" type="text" placeholder="Введите или выберите на карте">
+  </label>
+
+  <div class="grid two">
+    <label class="field">
+      <span class="field-label">Lat</span>
+      <input id="legalLat" class="field-input" type="text" readonly>
+    </label>
+    <label class="field">
+      <span class="field-label">Lon</span>
+      <input id="legalLon" class="field-input" type="text" readonly>
+    </label>
+  </div>
+
+  <div id="legalMap" class="map-box"></div>
+
+  <hr class="divider">
+
+  <!-- ТОРГОВАЯ ТОЧКА -->
+  <label class="field">
+    <span class="field-label" data-key="lbl_trade_address">Адрес торговой точки</span>
+    <input id="tradeAddress" class="field-input" type="text" placeholder="Введите или выберите на карте">
+  </label>
+
+  <div class="grid two">
+    <label class="field">
+      <span class="field-label">Lat</span>
+      <input id="tradeLat" class="field-input" type="text" readonly>
+    </label>
+    <label class="field">
+      <span class="field-label">Lon</span>
+      <input id="tradeLon" class="field-input" type="text" readonly>
+    </label>
+  </div>
+
+  <div id="tradeMap" class="map-box"></div>
+</section>
           <!-- LEGAL -->
           <label class="field">
             <span class="field-label" data-key="lbl_legal_address">Юридический адрес</span>
