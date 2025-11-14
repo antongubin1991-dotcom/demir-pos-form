@@ -117,7 +117,7 @@ const activityTypes = [
 /* ============================================================
    RESPONSIBLE BRANCHES
 ============================================================ */
-const responsibleBranches = [
+const responsibleBranch = [
   "СК Авангард",
   "СК Ала-Бука",
   "СК Асанбай",
