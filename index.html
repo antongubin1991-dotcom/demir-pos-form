@@ -364,24 +364,21 @@
              БЛОК 10 — Подписи
         ============================== -->
         <section class="section">
-          <h2 class="section-title">Подписи</h2>
+  <h2 class="section-title">Подпись заявителя</h2>
 
-          <div class="grid two">
-            <label class="field">
-              <span class="field-label">Ответственное лицо (ФИО)</span>
-              <input name="signPerson1" type="text" class="field-input" />
-            </label>
-            <label class="field">
-              <span class="field-label">Подписант 2 (ФИО)</span>
-              <input name="signPerson2" type="text" class="field-input" />
-            </label>
-          </div>
+  <div class="signature-block">
+    <canvas id="signaturePad" width="600" height="200"></canvas>
 
-          <label class="field">
-            <span class="field-label">Исполнитель</span>
-            <input name="executor" type="text" class="field-input" />
-          </label>
-        </section>
+    <div class="signature-actions">
+      <button type="button" id="signatureClear" class="btn secondary">
+        Очистить подпись
+      </button>
+    </div>
+
+    <!-- base64 подпись для JSON / SLK -->
+    <input type="hidden" id="signatureData" name="signatureData" />
+  </div>
+</section>
 
         <!-- 7. КОММЕНТАРИЙ -->
         <section class="section">
