@@ -162,6 +162,56 @@ function initMaps() {
 
 document.addEventListener("DOMContentLoaded", initMaps);
 
+/* ============================================================
+   MAPS + GEOCODING
+============================================================ */
+
+function initMap(mapId, addressInputId, latInputId, lonInputId) {
+    const map = L.map(mapId).setView([42.8746, 74.5698], 13);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '© OpenStreetMap',
+    }).addTo(map);
+
+    const marker = L.marker([42.8746, 74.5698], { draggable: true }).addTo(map);
+
+    function updateFields(lat, lon) {
+        document.getElementById(latInputId).value = lat.toFixed(6);
+        document.getElementById(lonInputId).value = lon.toFixed(6);
+
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data && data.display_name)
+                    document.getElementById(addressInputId).value = data.display_name;
+            })
+            .catch(() => {});
+    }
+
+    // Маркер двигается → обновить
+    marker.on("dragend", e => {
+        const lat = e.target.getLatLng().lat;
+        const lon = e.target.getLatLng().lng;
+        updateFields(lat, lon);
+    });
+
+    // Клик по карте → обновить
+    map.on("click", e => {
+        marker.setLatLng(e.latlng);
+        updateFields(e.latlng.lat, e.latlng.lng);
+    });
+
+    // Первичное заполнение
+    updateFields(42.8746, 74.5698);
+
+    return map;
+}
+
+// Инициализация двух карт
+document.addEventListener("DOMContentLoaded", () => {
+    initMap("legalMap", "legalAddress", "legalLat", "legalLon");
+    initMap("tradeMap", "tradeAddress", "tradeLat", "tradeLon");
+});
 
 /* ============================================================
    PDF EXPORT
