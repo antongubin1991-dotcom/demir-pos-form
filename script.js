@@ -29,8 +29,10 @@ function applyTranslations(lang) {
     const tr = translations[lang]?.[key];
     if (!tr) return;
 
-    // карты, кнопки и спец-элементы пропускаем
+    // Оставляем карту без изменений
     if (el.classList.contains("no-translate")) return;
+
+    // Не перезаписываем INPUT/TEXTAREA
     if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") return;
 
     el.textContent = tr;
@@ -56,7 +58,7 @@ langSelect.addEventListener("change", () => {
 /* ============================================================
    AUTO-SAVE FORM FIELDS
 ============================================================ */
-const fields = [
+const autoSaveFields = [
   "companyName", "companyBin", "companyHead",
   "phone", "email", "manager",
   "legalAddress", "tradeAddress",
@@ -66,7 +68,7 @@ const fields = [
   "posModel", "description"
 ];
 
-fields.forEach((id) => {
+autoSaveFields.forEach((id) => {
   const el = document.getElementById(id);
   if (!el) return;
 
@@ -80,12 +82,35 @@ fields.forEach((id) => {
 
 
 /* ============================================================
+   POPULATE BUSINESS DROPDOWNS
+============================================================ */
+if (window.businessObjects && window.activityTypes) {
+  const businessObjectType = document.getElementById("businessObjectType");
+  const activityType = document.getElementById("activityType");
+
+  businessObjects.forEach((v) => {
+    const opt = document.createElement("option");
+    opt.textContent = v;
+    opt.value = v;
+    businessObjectType.appendChild(opt);
+  });
+
+  activityTypes.forEach((v) => {
+    const opt = document.createElement("option");
+    opt.textContent = v;
+    opt.value = v;
+    activityType.appendChild(opt);
+  });
+}
+
+
+/* ============================================================
    POS MODEL SELECT
 ============================================================ */
 const posModel = document.getElementById("posModel");
 if (posModel) {
-  const savedModel = localStorage.getItem("posModel");
-  if (savedModel) posModel.value = savedModel;
+  const saved = localStorage.getItem("posModel");
+  if (saved) posModel.value = saved;
 
   posModel.addEventListener("change", () => {
     localStorage.setItem("posModel", posModel.value);
@@ -113,9 +138,11 @@ function initMap(mapId, addressInputId, latInputId, lonInputId) {
     function updateFields(lat, lon) {
         document.getElementById(latInputId).value = lat.toFixed(6);
         document.getElementById(lonInputId).value = lon.toFixed(6);
+
         localStorage.setItem(latInputId, lat.toFixed(6));
         localStorage.setItem(lonInputId, lon.toFixed(6));
 
+        // Reverse geocoding — текстовый адрес
         fetch(
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ru`
         )
@@ -129,17 +156,19 @@ function initMap(mapId, addressInputId, latInputId, lonInputId) {
             .catch(() => {});
     }
 
+    // Drag marker
     marker.on("dragend", (e) => {
         const pos = e.target.getLatLng();
         updateFields(pos.lat, pos.lng);
     });
 
+    // Click on map
     map.on("click", (e) => {
         marker.setLatLng(e.latlng);
         updateFields(e.latlng.lat, e.latlng.lng);
     });
 
-    // restore saved values if present
+    // Restore saved coordinates or initialize
     const savedLat = localStorage.getItem(latInputId);
     const savedLon = localStorage.getItem(lonInputId);
 
