@@ -3,19 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title data-key="app_title">Demir POS Form</title>
+  <title data-key="title">Demir POS Form</title>
 
-  <!-- STYLES -->
+  <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
 
-  <!-- Leaflet (OSM maps) -->
+  <!-- Leaflet Maps -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-  <!-- PDF export -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+  <!-- html2pdf -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-  <!-- Language + main logic -->
+  <!-- Translations + Logic -->
   <script src="translations.js"></script>
   <script defer src="script.js"></script>
 </head>
@@ -23,417 +23,216 @@
 <body class="light">
   <div class="app">
 
-    <!-- HEADER -->
+    <!-- ========================= HEADER ========================= -->
     <header class="app-header">
       <div class="brand">
-        <img src="logo.png" alt="Logo" class="brand-logo" />
+        <img src="logo.png" class="brand-logo" alt="DemirBank" />
         <div class="brand-text">
-          <div class="brand-title" data-key="app_title">Demir POS Form</div>
-          <div class="brand-subtitle" data-key="app_subtitle">Форма заявки</div>
+          <div class="brand-title" data-key="form_title">Demir POS Form</div>
+          <div class="brand-subtitle" data-key="form_subtitle">Анкета для установки POS терминала</div>
         </div>
       </div>
 
       <div class="header-controls">
         <!-- Language -->
-        <select id="langSelect" class="field-input" style="width:auto;">
+        <select id="langSelect" class="field-input">
           <option value="ru">RU</option>
           <option value="kg">KG</option>
           <option value="en">EN</option>
         </select>
 
         <!-- Theme -->
-        <select id="themeToggle" class="field-input" style="width:auto;">
-          <option value="light" data-key="theme_light">Светлая</option>
-          <option value="dark" data-key="theme_dark">Тёмная</option>
+        <select id="themeToggle" class="field-input">
+          <option value="light" data-key="theme_light">Light</option>
+          <option value="dark" data-key="theme_dark">Dark</option>
         </select>
       </div>
     </header>
 
-    <!-- MAIN -->
+
+    <!-- ========================= MAIN CARD ========================= -->
     <main class="app-main">
       <div class="card">
 
-        <!-- 1. Company Information -->
+        <!-- ========================= 1. КОМПАНИЯ ========================= -->
         <section class="section">
-          <h2 class="section-title" data-key="sec_company">Информация о предприятии</h2>
+          <h2 class="section-title" data-key="sec_company">Информация о компании</h2>
 
-          <div class="grid two">
-            <label class="field">
-              <span class="field-label" data-key="lbl_company_name">Наименование организации</span>
-              <input id="companyName" type="text" class="field-input" />
-            </label>
+          <label class="field">
+            <span class="field-label" data-key="lbl_company_name">Название организации</span>
+            <input id="companyName" class="field-input" type="text" data-placeholder="ph_company_name">
+          </label>
 
-            <label class="field">
-              <span class="field-label" data-key="lbl_company_bin">ИНН / БИН</span>
-              <input id="companyBin" type="text" class="field-input" />
-            </label>
-          </div>
+          <label class="field">
+            <span class="field-label" data-key="lbl_company_bin">ИНН / БИН</span>
+            <input id="companyBin" class="field-input" type="text">
+          </label>
 
           <label class="field">
             <span class="field-label" data-key="lbl_company_head">ФИО руководителя</span>
-            <input id="companyHead" type="text" class="field-input" />
+            <input id="companyHead" class="field-input" type="text">
           </label>
-
-          <!-- BUSINESS OBJECT TYPE -->
-          <label class="field">
-            <span class="field-label" data-key="lbl_business_object_type">Тип объекта предпринимательства</span>
-            <select id="businessObjectType" class="field-input">
-              <option value="">— выбрать —</option>
-              <option value="1">Автомобильная заправочная станция (АЗС)</option>
-              <option value="2">Автомобильная газонаполнительная компрессорная станция (АГНКС)</option>
-              <option value="3">Автомобильная газозаправочная станция (АГЗС)</option>
-              <option value="4">Магазин (площадь более 200 кв.м.)</option>
-              <option value="5">Магазин (площадь 100–200 кв.м.)</option>
-              <option value="6">Магазин (площадь 50–100 кв.м.)</option>
-              <option value="7">Магазин (площадь до 50 кв.м.)</option>
-              <option value="8">Медицинская лаборатория</option>
-              <option value="9">Медицинский центр (более 150 кв.м.)</option>
-              <option value="10">Медицинский центр (до 150 кв.м.)</option>
-              <option value="11">Кафе/Ресторан (более 200 мест)</option>
-              <option value="12">Кафе/Ресторан (100–200 мест)</option>
-              <option value="13">Кафе/Ресторан (до 100 мест)</option>
-              <option value="14">Сеть быстрого питания</option>
-              <option value="15">Бутик/Отдел в ТЦ (более 200 кв.м.)</option>
-              <option value="16">Бутик/Отдел в ТЦ (100–200 кв.м.)</option>
-              <option value="17">Бутик/Отдел в ТЦ (50–100 кв.м.)</option>
-              <option value="18">Бутик/Отдел в ТЦ (до 50 кв.м.)</option>
-              <option value="19">Ветеринарная клиника</option>
-              <option value="20">Ветеринарная аптека</option>
-              <option value="21">Аптека</option>
-              <option value="22">Аптечный пункт</option>
-              <option value="23">Платёжный терминал</option>
-              <option value="24">Вендинговый аппарат</option>
-              <option value="25">Сауна</option>
-              <option value="26">Баня</option>
-              <option value="27">Бильярдный клуб</option>
-              <option value="28">Обменное бюро</option>
-              <option value="29">Ночной клуб</option>
-              <option value="30">Караоке</option>
-              <option value="31">Круглосуточная автостоянка</option>
-              <option value="32">Ломбард</option>
-              <option value="33">Салон красоты</option>
-              <option value="34">Стоматология</option>
-              <option value="35">Аренда рекламных щитов</option>
-              <option value="36">Автомойка</option>
-              <option value="37">Гостиница</option>
-              <option value="38">Дом отдыха</option>
-              <option value="39">Частный коттедж</option>
-              <option value="40">СТО</option>
-              <option value="41">Вулканизация</option>
-              <option value="42">Нотариус/Адвокат</option>
-              <option value="43">КОУ (пансионат/санаторий)</option>
-              <option value="44">Павильон (более 50 кв.м.)</option>
-              <option value="45">Авиакасса</option>
-              <option value="46">Бассейн</option>
-              <option value="47">Учебное заведение</option>
-              <option value="48">Интернет-клуб</option>
-              <option value="49">Игровой клуб</option>
-              <option value="50">Кинотеатр</option>
-              <option value="51">Химчистка</option>
-              <option value="52">Спортзал</option>
-              <option value="53">Фотосалон</option>
-              <option value="54">Свадебный салон</option>
-              <option value="55">Звукозапись</option>
-              <option value="56">Спортивное поле</option>
-              <option value="57">Цирк</option>
-              <option value="58">Аттракцион</option>
-              <option value="59">Боулинг</option>
-              <option value="60">Другие точки торговли</option>
-              <option value="61">Другие услуги</option>
-              <option value="62">Айыл окмоту</option>
-              <option value="9999">Прочее</option>
-            </select>
-          </label>
-
-          <!-- ACTIVITY TYPE -->
-          <label class="field">
-            <span class="field-label" data-key="lbl_activity_type">Вид деятельности</span>
-            <select id="activityType" class="field-input">
-              <option value="">— выбрать —</option>
-
-              <option value="1">Розничная торговля широким ассортиментом</option>
-              <option value="2">Розничная торговля ГСМ</option>
-              <option value="3">Розничная торговля газом</option>
-              <option value="4">Продажа авиабилетов</option>
-              <option value="5">Продажа ветпрепаратов</option>
-              <option value="6">Продажа фармтоваров</option>
-              <option value="7">Мед. и ортопедические товары</option>
-              <option value="8">Продажа мяса</option>
-              <option value="9">Продажа рыбы</option>
-              <option value="10">Хлеб/кондитерские изделия</option>
-              <option value="11">Алкоголь и напитки</option>
-              <option value="12">Табачные изделия</option>
-              <option value="13">Компьютеры и ПО</option>
-              <option value="14">Видео/аудио аппаратура</option>
-              <option value="15">Бытовая техника</option>
-              <option value="16">Текстиль</option>
-              <option value="17">Стройматериалы</option>
-              <option value="18">Ковры</option>
-              <option value="19">Мебель</option>
-              <option value="20">Осветительные приборы</option>
-              <option value="21">Книги</option>
-              <option value="22">Канцтовары</option>
-              <option value="23">Видео/аудио записи</option>
-              <option value="24">Спорттовары</option>
-              <option value="25">Игры и игрушки</option>
-              <option value="26">Одежда</option>
-              <option value="27">Обувь</option>
-              <option value="28">Косметика</option>
-              <option value="29">Цветы</option>
-              <option value="30">Животные</option>
-              <option value="31">Корма</option>
-              <option value="32">Ювелирные изделия</option>
-              <option value="33">Автозапчасти</option>
-              <option value="34">Прочие продукты</option>
-              <option value="35">Непродовольственные товары</option>
-              <option value="36">Услуги лабораторий</option>
-              <option value="37">Услуги медцентров</option>
-              <option value="38">Общественное питание</option>
-              <option value="39">Фаст-фуд</option>
-              <option value="40">Услуги ветеринаров</option>
-              <option value="41">Платёжные терминалы</option>
-              <option value="42">Вендинг</option>
-              <option value="43">Сауны</option>
-              <option value="44">Бани</option>
-              <option value="45">Бильярдные клубы</option>
-              <option value="46">Обменные бюро</option>
-              <option value="47">Ночные клубы</option>
-              <option value="48">Автостоянки</option>
-              <option value="49">Ломбарды</option>
-              <option value="50">Салоны красоты</option>
-              <option value="51">Стоматологии</option>
-              <option value="52">Рекламные щиты</option>
-              <option value="53">Автомойки</option>
-              <option value="54">Гостиницы</option>
-              <option value="55">Ремонт автомобилей</option>
-              <option value="56">Вулканизация</option>
-              <option value="57">Нотариус</option>
-              <option value="58">КОУ</option>
-              <option value="59">Бассейны</option>
-              <option value="60">Учебные учреждения</option>
-              <option value="61">Интернет клубы</option>
-              <option value="62">Игровые клубы</option>
-              <option value="63">Кинотеатры</option>
-              <option value="64">Химчистки</option>
-              <option value="65">Спортзалы</option>
-              <option value="66">Фотосалоны</option>
-              <option value="67">Спортивные поля</option>
-              <option value="68">Цирки</option>
-              <option value="69">Аттракционы</option>
-              <option value="70">Боулинг</option>
-              <option value="71">Звукозапись</option>
-              <option value="72">Видеосъёмка</option>
-              <option value="73">Свадебные салоны</option>
-              <option value="74">Спортивные площадки</option>
-              <option value="75">Аттракционы (повтор)</option>
-              <option value="76">Караоке</option>
-              <option value="77">Прочие услуги</option>
-              <option value="78">Сбор платежей</option>
-              <option value="79">Автозапчасти (новые/б/у)</option>
-              <option value="80">Телефоны и запчасти</option>
-              <option value="81">Ремонт ювелирных изделий</option>
-              <option value="82">Овощи и фрукты</option>
-              <option value="83">Охотничьи товары</option>
-              <option value="84">Косметика (до 50 кв.м.)</option>
-              <option value="85">Газ/уголь/дрова</option>
-              <option value="86">Шашлык/гриль</option>
-              <option value="87">Хлебобулочные изделия</option>
-              <option value="88">Производство блоков</option>
-              <option value="89">Перевозка грузов</option>
-              <option value="90">Доставка</option>
-              <option value="91">Обучение</option>
-              <option value="92">Уборка</option>
-              <option value="93">Перевозка пассажиров</option>
-              <option value="94">Консультации</option>
-              <option value="95">Страхование</option>
-              <option value="97">Обслуживание оборудования</option>
-              <option value="98">Туристические услуги</option>
-              <option value="99">Аренда имущества</option>
-              <option value="101">Реставрация</option>
-              <option value="102">Бурение скважин</option>
-              <option value="103">Татуировка</option>
-              <option value="104">Продажа алкоголя</option>
-              <option value="105">Продажа напитков</option>
-              <option value="9999">Прочее</option>
-            </select>
-          </label>
-        </section>
-
-        <!-- CONTACTS -->
-        <section class="section">
-          <h2 class="section-title" data-key="sec_contacts">Контактные данные</h2>
 
           <div class="grid two">
             <label class="field">
               <span class="field-label" data-key="lbl_phone">Телефон</span>
-              <input id="phone" type="text" class="field-input" />
+              <input id="phone" class="field-input" type="text">
             </label>
 
             <label class="field">
               <span class="field-label" data-key="lbl_email">Email</span>
-              <input id="email" type="email" class="field-input" />
+              <input id="email" class="field-input" type="email">
             </label>
           </div>
 
           <label class="field">
-            <span class="field-label" data-key="lbl_manager">Сотрудник привлечения</span>
-            <input id="manager" type="text" class="field-input" />
+            <span class="field-label" data-key="lbl_manager">Сотрудник привлекший клиента</span>
+            <input id="manager" class="field-input" type="text">
           </label>
         </section>
 
+
+        <!-- ========================= 2. АДРЕСА ========================= -->
         <section class="section">
-  <h2 class="section-title" data-key="sec_address">Адреса</h2>
+          <h2 class="section-title" data-key="sec_address">Адреса</h2>
 
-  <!-- ЮРИДИЧЕСКИЙ АДРЕС -->
-  <label class="field">
-    <span class="field-label" data-key="lbl_legal_address">Юридический адрес</span>
-    <input id="legalAddress" class="field-input" type="text" placeholder="Введите или выберите на карте">
-  </label>
-
-  <div class="grid two">
-    <label class="field">
-      <span class="field-label">Lat</span>
-      <input id="legalLat" class="field-input" type="text" readonly>
-    </label>
-    <label class="field">
-      <span class="field-label">Lon</span>
-      <input id="legalLon" class="field-input" type="text" readonly>
-    </label>
-  </div>
-
-  <div id="legalMap" class="map-box"></div>
-
-  <hr class="divider">
-
-  <!-- ТОРГОВАЯ ТОЧКА -->
-  <label class="field">
-    <span class="field-label" data-key="lbl_trade_address">Адрес торговой точки</span>
-    <input id="tradeAddress" class="field-input" type="text" placeholder="Введите или выберите на карте">
-  </label>
-
-  <div class="grid two">
-    <label class="field">
-      <span class="field-label">Lat</span>
-      <input id="tradeLat" class="field-input" type="text" readonly>
-    </label>
-    <label class="field">
-      <span class="field-label">Lon</span>
-      <input id="tradeLon" class="field-input" type="text" readonly>
-    </label>
-  </div>
-
-  <div id="tradeMap" class="map-box"></div>
-</section>
-          <!-- LEGAL -->
+          <!-- Юридический адрес -->
           <label class="field">
             <span class="field-label" data-key="lbl_legal_address">Юридический адрес</span>
-            <input id="legalAddress" class="field-input" type="text" />
+            <input id="legalAddress" class="field-input" type="text">
           </label>
 
-          <div id="legalMap" style="height:250px;border-radius:12px;margin-bottom:20px;"></div>
+          <div class="grid two">
+            <label class="field">
+              <span class="field-label">LAT</span>
+              <input id="legalLat" class="field-input" type="text" readonly>
+            </label>
+            <label class="field">
+              <span class="field-label">LON</span>
+              <input id="legalLon" class="field-input" type="text" readonly>
+            </label>
+          </div>
 
-          <!-- TRADE -->
+          <div id="legalMap" class="map-box no-translate"></div>
+
+          <hr class="divider">
+
+          <!-- Торговая точка -->
           <label class="field">
             <span class="field-label" data-key="lbl_trade_address">Адрес торговой точки</span>
-            <input id="tradeAddress" class="field-input" type="text" />
+            <input id="tradeAddress" class="field-input" type="text">
           </label>
 
-          <div id="tradeMap" style="height:250px;border-radius:12px;margin-bottom:10px;"></div>
+          <div class="grid two">
+            <label class="field">
+              <span class="field-label">LAT</span>
+              <input id="tradeLat" class="field-input" type="text" readonly>
+            </label>
+            <label class="field">
+              <span class="field-label">LON</span>
+              <input id="tradeLon" class="field-input" type="text" readonly>
+            </label>
+          </div>
+
+          <div id="tradeMap" class="map-box no-translate"></div>
         </section>
 
-        <!-- POS TERMINAL -->
+
+        <!-- ========================= 3. ВИДЫ ДЕЯТЕЛЬНОСТИ ========================= -->
         <section class="section">
-          <h2 class="section-title" data-key="sec_pos">POS-терминал</h2>
+          <h2 class="section-title" data-key="sec_business">Вид деятельности</h2>
 
           <label class="field">
-            <span class="field-label" data-key="lbl_pos_model">Модель POS-терминала</span>
-            <select id="posModel" class="field-input">
-              <option value="">— выбрать —</option>
-              <option value="NewPOS">NewPOS</option>
-              <option value="Castles">Castles</option>
-              <option value="Ingenico">Ingenico</option>
-              <option value="Verifone">Verifone</option>
-              <option value="Kozen">Kozen</option>
+            <span class="field-label" data-key="lbl_business_object">Тип объекта предпринимательства</span>
+            <select id="businessObjectType" class="field-input">
+              <!-- Заполняется в script.js -->
+            </select>
+          </label>
+
+          <label class="field">
+            <span class="field-label" data-key="lbl_activity_type">Вид деятельности</span>
+            <select id="activityType" class="field-input">
+              <!-- Заполняется в script.js -->
             </select>
           </label>
         </section>
 
-        <!-- FINANCES -->
-        <section class="section">
-          <h2 class="section-title" data-key="sec_fin">Комиссии и скидки</h2>
 
-          <!-- COMMISSIONS TABLE -->
+        <!-- ========================= 4. POS-МОДЕЛЬ ========================= -->
+        <section class="section">
+          <h2 class="section-title" data-key="sec_pos">POS терминал</h2>
+
+          <label class="field">
+            <span class="field-label" data-key="lbl_pos_model">Модель POS</span>
+            <select id="posModel" class="field-input">
+              <option value="pax">PAX</option>
+              <option value="ingenico">Ingenico</option>
+              <option value="newpos">NewPOS</option>
+              <option value="kozen">Kozen</option>
+            </select>
+          </label>
+        </section>
+
+
+        <!-- ========================= 5. ОПИСАНИЕ ========================= -->
+        <section class="section">
+          <h2 class="section-title" data-key="sec_description">Описание</h2>
+          <textarea id="description" class="field-input" rows="4"></textarea>
+        </section>
+
+
+        <!-- ========================= 6. ТАБЛИЦЫ КОМИССИЙ ========================= -->
+        <section class="section">
+          <h2 class="section-title" data-key="sec_commissions">Комиссии и скидки</h2>
+
           <div class="table-wrap">
             <table class="tbl">
-              <tr>
-                <th>Наименование</th>
-                <th>Значение (%)</th>
-              </tr>
-
-              <tr>
-                <td>Комиссия на эквайринг</td>
-                <td><input type="number" id="fee1" class="field-input" /></td>
-              </tr>
-
-              <tr>
-                <td>Скидка партнёра</td>
-                <td><input type="number" id="fee2" class="field-input" /></td>
-              </tr>
-            </table>
-          </div>
-
-          <!-- DISCOUNTS -->
-          <div class="table-wrap" style="margin-top:14px;">
-            <table class="tbl">
-              <tr>
-                <th>Тип скидки</th>
-                <th>Значение (%)</th>
-              </tr>
-
-              <tr>
-                <td>Акционная скидка</td>
-                <td><input type="number" id="disc1" class="field-input" /></td>
-              </tr>
-
-              <tr>
-                <td>Индивидуальная скидка</td>
-                <td><input type="number" id="disc2" class="field-input" /></td>
-              </tr>
-
+              <thead>
+                <tr>
+                  <th data-key="tbl_service">Услуга</th>
+                  <th data-key="tbl_percent">%</th>
+                  <th data-key="tbl_fix">Фикс</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td data-key="tbl_acquiring">Эквайринг</td>
+                  <td><input id="acq_percent" class="cell" type="text"></td>
+                  <td><input id="acq_fix" class="cell" type="text"></td>
+                </tr>
+                <tr>
+                  <td data-key="tbl_qr">QR-платежи</td>
+                  <td><input id="qr_percent" class="cell" type="text"></td>
+                  <td><input id="qr_fix" class="cell" type="text"></td>
+                </tr>
+              </tbody>
             </table>
           </div>
         </section>
 
-        <!-- DOCUMENTS -->
+
+        <!-- ========================= SPELLCHECK ========================= -->
         <section class="section">
-          <h2 class="section-title" data-key="sec_docs">Документы</h2>
-
-          <label class="field">
-            <span class="field-label" data-key="lbl_upload_docs">Прикрепить документы</span>
-            <input type="file" class="field-input" multiple />
-          </label>
-
-          <label class="field">
-            <span class="field-label" data-key="lbl_comments">Комментарий</span>
-            <textarea id="description" class="field-input"></textarea>
-          </label>
+          <h2 class="section-title" data-key="sec_spellcheck">Проверка орфографии</h2>
+          <div id="spellcheckPanel" class="spell-results no-translate"></div>
         </section>
 
-        <!-- ACTIONS -->
-        <div class="actions" style="margin-top:16px; display:flex; justify-content:flex-end;">
-          <button id="savePdf" class="btn" data-key="btn_submit">Сохранить PDF</button>
-        </div>
 
-        <div id="spellcheckPanel" class="spell-results"></div>
+        <!-- ========================= ACTIONS ========================= -->
+        <div class="actions">
+          <button id="savePdf" class="btn" data-key="btn_pdf">Сохранить PDF</button>
+        </div>
 
       </div>
     </main>
 
-    <!-- FOOTER -->
+
+    <!-- ========================= FOOTER ========================= -->
     <footer class="app-footer">
-      <span>DemirBank © 2025</span>
-      <span data-key="app_subtitle">Форма установки POS</span>
+      <div>DemirBank © 2025</div>
+      <div data-key="footer_text">Форма подачи заявки на установку POS</div>
     </footer>
+
   </div>
 </body>
 </html>
