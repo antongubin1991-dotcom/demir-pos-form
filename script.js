@@ -433,27 +433,20 @@ function initSignaturePad() {
   const ctx = canvas.getContext("2d");
   let drawing = false;
 
-  // Подгоняем реальный размер канваса под размер на экране
-  function resizeCanvas() {
+  // Приводим внутренний размер канваса к тому, что на экране
+  function fixCanvasSize() {
     const rect = canvas.getBoundingClientRect();
-    const ratio = window.devicePixelRatio || 1;
-
-    canvas.width = rect.width * ratio;
-    canvas.height = rect.height * ratio;
-
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.scale(ratio, ratio);
+    // без devicePixelRatio, чтобы не было сдвигов на Android
+    canvas.width = rect.width;
+    canvas.height = rect.height;
 
     ctx.lineWidth = 2;
     ctx.lineCap = "round";
     ctx.strokeStyle = "#000000";
   }
 
-  resizeCanvas();
-  window.addEventListener("resize", () => {
-    // При ресайзе подпись очистится — это нормально для первой версии
-    resizeCanvas();
-  });
+  fixCanvasSize();
+  window.addEventListener("resize", fixCanvasSize);
 
   function getPos(e) {
     const rect = canvas.getBoundingClientRect();
@@ -467,7 +460,6 @@ function initSignaturePad() {
       clientY = e.clientY;
     }
 
-    // Мы уже учли масштаб через ctx.scale, поэтому здесь без ratio
     return {
       x: clientX - rect.left,
       y: clientY - rect.top
@@ -499,6 +491,7 @@ function initSignaturePad() {
 
   function saveSignature() {
     const dataUrl = canvas.toDataURL("image/png");
+
     if (hiddenInput) {
       hiddenInput.value = dataUrl;
     }
@@ -519,7 +512,7 @@ function initSignaturePad() {
   canvas.addEventListener("touchmove", moveDraw, { passive: false });
   canvas.addEventListener("touchend", endDraw, { passive: false });
 
-  // Кнопка "Очистить"
+  // Очистка подписи
   if (clearBtn) {
     clearBtn.addEventListener("click", () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
