@@ -1,21 +1,23 @@
 /* ============================================================
-   GLOBAL THEME VARIABLES
-   light/dark — через классы body.light / body.dark
+   ТЕМЫ
 ============================================================ */
 :root {
-  --radius-lg: 16px;
+  --radius-lg: 18px;
   --radius-md: 12px;
   --radius-sm: 8px;
-  --shadow-soft: 0 12px 30px rgba(15, 23, 42, 0.06);
-  --shadow-hard: 0 18px 45px rgba(15, 23, 42, 0.14);
+
+  --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.06);
+
+  --accent: #be2c1c;
+  --accent-strong: #9b2417;
+  --accent-soft: rgba(190, 44, 28, 0.12);
 }
 
 /* Светлая тема (по умолчанию) */
 body.light {
-  --bg: #f5f6f8;
-  --bg-elevated: #ffffff;
+  --bg: #f3f4f6;
+  --bg-card: #ffffff;
   --bg-section: #ffffff;
-  --bg-tag: #f3f4f6;
   --bg-map: #f3f4f6;
 
   --text: #111827;
@@ -25,28 +27,15 @@ body.light {
   --border: #e5e7eb;
   --border-subtle: #e5e7eb;
 
-  --accent: #be2c1c;
-  --accent-soft: rgba(190, 44, 28, 0.12);
-  --accent-soft-strong: rgba(190, 44, 28, 0.18);
-  --accent-strong: #9a2217;
-
-  --success: #059669;
-  --danger: #dc2626;
-  --warning: #d97706;
-
   --input-bg: #ffffff;
   --input-bg-disabled: #f3f4f6;
-
-  --chip-bg: #f3f4f6;
-  --chip-text: #374151;
 }
 
-/* Тёмная тема (если понадобится) */
+/* Тёмная тема (если включишь переключатель) */
 body.dark {
-  --bg: #050816;
-  --bg-elevated: #0b1120;
+  --bg: #020617;
+  --bg-card: #020617;
   --bg-section: #020617;
-  --bg-tag: #111827;
   --bg-map: #020617;
 
   --text: #f9fafb;
@@ -56,24 +45,12 @@ body.dark {
   --border: #1f2937;
   --border-subtle: #111827;
 
-  --accent: #f97373; /* чуть светлее в тёмной теме */
-  --accent-soft: rgba(248, 113, 113, 0.16);
-  --accent-soft-strong: rgba(248, 113, 113, 0.25);
-  --accent-strong: #fecaca;
-
-  --success: #22c55e;
-  --danger: #f87171;
-  --warning: #facc15;
-
   --input-bg: #020617;
   --input-bg-disabled: #111827;
-
-  --chip-bg: #111827;
-  --chip-text: #e5e7eb;
 }
 
 /* ============================================================
-   RESET / BASE
+   БАЗА
 ============================================================ */
 
 *,
@@ -92,14 +69,14 @@ body {
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background:
-    radial-gradient(circle at top left, rgba(190, 44, 28, 0.08), transparent 55%),
-    radial-gradient(circle at bottom right, rgba(15, 23, 42, 0.08), transparent 55%),
+    radial-gradient(circle at top left, rgba(190, 44, 28, 0.05), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(15, 23, 42, 0.06), transparent 55%),
     var(--bg);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
 }
 
-/* Scrollbar слегка подчищаем */
+/* Скроллбар чуть поаккуратнее */
 body::-webkit-scrollbar {
   width: 8px;
 }
@@ -112,7 +89,7 @@ body::-webkit-scrollbar-thumb {
 }
 
 /* ============================================================
-   APP SHELL / LAYOUT
+   ОБЩИЙ ЛЕЙАУТ
 ============================================================ */
 
 .app {
@@ -124,34 +101,28 @@ body::-webkit-scrollbar-thumb {
 /* Шапка */
 .app-header {
   background: linear-gradient(135deg, #ffffff 0%, #f9fafb 50%, #fef2f2 100%);
-  border-radius: 24px;
-  padding: 18px 20px;
+  border-radius: 20px;
+  padding: 14px 18px;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   box-shadow: var(--shadow-soft);
-  border: 1px solid rgba(248, 113, 113, 0.16);
+  border: 1px solid rgba(190, 44, 28, 0.2);
   margin-bottom: 18px;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   flex: 1;
   min-width: 0;
 }
 
 .logo-img {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   object-fit: contain;
-}
-
-.brand-titles {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
 }
 
 .brand-title {
@@ -166,16 +137,14 @@ body::-webkit-scrollbar-thumb {
   color: var(--muted);
 }
 
-/* Панель действий справа от логотипа (язык, тема и т.п.) */
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
-/* Небольшие селекты в шапке */
 .header-select {
-  padding: 6px 10px;
+  padding: 5px 10px;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.9);
@@ -184,39 +153,26 @@ body::-webkit-scrollbar-thumb {
   outline: none;
 }
 
-/* ============================================================
-   MAIN CARD / CONTENT WRAPPER
-============================================================ */
-
+/* Основная «карточка» формы (если используешь .main-card — оставь, иначе можно игнорировать) */
 .main-card {
   margin-top: 18px;
-  border-radius: 24px;
-  background: var(--bg-elevated);
+  border-radius: 20px;
+  background: var(--bg-card);
   box-shadow: var(--shadow-soft);
   border: 1px solid var(--border-subtle);
-  padding: 20px 18px 22px;
-}
-
-/* Можно использовать для шапки формы / шагов */
-.main-card-header {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 18px;
+  padding: 18px 16px 20px;
 }
 
 /* ============================================================
-   SECTION / GRID
+   СЕКЦИИ И СЕТКИ
 ============================================================ */
 
 .section {
   background: var(--bg-section);
   border-radius: 16px;
-  padding: 16px 16px 14px;
+  padding: 14px 14px 12px;
   border: 1px solid var(--border-subtle);
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.03);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.03);
   margin-bottom: 14px;
 }
 
@@ -239,15 +195,13 @@ body::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, var(--accent), var(--accent-strong));
 }
 
-/* Мелкие подзаголовки внутри секции (например "Комиссии") */
 .section-subtitle {
-  margin: 8px 0;
+  margin: 6px 0 8px;
   font-size: 13px;
   font-weight: 500;
   color: var(--muted);
 }
 
-/* Гриды */
 .grid {
   display: grid;
   gap: 10px 14px;
@@ -265,7 +219,6 @@ body::-webkit-scrollbar-thumb {
   .app-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
   }
 
   .grid.two,
@@ -274,12 +227,12 @@ body::-webkit-scrollbar-thumb {
   }
 
   .section {
-    padding: 14px 12px 12px;
+    padding: 12px 10px 10px;
   }
 }
 
 /* ============================================================
-   FORM FIELDS
+   ПОЛЯ ФОРМЫ
 ============================================================ */
 
 .field {
@@ -296,11 +249,6 @@ body::-webkit-scrollbar-thumb {
   text-transform: uppercase;
 }
 
-.field-label.required::after {
-  content: " *";
-  color: var(--accent);
-}
-
 .field-input {
   width: 100%;
   padding: 9px 11px;
@@ -315,7 +263,6 @@ body::-webkit-scrollbar-thumb {
     box-shadow 0.15s ease,
     background-color 0.15s ease,
     transform 0.05s ease;
-  appearance: none;
 }
 
 .field-input::placeholder {
@@ -340,13 +287,13 @@ body::-webkit-scrollbar-thumb {
   background: var(--input-bg-disabled);
 }
 
-/* Textarea */
+/* textarea */
 textarea.field-input {
   resize: vertical;
   min-height: 80px;
 }
 
-/* Селекты (под стрелку) */
+/* select — аккуратная стрелочка */
 select.field-input {
   background-image:
     linear-gradient(45deg, transparent 50%, var(--muted) 50%),
@@ -357,16 +304,17 @@ select.field-input {
   background-size: 5px 5px, 5px 5px;
   background-repeat: no-repeat;
   padding-right: 28px;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
-/* Маленький hint под полем */
 .field-hint {
   font-size: 11px;
   color: var(--muted);
 }
 
 /* ============================================================
-   BUTTONS
+   КНОПКИ
 ============================================================ */
 
 .btn {
@@ -395,34 +343,26 @@ select.field-input {
   transform: translateY(-0.5px);
 }
 
-.btn:active {
-  transform: translateY(0);
-}
-
-/* Primary */
 .btn.primary {
   background: linear-gradient(135deg, var(--accent), var(--accent-strong));
   color: #ffffff;
-  box-shadow: 0 10px 22px var(--accent-soft);
+  box-shadow: 0 10px 20px var(--accent-soft);
 }
 
 .btn.primary:hover {
-  box-shadow: 0 12px 28px var(--accent-soft-strong);
+  box-shadow: 0 12px 26px var(--accent-soft);
 }
 
-/* Outline */
 .btn.secondary {
   background: transparent;
   color: var(--accent);
-  border-color: rgba(190, 44, 28, 0.35);
-  box-shadow: none;
+  border-color: rgba(190, 44, 28, 0.4);
 }
 
 .btn.secondary:hover {
   background: var(--accent-soft);
 }
 
-/* Ghost / tertiary */
 .btn.ghost {
   background: transparent;
   color: var(--muted);
@@ -435,7 +375,7 @@ select.field-input {
 }
 
 /* ============================================================
-   TABLES (КОМИССИИ и т.п.)
+   ТАБЛИЦЫ (КОМИССИИ, И Т.П.)
 ============================================================ */
 
 .table-wrap {
@@ -475,60 +415,39 @@ tbody tr:last-child td {
 }
 
 tbody tr:nth-child(even) {
-  background: rgba(15, 23, 42, 0.012);
+  background: rgba(15, 23, 42, 0.015);
 }
 
-/* Поля ввода внутри таблиц */
 .table-wrap .field-input {
   padding: 6px 8px;
   font-size: 13px;
 }
 
 /* ============================================================
-   MAPS / LEAFLET
+   КАРТЫ (LEAFLET)
 ============================================================ */
 
-.map-card {
-  border-radius: 16px;
-  border: 1px solid var(--border-subtle);
-  background: var(--bg-map);
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.map-label {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--muted);
-}
-
-.map-container {
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid var(--border-subtle);
-  min-height: 220px;
-  background: #d1d5db;
-}
-
-/* сам div карты */
+.map-container,
 #legalMap,
 #tradeMap {
   width: 100%;
   min-height: 220px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-map);
+  overflow: hidden;
 }
 
-/* Leaflet popup чуть сгладим */
+/* Popups слегка скруглим */
 .leaflet-popup-content-wrapper {
-  border-radius: 12px !important;
+  border-radius: 10px !important;
 }
 .leaflet-popup-tip {
   border-radius: 4px !important;
 }
 
 /* ============================================================
-   SIGNATURE PAD
+   ПОДПИСЬ (SIGNATURE PAD)
 ============================================================ */
 
 .signature-block {
@@ -541,15 +460,6 @@ tbody tr:nth-child(even) {
   gap: 8px;
 }
 
-.signature-block-title {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
 .signature-block canvas {
   width: 100%;
   max-width: 600px;
@@ -558,7 +468,7 @@ tbody tr:nth-child(even) {
   border-radius: 10px;
   border: 1px solid var(--border);
   display: block;
-  touch-action: none;
+  touch-action: none; /* важно для пальца */
 }
 
 .signature-actions {
@@ -567,7 +477,7 @@ tbody tr:nth-child(even) {
   margin-top: 4px;
 }
 
-/* Подпись в PDF */
+/* подпись в PDF */
 .pdf-signature-block {
   margin-top: 24px;
   font-size: 13px;
@@ -579,15 +489,15 @@ tbody tr:nth-child(even) {
 }
 
 /* ============================================================
-   SPELLCHECK PANEL
+   ПАНЕЛЬ ОРФОГРАФИИ
 ============================================================ */
 
 #spellcheckPanel {
   margin-top: 6px;
   padding: 8px 10px;
-  border-radius: 12px;
-  background: rgba(248, 250, 252, 0.8);
-  border: 1px dashed rgba(148, 163, 184, 0.7);
+  border-radius: 10px;
+  background: rgba(249, 250, 251, 0.9);
+  border: 1px dashed rgba(148, 163, 184, 0.8);
   font-size: 12px;
   color: var(--muted);
   max-height: 120px;
@@ -595,44 +505,15 @@ tbody tr:nth-child(even) {
 }
 
 /* ============================================================
-   MISC / UTILS
+   МЕЛОЧИ / ПРИНТ
 ============================================================ */
 
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 9px;
-  border-radius: 999px;
-  background: var(--chip-bg);
-  color: var(--chip-text);
-  font-size: 11px;
-  font-weight: 500;
-}
-
-.chip.accent {
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-
-/* Блоки с небольшими заметками */
-.note {
-  font-size: 12px;
-  padding: 8px 10px;
-  border-radius: 10px;
-  background: rgba(250, 250, 251, 0.9);
-  border: 1px solid var(--border-subtle);
-  color: var(--muted);
-}
-
-/* Небольшие ошибки под полями, если будешь валидировать */
 .field-error {
   font-size: 11px;
-  color: var(--danger);
+  color: #dc2626;
   margin-top: 2px;
 }
 
-/* Печатный режим — убираем фон/тени */
 @media print {
   body {
     background: #ffffff;
