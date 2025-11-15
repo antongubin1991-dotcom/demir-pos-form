@@ -433,16 +433,44 @@ function initSignaturePad() {
   const ctx = canvas.getContext("2d");
   let drawing = false;
 
-  ctx.lineWidth = 2;
-  ctx.lineCap = "round";
-  ctx.strokeStyle = "#000";
+  // Подгоняем реальный размер канваса под размер на экране
+  function resizeCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    const ratio = window.devicePixelRatio || 1;
+
+    canvas.width = rect.width * ratio;
+    canvas.height = rect.height * ratio;
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(ratio, ratio);
+
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#000000";
+  }
+
+  resizeCanvas();
+  window.addEventListener("resize", () => {
+    // При ресайзе подпись очистится — это нормально для первой версии
+    resizeCanvas();
+  });
 
   function getPos(e) {
     const rect = canvas.getBoundingClientRect();
-    const point = e.touches ? e.touches[0] : e;
+    let clientX, clientY;
+
+    if (e.touches && e.touches.length > 0) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+
+    // Мы уже учли масштаб через ctx.scale, поэтому здесь без ratio
     return {
-      x: point.clientX - rect.left,
-      y: point.clientY - rect.top
+      x: clientX - rect.left,
+      y: clientY - rect.top
     };
   }
 
@@ -470,10 +498,10 @@ function initSignaturePad() {
   }
 
   function saveSignature() {
-    if (!hiddenInput) return;
-
     const dataUrl = canvas.toDataURL("image/png");
-    hiddenInput.value = dataUrl;
+    if (hiddenInput) {
+      hiddenInput.value = dataUrl;
+    }
 
     const pdfImg = document.getElementById("pdf_signature");
     if (pdfImg && dataUrl) {
@@ -481,20 +509,17 @@ function initSignaturePad() {
     }
   }
 
-  // pointer / mouse / touch
-  canvas.addEventListener("pointerdown", startDraw);
-  canvas.addEventListener("pointermove", moveDraw);
-  canvas.addEventListener("pointerup", endDraw);
-  canvas.addEventListener("pointerleave", endDraw);
-
+  // Мышь (ПК)
   canvas.addEventListener("mousedown", startDraw);
   canvas.addEventListener("mousemove", moveDraw);
   window.addEventListener("mouseup", endDraw);
 
+  // Тач (Android / iOS)
   canvas.addEventListener("touchstart", startDraw, { passive: false });
   canvas.addEventListener("touchmove", moveDraw, { passive: false });
   canvas.addEventListener("touchend", endDraw, { passive: false });
 
+  // Кнопка "Очистить"
   if (clearBtn) {
     clearBtn.addEventListener("click", () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
