@@ -1,230 +1,215 @@
 /* ============================================================
-   БАЗОВЫЕ ЦВЕТА (ориентация на стиль банка)
+   GLOBAL RESET
 ============================================================ */
-:root {
-  --bg: #f3f4f6;
-  --bg-card: #ffffff;
-  --bg-section: #ffffff;
-
-  --text: #111827;
-  --text-soft: #4b5563;
-  --muted: #6b7280;
-
-  --border: #e5e7eb;
-  --border-subtle: #e5e7eb;
-
-  --accent: #be2c1c;
-  --accent-strong: #9b2417;
-  --accent-soft: rgba(190, 44, 28, 0.12);
-
-  --input-bg: #ffffff;
-  --input-bg-disabled: #f3f4f6;
-
-  --radius-lg: 16px;
-  --radius-md: 10px;
-  --radius-sm: 6px;
-
-  --shadow-soft: 0 10px 25px rgba(15, 23, 42, 0.06);
-}
-
-/* Тёмная тема сильно менять не будем, чтобы не было «ужаса» */
-body.dark {
-  --bg: #111827;
-  --bg-card: #020617;
-  --bg-section: #020617;
-
-  --text: #f9fafb;
-  --text-soft: #e5e7eb;
-  --muted: #9ca3af;
-
-  --border: #1f2937;
-  --border-subtle: #111827;
-
-  --input-bg: #020617;
-  --input-bg-disabled: #111827;
-}
-
-/* ============================================================
-   ОБЩАЯ БАЗА
-============================================================ */
-
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-html,
-body {
+html, body {
   margin: 0;
   padding: 0;
-  height: 100%;
-}
-
-body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  -webkit-font-smoothing: antialiased;
-}
-
-/* Лёгкий аккуратный скроллбар */
-body::-webkit-scrollbar {
-  width: 8px;
-}
-body::-webkit-scrollbar-track {
-  background: transparent;
-}
-body::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.8);
-  border-radius: 999px;
 }
 
 /* ============================================================
-   ЛЕЙАУТ
+   THEMES
+============================================================ */
+
+body.light {
+  --bg: #f5f6f7;
+  --bg-card: #ffffff;
+  --bg-section: #ffffff;
+
+  --text: #1e293b;
+  --text-muted: #64748b;
+
+  --border: #d4d7dd;
+
+  --primary: #be2c1c;
+  --primary-soft: rgba(190,44,28,0.14);
+
+  --accent: #be2c1c;
+  --accent-soft: rgba(190,44,28,0.18);
+
+  --radius: 12px;
+  --shadow: 0 10px 30px rgba(15,23,42,0.10);
+
+  color-scheme: light;
+}
+
+body.dark {
+  --bg: #0f1115;
+  --bg-card: #181a20;
+  --bg-section: #1b1e25;
+
+  --text: #e5e7eb;
+  --text-muted: #9ca3af;
+
+  --border: #2f3540;
+
+  --primary: #f97362;
+  --primary-soft: rgba(249,115,98,0.16);
+
+  --accent: #f97362;
+  --accent-soft: rgba(249,115,98,0.20);
+
+  --radius: 12px;
+  --shadow: 0 20px 40px rgba(0,0,0,0.55);
+
+  color-scheme: dark;
+}
+
+/* базовые стили для любого режима */
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+               "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* ============================================================
+   LAYOUT
 ============================================================ */
 
 .app {
-  max-width: 960px;
-  margin: 16px auto 32px;
-  padding: 0 12px 24px;
+  min-height: 100vh;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 24px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-/* Шапка */
+.app-main {
+  margin-top: 8px;
+}
+
+/* ============================================================
+   HEADER
+============================================================ */
+
 .app-header {
-  background: #ffffff;
-  border-radius: var(--radius-lg);
-  padding: 12px 14px;
+  background: linear-gradient(135deg, #be2c1c, #e04834);
+  color: #fff;
+  padding: 16px 20px;
+  border-radius: 24px;
+  box-shadow: 0 18px 40px rgba(190,44,28,0.45);
+
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  box-shadow: var(--shadow-soft);
-  border: 1px solid rgba(190, 44, 28, 0.18);
-  margin-bottom: 16px;
+  gap: 16px;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex: 1;
-  min-width: 0;
+  gap: 12px;
 }
 
-.logo-img {
-  width: 40px;
+.brand-logo {
   height: 40px;
-  object-fit: contain;
+  width: auto;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  padding: 4px;
 }
 
 .brand-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text);
+  font-size: 20px;
+  font-weight: 700;
 }
 
 .brand-subtitle {
-  font-size: 13px;
-  color: var(--muted);
+  font-size: 12px;
+  opacity: 0.9;
 }
 
-.header-actions {
+.header-controls {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
-.header-select {
-  padding: 4px 10px;
+.header-controls select {
   border-radius: 999px;
-  border: 1px solid var(--border);
-  background: #ffffff;
+  padding: 6px 12px;
+  border: none;
+  background: rgba(15,23,42,0.18);
+  color: #fff;
   font-size: 13px;
-  color: var(--text-soft);
   outline: none;
+  cursor: pointer;
 }
 
-/* Основной контейнер формы (если используешь .main-card) */
-.main-card {
-  margin-top: 12px;
-  border-radius: var(--radius-lg);
-  background: var(--bg-card);
-  box-shadow: var(--shadow-soft);
-  border: 1px solid var(--border-subtle);
-  padding: 16px 14px 18px;
+.header-controls select option {
+  color: #111827;
 }
 
 /* ============================================================
-   СЕКЦИИ И СЕТКИ
+   CARD / SECTIONS
 ============================================================ */
 
+.card {
+  background: var(--bg-card);
+  padding: 20px 20px 24px;
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
 .section {
-  background: var(--bg-section);
-  border-radius: var(--radius-lg);
-  padding: 12px 12px 10px;
-  border: 1px solid var(--border-subtle);
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.03);
-  margin-bottom: 12px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(148,163,184,0.25);
+}
+
+.section:first-of-type {
+  border-top: none;
 }
 
 .section-title {
-  margin: 0 0 8px;
   font-size: 15px;
   font-weight: 600;
+  margin: 0 0 12px;
   color: var(--text);
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }
 
-.section-title::before {
-  content: "";
-  width: 3px;
-  height: 16px;
-  border-radius: 999px;
-  background: var(--accent);
-}
-
-.section-subtitle {
-  margin: 4px 0 8px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--muted);
-}
+/* ============================================================
+   GRID
+============================================================ */
 
 .grid {
   display: grid;
-  gap: 10px 12px;
+  gap: 12px;
 }
 
 .grid.two {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 12px 16px;
 }
 
-.grid.three {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
+@media (max-width: 720px) {
+  .grid.two {
+    grid-template-columns: minmax(0,1fr);
+  }
 
-/* Мобильная адаптация */
-@media (max-width: 768px) {
   .app-header {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .grid.two,
-  .grid.three {
-    grid-template-columns: 1fr;
-  }
-
-  .section {
-    padding: 10px;
+  .header-controls {
+    align-self: stretch;
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
 }
 
 /* ============================================================
-   ПОЛЯ ФОРМЫ (INPUT / SELECT / TEXTAREA)
+   FIELDS
 ============================================================ */
 
 .field {
@@ -234,285 +219,168 @@ body::-webkit-scrollbar-thumb {
 }
 
 .field-label {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--muted);
+  font-size: 13px;
+  color: var(--text-muted);
 }
 
 .field-input {
   width: 100%;
-  padding: 8px 10px;
-  border-radius: var(--radius-md);
+  padding: 9px 11px;
+  border-radius: 10px;
   border: 1px solid var(--border);
-  background: var(--input-bg);
+  background: var(--bg-section);
   color: var(--text);
   font-size: 14px;
   outline: none;
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease,
-    background-color 0.15s ease;
+  transition: border-color .15s ease, box-shadow .15s ease,
+              background-color .15s ease, transform .05s ease;
+}
+
+/* FIX — делаем <select> рабочим */
+select.field-input {
+  appearance: auto;
+  -webkit-appearance: auto;
+  -moz-appearance: auto;
+  cursor: pointer;
 }
 
 .field-input::placeholder {
-  color: rgba(148, 163, 184, 0.95);
-}
-
-.field-input:hover {
-  border-color: rgba(148, 163, 184, 0.9);
+  color: rgba(148,163,184,0.9);
 }
 
 .field-input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-soft);
-  background: #ffffff;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  background: #fff;
 }
 
 .field-input:disabled,
 .field-input[readonly] {
-  opacity: 0.85;
+  opacity: 0.75;
   cursor: default;
-  background: var(--input-bg-disabled);
+  background: rgba(148,163,184,0.08);
 }
 
-/* textarea */
 textarea.field-input {
   resize: vertical;
   min-height: 80px;
 }
-
-/* select — своя стрелочка, логика не меняется */
-select.field-input {
-  background-image:
-    linear-gradient(45deg, transparent 50%, var(--muted) 50%),
-    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
-  background-position:
-    calc(100% - 14px) calc(50% - 3px),
-    calc(100% - 9px) calc(50% - 3px);
-  background-size: 5px 5px, 5px 5px;
-  background-repeat: no-repeat;
-  padding-right: 26px;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-.field-hint {
-  font-size: 11px;
-  color: var(--muted);
-}
-
 /* ============================================================
-   КНОПКИ
-============================================================ */
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 7px 13px;
-  border-radius: 999px;
-  border: 1px solid transparent;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  background: #e5e7eb;
-  color: #111827;
-  text-decoration: none;
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease,
-    box-shadow 0.15s ease,
-    transform 0.05s ease,
-    border-color 0.15s ease;
-}
-
-.btn:hover {
-  transform: translateY(-0.5px);
-}
-
-.btn.primary {
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-  color: #ffffff;
-  box-shadow: 0 10px 18px var(--accent-soft);
-}
-
-.btn.primary:hover {
-  box-shadow: 0 12px 24px var(--accent-soft);
-}
-
-.btn.secondary {
-  background: transparent;
-  color: var(--accent);
-  border-color: rgba(190, 44, 28, 0.5);
-}
-
-.btn.secondary:hover {
-  background: var(--accent-soft);
-}
-
-.btn.ghost {
-  background: transparent;
-  color: var(--muted);
-  border-color: transparent;
-}
-
-.btn.sm {
-  padding: 5px 10px;
-  font-size: 12px;
-}
-
-/* ============================================================
-   ТАБЛИЦЫ (КОМИССИИ)
+   TABLES
 ============================================================ */
 
 .table-wrap {
   width: 100%;
   overflow-x: auto;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  border: 1px solid var(--border);
   background: var(--bg-section);
 }
 
-table {
+.tbl {
   width: 100%;
   border-collapse: collapse;
+  min-width: 520px;
   font-size: 13px;
 }
 
-thead {
-  background: rgba(148, 163, 184, 0.08);
+.tbl thead {
+  background: rgba(148,163,184,0.12);
 }
 
-thead th {
+.tbl th,
+.tbl td {
   padding: 8px 10px;
   text-align: left;
-  font-weight: 500;
-  color: var(--muted);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(226,232,240,0.9);
 }
 
-tbody td {
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--border-subtle);
-  color: var(--text);
+.tbl th {
+  font-weight: 600;
+  color: var(--text-muted);
 }
 
-tbody tr:last-child td {
+.tbl tr:last-child td {
   border-bottom: none;
 }
 
-tbody tr:nth-child(even) {
-  background: rgba(15, 23, 42, 0.02);
-}
-
-.table-wrap .field-input {
+.tbl input.field-input {
   padding: 6px 8px;
   font-size: 13px;
 }
 
 /* ============================================================
-   КАРТЫ (LEAFLET)
+   MAPS
 ============================================================ */
 
-#legalMap,
-#tradeMap {
+.map-box {
+  margin-top: 10px;
   width: 100%;
-  min-height: 220px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-subtle);
-  background: #d1d5db;
+  height: 260px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
   overflow: hidden;
 }
 
-/* попапы слегка скруглим */
-.leaflet-popup-content-wrapper {
-  border-radius: 10px !important;
-}
-.leaflet-popup-tip {
-  border-radius: 4px !important;
-}
-
 /* ============================================================
-   ПОДПИСЬ (SIGNATURE PAD) — ТОЛЬКО ВИЗУАЛ
+   SPELLCHECK PANEL
 ============================================================ */
 
-.signature-block {
+.spell-results {
+  border-radius: 12px;
   border: 1px dashed var(--border);
-  border-radius: var(--radius-md);
-  padding: 10px;
-  background: var(--bg-section);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* Важно: не трогаем внутренние размеры канваса, чтобы JS не ломался */
-.signature-block canvas {
-  max-width: 100%;
-  background: #ffffff;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  display: block;
-  touch-action: none; /* для тача на Android */
-}
-
-.signature-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 4px;
-}
-
-/* Блок подписи в PDF, если используешь */
-.pdf-signature-block {
-  margin-top: 20px;
+  padding: 10px 12px;
   font-size: 13px;
-  color: var(--text);
-}
-
-.pdf-signature-line {
-  margin-top: 6px;
+  color: var(--text-muted);
+  min-height: 40px;
 }
 
 /* ============================================================
-   ПАНЕЛЬ ПРОВЕРКИ ОРФОГРАФИИ
+   BUTTONS
 ============================================================ */
 
-#spellcheckPanel {
-  margin-top: 6px;
-  padding: 8px 10px;
-  border-radius: var(--radius-md);
-  background: rgba(249, 250, 251, 0.95);
-  border: 1px dashed rgba(148, 163, 184, 0.9);
+.btn {
+  background: var(--primary);
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: none;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 18px var(--primary-soft);
+  transition: transform .08s ease, box-shadow .08s ease,
+              filter .12s ease;
+}
+
+.btn:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 26px var(--primary-soft);
+}
+
+.btn:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px var(--primary-soft);
+}
+
+/* ============================================================
+   MISC
+============================================================ */
+
+.divider {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 16px 0;
+}
+
+/* ============================================================
+   FOOTER
+============================================================ */
+
+.app-footer {
+  text-align: center;
   font-size: 12px;
-  color: var(--muted);
-  max-height: 120px;
-  overflow-y: auto;
-}
-
-/* ============================================================
-   ПРОЧЕЕ / ПЕЧАТЬ
-============================================================ */
-
-.field-error {
-  font-size: 11px;
-  color: #dc2626;
-  margin-top: 2px;
-}
-
-@media print {
-  body {
-    background: #ffffff;
-  }
-  .app {
-    margin: 0;
-    padding: 0;
-  }
-  .app-header,
-  .main-card,
-  .section {
-    box-shadow: none;
-    border-radius: 0;
-    border: none;
-  }
+  padding: 10px;
+  color: var(--text-muted);
 }
