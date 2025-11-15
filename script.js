@@ -491,7 +491,7 @@ function initMap(mapId, addressInputId, latInputId, lonInputId) {
 /* ============================================================
    SIGNATURE PAD
 ============================================================ */
-function initSignaturePad() {
+function initSignaturePad(); {
   var canvas = document.getElementById("signaturePad");
   var clearBtn = document.getElementById("signatureClear");
   var hiddenInput = document.getElementById("signatureData");
