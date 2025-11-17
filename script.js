@@ -738,6 +738,7 @@ function fillPdfTemplate() {
    PDF / ПЕЧАТЬ — JSON В SLK + ЗАЯВЛЕНИЕ
 ============================================================ */
 const savePdfBtn = document.getElementById("savePdf");
+
 if (savePdfBtn) {
   savePdfBtn.addEventListener("click", async () => {
     // 1. Собираем JSON для SLK
@@ -759,17 +760,49 @@ if (savePdfBtn) {
       }
     }
 
-    // 3. Отправляем JSON в SLK (или логируем, если SLK_ENDPOINT пустой)
+    // 3. Отправляем JSON в SLK (или просто логируем)
     await sendToSLK(formData);
 
-    // 4. Заполняем PDF-шаблон
+    // 4. Заполняем PDF-шаблон полями pdf_*
     fillPdfTemplate();
 
-    // 5. Диалог печати → "Сохранить как PDF"
-    window.print();
+    // 5. Генерируем PDF из скрытого блока pdfDocument
+    const pdfDoc = document.getElementById("pdfDocument");
+    if (!pdfDoc) {
+      alert("PDF-шаблон не найден (pdfDocument).");
+      return;
+    }
+
+    const prevDisplay = pdfDoc.style.display;
+    pdfDoc.style.display = "block"; // показать на время рендера
+
+    try {
+      if (typeof html2pdf !== "undefined") {
+        await html2pdf()
+          .set({
+            margin: 10,
+            filename: "Demir_POS_Form.pdf",
+            html2canvas: {
+              scale: 2,
+              useCORS: true,
+              backgroundColor: "#ffffff"
+            },
+            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+          })
+          .from(pdfDoc)
+          .save();
+      } else {
+        // запасной вариант, если по какой-то причине html2pdf не загрузился
+        window.print();
+      }
+    } catch (e) {
+      console.error("Ошибка формирования PDF:", e);
+      alert("Ошибка при формировании PDF. Подробности смотри в консоли.");
+    } finally {
+      pdfDoc.style.display = prevDisplay || "none"; // снова спрятать шаблон
+    }
   });
 }
-
 /* ============================================================
    SIMPLE SPELLCHECK MOCK
 ============================================================ */
