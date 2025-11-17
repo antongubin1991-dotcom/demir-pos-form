@@ -829,6 +829,114 @@ if (savePdfBtn) {
   savePdfBtn.addEventListener("click", async () => {
     // 1. Собираем JSON
     const formData = collectFormData();
+     /* ============================================================
+   SLK JSON HELPERS (ТОЛЬКО 1–22 ПУНКТЫ ЗАЯВЛЕНИЯ)
+============================================================ */
+function getFieldValue(id, maxLen = 255) {
+  const el = document.getElementById(id);
+  if (!el) return "";
+  const val = (el.value || "").trim();
+  return val.length > maxLen ? val.slice(0, maxLen) : val;
+}
+
+function collectFormData() {
+  return {
+    // 1) Наименование субъекта
+    subjectName: getFieldValue("companyName", 150),
+
+    // 2) ИНН субъекта
+    subjectInn: getFieldValue("companyBin", 14),
+
+    // 3) Юридический адрес субъекта
+    subjectLegalAddress: getFieldValue("legalAddress", 300),
+
+    // 4) Место налоговой регистрации
+    taxRegistrationPlace: getFieldValue("taxRegistrationPlace", 100),
+
+    // 5) Контактный номер телефона субъекта
+    subjectPhone: getFieldValue("phone", 30),
+
+    // 6) ПИН руководителя
+    directorPin: getFieldValue("companyHeadInn", 14),
+
+    // 7) ФИО руководителя
+    directorFio: getFieldValue("companyHead", 150),
+
+    // 8) Адрес объекта предпринимательства
+    businessObjectAddress: getFieldValue("tradeAddress", 300),
+
+    // 9) Статус по регистрации НДС
+    vatStatus: getFieldValue("vatStatus", 50),
+
+    // 10) Налоговые ставки (ставка НДС/НСП нал., безнал.)
+    taxRates: getFieldValue("taxRates", 100),
+
+    // 11) Наименование объекта
+    objectName: getFieldValue("objectName", 150),
+
+    // 12) Объект предпринимательства
+    businessObject: getFieldValue("businessObjectType", 150),
+
+    // 13) Предмет расчета
+    paymentSubject: getFieldValue("paymentSubject", 100),
+
+    // 14) Вид деятельности
+    activityType: getFieldValue("activityType", 200),
+
+    // 15) Заводской номер ККМ/номер версии ККМ
+    kkmSerial: getFieldValue("kkmSerial", 50),
+
+    // 16) Модель ККМ
+    kkmModel: getFieldValue("posModel", 50),
+
+    // 17) РНМ ККМ
+    kkmRegNumber: getFieldValue("kkmRegNumber", 50),
+
+    // 18) ФН
+    fnNumber: getFieldValue("fnNumber", 50),
+
+    // 19) Причина перерегистрации и снятия
+    registrationReason: getFieldValue("registrationReason", 100),
+
+    // 20) Электронная почта
+    email: getFieldValue("email", 100),
+
+    // 21) Почтовый индекс, широта и долгота
+    postalCode: getFieldValue("postalCode", 20),
+    latitude: getFieldValue("latitude", 20),
+    longitude: getFieldValue("longitude", 20),
+
+    // 22) Данные lk.salyk.kg
+    slkLogin: getFieldValue("slkLogin", 100),
+    slkPassword: getFieldValue("slkPassword", 100)
+  };
+}
+
+/* Отправка в SLK */
+async function sendToSLK(payload) {
+  try {
+    // Если эндпоинт не настроен — просто лог
+    if (!SLK_ENDPOINT) {
+      console.log("JSON для SLK (только 1–22 строки):", payload);
+      return;
+    }
+
+    const resp = await fetch(SLK_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!resp.ok) {
+      const text = await resp.text();
+      console.error("Ошибка отправки в SLK:", resp.status, text);
+      alert("Ошибка отправки данных в SLK. Подробности смотри в консоли.");
+    }
+  } catch (e) {
+    console.error("Сетевая ошибка при отправке в SLK:", e);
+    alert("Сетевая ошибка при отправке данных в SLK. Подробности смотри в консоли.");
+  }
+}
 
     // 2. Подготовим подпись для PDF (если есть)
     const sigData = document.getElementById("signatureData")?.value;
