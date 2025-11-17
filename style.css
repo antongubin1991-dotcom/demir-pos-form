@@ -385,12 +385,21 @@ textarea.field-input {
   color: var(--text-muted);
 }
 /* ============================================================
-   PDF DOCUMENT — ЖЁСТКИЕ ЦВЕТА (НЕ ЗАВИСИТ ОТ ТЕМЫ)
+   PRINT LAYOUT — ПЕЧАТАЕМ ТОЛЬКО PDF-ДОКУМЕНТ
 ============================================================ */
-#pdfDocument,
-#pdfDocument * {
-  color: #000 !important;
-  background: #fff !important;
-  box-shadow: none !important;
-  border-color: #000 !important;
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  /* Прячем основное приложение (форму, карты, кнопки) */
+  .app {
+    display: none !important;
+  }
+
+  /* Показываем только pdfDocument */
+  #pdfDocument {
+    display: block !important;
+  }
 }
