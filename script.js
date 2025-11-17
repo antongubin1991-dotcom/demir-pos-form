@@ -364,30 +364,71 @@ function fillPdfTemplate() {
 }
 
 // ============================================================
-// PDF EXPORT — CLICK HANDLER (через window.print)
+// PDF EXPORT — через отдельное окно
 // ============================================================
 function initPdfExport() {
   const btn = document.getElementById("savePdf");
   if (!btn) return;
 
   btn.addEventListener("click", async () => {
-    // 1) Собираем JSON и логируем/отправляем в SLK
+    // 1) Собираем JSON и отправляем/логируем
     const payload = collectFormData();
-    await sendToSLK(payload);
+    await sendToSLK(payload); // если SLK_ENDPOINT пустой — просто лог в консоль
 
-    // 2) Заполняем PDF-шаблон данными формы
+    // 2) Заполняем PDF-шаблон
     fillPdfTemplate();
 
-    // 3) Открываем диалог печати браузера
-    //    (в нём выбираешь "Сохранить как PDF")
-    window.print();
+    // 3) Берём шаблон
+    const pdfElement = document.getElementById("pdfDocument");
+    if (!pdfElement) {
+      console.error("pdfDocument не найден");
+      return;
+    }
+
+    // 4) Открываем новое окно
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      alert("Разрешите всплывающие окна для печати PDF");
+      return;
+    }
+
+    // 5) Пишем базовый HTML
+    printWindow.document.open();
+    printWindow.document.write(
+      `
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <title>Demir POS Form</title>
+</head>
+<body></body>
+</html>
+      `
+    );
+    printWindow.document.close();
+
+    // 6) Клонируем pdfDocument, делаем его видимым и центрируем
+    const clone = pdfElement.cloneNode(true);
+    clone.style.display = "block";
+    clone.style.margin = "20px auto";
+    clone.style.width = "800px"; // как в твоём шаблоне
+
+    printWindow.document.body.appendChild(clone);
+
+    // 7) Печать
+    setTimeout(() => {
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    }, 100);
   });
 }
-
+// Не забудь, чтобы при загрузке страницы это всё инициализировалось:
 document.addEventListener("DOMContentLoaded", () => {
   initSignaturePad();
   initMaps();
-  initPdfExport(); // <-- не забыть вызвать
+  initPdfExport();
 });
 
 // ============================================================
