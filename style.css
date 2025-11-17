@@ -265,6 +265,11 @@ textarea.field-input {
   resize: vertical;
   min-height: 80px;
 }
+.field-error {
+  border-color: #e11d48 !important; /* ярко-красный */
+  background-color: #fee2e2;        /* светло-красный фон */
+}
+
 /* ============================================================
    TABLES
 ============================================================ */
