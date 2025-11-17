@@ -384,3 +384,13 @@ textarea.field-input {
   padding: 10px;
   color: var(--text-muted);
 }
+/* ============================================================
+   PDF DOCUMENT — ЖЁСТКИЕ ЦВЕТА (НЕ ЗАВИСИТ ОТ ТЕМЫ)
+============================================================ */
+#pdfDocument,
+#pdfDocument * {
+  color: #000 !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  border-color: #000 !important;
+}
