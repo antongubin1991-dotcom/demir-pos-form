@@ -16,7 +16,9 @@ if (themeToggle) {
     localStorage.setItem("theme", theme);
   });
 }
-   /*SLK ENDPOINT (URL ДЛЯ ОТПРАВКИ JSON)
+
+/* ============================================================
+   SLK ENDPOINT (URL ДЛЯ ОТПРАВКИ JSON)
 ============================================================ */
 const SLK_ENDPOINT = ""; // например: "https://slk.goodoo.kg/api/demir-pos-form"
 
@@ -105,6 +107,7 @@ async function sendToSLK(payload) {
     alert("Сетевая ошибка при отправке в SLK. Подробности смотри в консоли.");
   }
 }
+
 /* ============================================================
    BUSINESS OBJECT TYPES
 ============================================================ */
@@ -502,6 +505,11 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ---------- LEAFLET MAPS ---------- */
   initMap("legalMap", "legalAddress", "legalLat", "legalLon");
   initMap("tradeMap", "tradeAddress", "tradeLat", "tradeLon");
+
+  // Инициализация подписи
+  initSignaturePad();
+});
+
 /* ============================================================
    LEAFLET MAP + REVERSE GEOCODING
 ============================================================ */
@@ -570,6 +578,7 @@ function initMap(mapId, addressInputId, latInputId, lonInputId) {
     updateFields(e.latlng.lat, e.latlng.lng, true);
   });
 }
+
 /* ============================================================
    SIGNATURE PAD
 ============================================================ */
@@ -599,7 +608,6 @@ function initSignaturePad() {
       clientY = e.clientY;
     }
 
-    // Масштаб: внутренний размер канваса vs CSS-размер
     var scaleX = canvas.width / rect.width;
     var scaleY = canvas.height / rect.height;
 
@@ -644,17 +652,14 @@ function initSignaturePad() {
     }
   }
 
-  // Мышь (ПК)
   canvas.addEventListener("mousedown", startDraw);
   canvas.addEventListener("mousemove", moveDraw);
   window.addEventListener("mouseup", endDraw);
 
-  // Тач (телефон / планшет)
   canvas.addEventListener("touchstart", startDraw, { passive: false });
   canvas.addEventListener("touchmove", moveDraw, { passive: false });
   canvas.addEventListener("touchend", endDraw, { passive: false });
 
-  // Очистка подписи
   if (clearBtn) {
     clearBtn.addEventListener("click", function () {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -666,6 +671,7 @@ function initSignaturePad() {
     });
   }
 }
+
 /* ============================================================
    PDF EXPORT — FILL TEMPLATE
 ============================================================ */
@@ -701,7 +707,6 @@ function fillPdfTemplate() {
     dstEl.textContent = srcEl ? (srcEl.value || "") : "";
   });
 
-  // Район + УГНС
   const districtSelect = document.getElementById("district");
   const ugnsInput = document.getElementById("ugnsCode");
   const pdfDistrict = document.getElementById("pdf_district_ugns");
@@ -717,7 +722,6 @@ function fillPdfTemplate() {
     }
   }
 
-  // Дата заполнения
   const pdfDate = document.getElementById("pdf_date");
   if (pdfDate) {
     const d = new Date();
@@ -734,10 +738,8 @@ function fillPdfTemplate() {
 const savePdfBtn = document.getElementById("savePdf");
 if (savePdfBtn) {
   savePdfBtn.addEventListener("click", async () => {
-    // 1. Собираем JSON для SLK
     const formData = collectFormData();
 
-    // 2. Подпись для PDF (если есть)
     const sigDataEl = document.getElementById("signatureData");
     const sigData = sigDataEl ? sigDataEl.value : "";
     const pdfSigImg = document.getElementById("pdf_signature");
@@ -753,17 +755,15 @@ if (savePdfBtn) {
       }
     }
 
-    // 3. Отправляем JSON в SLK (или логируем, если SLK_ENDPOINT пустой)
     await sendToSLK(formData);
 
-    // 4. Заполняем PDF-шаблон (все pdf_* поля)
     fillPdfTemplate();
 
-    // 5. Открываем диалог печати → пользователь выбирает "Сохранить как PDF"
     window.print();
   });
 }
-   /* ============================================================
+
+/* ============================================================
    SIMPLE SPELLCHECK MOCK
 ============================================================ */
 const spellPanel = document.getElementById("spellcheckPanel");
