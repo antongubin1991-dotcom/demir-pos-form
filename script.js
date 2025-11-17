@@ -16,7 +16,7 @@ if (themeToggle) {
     localStorage.setItem("theme", theme);
   });
 }
-   SLK ENDPOINT (URL ДЛЯ ОТПРАВКИ JSON)
+   /*SLK ENDPOINT (URL ДЛЯ ОТПРАВКИ JSON)
 ============================================================ */
 const SLK_ENDPOINT = ""; // например: "https://slk.goodoo.kg/api/demir-pos-form"
 
