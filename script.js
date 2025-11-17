@@ -479,6 +479,22 @@ document.addEventListener("DOMContentLoaded", () => {
   // 🔹 ИНИЦИАЛИЗАЦИЯ ПОДПИСИ
   initSignaturePad();
 });
+  const testBtn = document.getElementById("testPdf");
+  if (testBtn) {
+    testBtn.addEventListener("click", () => {
+      const el = document.getElementById("pdfTest");
+      if (!el) return;
+      el.style.display = "block";   // чтобы точно был размер
+      html2pdf().from(el).set({
+        margin: 10,
+        filename: "test.pdf",
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+      }).save().then(() => {
+        el.style.display = "none";
+      });
+    });
+  }
 /* ============================================================
    LEAFLET MAP + REVERSE GEOCODING
 ============================================================ */
