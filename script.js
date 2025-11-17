@@ -412,7 +412,6 @@ function updateDistrictFromAddress(addressText) {
     localStorage.setItem("ugnsCode", match.code);
   }
 }
-
 /* ============================================================
    DOMContentLoaded INITIALIZATION
 ============================================================ */
@@ -652,14 +651,17 @@ function initSignaturePad() {
     }
   }
 
+  // Мышь
   canvas.addEventListener("mousedown", startDraw);
   canvas.addEventListener("mousemove", moveDraw);
   window.addEventListener("mouseup", endDraw);
 
+  // Тач
   canvas.addEventListener("touchstart", startDraw, { passive: false });
   canvas.addEventListener("touchmove", moveDraw, { passive: false });
   canvas.addEventListener("touchend", endDraw, { passive: false });
 
+  // Очистка
   if (clearBtn) {
     clearBtn.addEventListener("click", function () {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -738,8 +740,10 @@ function fillPdfTemplate() {
 const savePdfBtn = document.getElementById("savePdf");
 if (savePdfBtn) {
   savePdfBtn.addEventListener("click", async () => {
+    // 1. Собираем JSON для SLK
     const formData = collectFormData();
 
+    // 2. Подпись для PDF (если есть)
     const sigDataEl = document.getElementById("signatureData");
     const sigData = sigDataEl ? sigDataEl.value : "";
     const pdfSigImg = document.getElementById("pdf_signature");
@@ -755,10 +759,13 @@ if (savePdfBtn) {
       }
     }
 
+    // 3. Отправляем JSON в SLK (или логируем, если SLK_ENDPOINT пустой)
     await sendToSLK(formData);
 
+    // 4. Заполняем PDF-шаблон
     fillPdfTemplate();
 
+    // 5. Диалог печати → "Сохранить как PDF"
     window.print();
   });
 }
