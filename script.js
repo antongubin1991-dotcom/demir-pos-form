@@ -966,26 +966,30 @@ async function sendToSLK(payload) {
       return;
     }
 
-    const prevDisplay = pdfDoc.style.display;
+        const prevDisplay = pdfDoc.style.display;
     pdfDoc.style.display = "block";
 
-    html2pdf()
-      .set({
-        margin: 10,
-        filename: "Demir_POS_Form.pdf",
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
-      })
-      .from(pdfDoc)
-      .save()
-      .then(() => {
-        pdfDoc.style.display = prevDisplay || "none";
-      })
-      .catch(() => {
-        pdfDoc.style.display = prevDisplay || "none";
-      });
-  });
-}
+    try {
+      await html2pdf()
+        .set({
+          margin: 10,
+          filename: "Demir_POS_Form.pdf",
+          html2canvas: {
+            scale: 2,
+            useCORS: true,     // пробуем корректно работать с картинками (logo, и т.п.)
+            allowTaint: true,  // если вдруг что-то без CORS
+            logging: true      // чтобы html2canvas писал в консоль, что ему не нравится
+          },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+        })
+        .from(pdfDoc)
+        .save();
+    } catch (err) {
+      console.error("Ошибка html2pdf/html2canvas:", err);
+      alert("Ошибка при формировании PDF. Подробности смотри в консоли.");
+    } finally {
+      pdfDoc.style.display = prevDisplay || "none";
+    }
 
 /* ============================================================
    SIMPLE SPELLCHECK MOCK
