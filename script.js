@@ -23,6 +23,92 @@ if (themeToggle) {
 const SLK_ENDPOINT = ""; // например: "https://slk.goodoo.kg/api/demir-pos-form"
 
 /* ============================================================
+   SLK JSON HELPERS
+============================================================ */
+function getFieldValue(id) {
+  const el = document.getElementById(id);
+  return el ? (el.value || "").trim() : "";
+}
+
+function collectFormData() {
+  return {
+    company: {
+      name:        getFieldValue("companyName"),
+      bin:         getFieldValue("companyBin"),
+      head:        getFieldValue("companyHead"),
+      manager:     getFieldValue("manager"),
+      description: getFieldValue("description")
+    },
+    contacts: {
+      phone: getFieldValue("phone"),
+      email: getFieldValue("email")
+    },
+    pos: {
+      model: getFieldValue("posModel"),
+      commissions: {
+        visa_dkb:      getFieldValue("comm_visa_dkb"),
+        bonus_dkb:     getFieldValue("comm_bonus_dkb"),
+        visa_other:    getFieldValue("comm_visa_other"),
+        elcart_dkb:    getFieldValue("comm_elcart_dkb"),
+        elcart_other:  getFieldValue("comm_elcart_other"),
+        mc_dkb:        getFieldValue("comm_mc_dkb"),
+        mc_other:      getFieldValue("comm_mc_other")
+      },
+      discount_10: getFieldValue("discount_10")
+    },
+    region: {
+      district:      getFieldValue("district"),
+      ugnsCode:      getFieldValue("ugnsCode"),
+      legalAddress:  getFieldValue("legalAddress"),
+      legalLat:      getFieldValue("legalLat"),
+      legalLon:      getFieldValue("legalLon"),
+      tradeAddress:  getFieldValue("tradeAddress"),
+      tradeLat:      getFieldValue("tradeLat"),
+      tradeLon:      getFieldValue("tradeLon")
+    },
+    business: {
+      objectType:   getFieldValue("businessObjectType"),
+      activityType: getFieldValue("activityType")
+    },
+    meta: {
+      createdAt: new Date().toISOString(),
+      userAgent: navigator.userAgent
+    },
+    // чтобы при желании можно было слать подпись в SLK
+    signature: getFieldValue("signatureData")
+  };
+}
+
+async function sendToSLK(payload) {
+  try {
+    if (!SLK_ENDPOINT) {
+      // Пока эндпоинт не настроен — просто лог
+      console.log("JSON для SLK (SLK_ENDPOINT не настроен):", payload);
+      return;
+    }
+
+    const response = await fetch(SLK_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error("Ошибка отправки в SLK:", response.status, text);
+      alert("Ошибка отправки данных в SLK. Подробности смотри в консоли.");
+    } else {
+      console.log("Успешно отправлено в SLK");
+    }
+  } catch (err) {
+    console.error("Сетевая ошибка при отправке в SLK:", err);
+    alert("Сетевая ошибка при отправке данных в SLK. Подробности смотри в консоли.");
+  }
+}
+
+/* ============================================================
    BUSINESS OBJECT TYPES
 ============================================================ */
 const businessObjects = [
