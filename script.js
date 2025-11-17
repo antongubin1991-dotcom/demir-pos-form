@@ -78,36 +78,6 @@ function collectFormData() {
     signature: getFieldValue("signatureData")
   };
 }
-
-async function sendToSLK(payload) {
-  try {
-    if (!SLK_ENDPOINT) {
-      // Пока эндпоинт не настроен — просто лог
-      console.log("JSON для SLK (SLK_ENDPOINT не настроен):", payload);
-      return;
-    }
-
-    const response = await fetch(SLK_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      const text = await response.text();
-      console.error("Ошибка отправки в SLK:", response.status, text);
-      alert("Ошибка отправки данных в SLK. Подробности смотри в консоли.");
-    } else {
-      console.log("Успешно отправлено в SLK");
-    }
-  } catch (err) {
-    console.error("Сетевая ошибка при отправке в SLK:", err);
-    alert("Сетевая ошибка при отправке данных в SLK. Подробности смотри в консоли.");
-  }
-}
-
 /* ============================================================
    BUSINESS OBJECT TYPES
 ============================================================ */
