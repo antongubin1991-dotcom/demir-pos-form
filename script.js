@@ -16,8 +16,6 @@ if (themeToggle) {
     localStorage.setItem("theme", theme);
   });
 }
-
-/* ============================================================
    SLK ENDPOINT (URL ДЛЯ ОТПРАВКИ JSON)
 ============================================================ */
 const SLK_ENDPOINT = ""; // например: "https://slk.goodoo.kg/api/demir-pos-form"
@@ -77,6 +75,35 @@ function collectFormData() {
     // чтобы при желании можно было слать подпись в SLK
     signature: getFieldValue("signatureData")
   };
+}
+
+/* Отправка данных в SLK (или лог в консоль, если эндпоинт не задан) */
+async function sendToSLK(payload) {
+  try {
+    if (!SLK_ENDPOINT) {
+      console.log("JSON для SLK (SLK_ENDPOINT не настроен):", payload);
+      return;
+    }
+
+    const response = await fetch(SLK_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error("Ошибка отправки в SLK:", response.status, text);
+      alert("Ошибка отправки данных в SLK. Подробности смотри в консоли.");
+    } else {
+      console.log("Успешно отправлено в SLK");
+    }
+  } catch (err) {
+    console.error("Сетевая ошибка при отправке в SLK:", err);
+    alert("Сетевая ошибка при отправке в SLK. Подробности смотри в консоли.");
+  }
 }
 /* ============================================================
    BUSINESS OBJECT TYPES
