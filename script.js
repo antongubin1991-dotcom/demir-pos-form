@@ -364,45 +364,31 @@ function fillPdfTemplate() {
 }
 
 // ============================================================
-// PDF EXPORT — CLICK HANDLER
+// PDF EXPORT — CLICK HANDLER (через window.print)
 // ============================================================
 function initPdfExport() {
   const btn = document.getElementById("savePdf");
   if (!btn) return;
 
   btn.addEventListener("click", async () => {
-    // 1) Собрать JSON и отправить/залогировать
+    // 1) Собираем JSON и логируем/отправляем в SLK
     const payload = collectFormData();
     await sendToSLK(payload);
 
-    // 2) Заполнить PDF-шаблон
+    // 2) Заполняем PDF-шаблон данными формы
     fillPdfTemplate();
 
-    // 3) Временно показать pdfDocument для рендера
-    const pdfElement = document.getElementById("pdfDocument");
-    if (!pdfElement) return;
-
-    const prevDisplay = pdfElement.style.display;
-    pdfElement.style.display = "block";
-
-    const opt = {
-      margin:       10,
-      filename:     "demir_pos_form.pdf",
-      image:        { type: "jpeg", quality: 0.95 },
-      html2canvas:  { scale: 2, useCORS: true },
-      jsPDF:        { unit: "pt", format: "a4", orientation: "portrait" }
-    };
-
-    try {
-      await html2pdf().set(opt).from(pdfElement).save();
-    } catch (e) {
-      console.error("Ошибка генерации PDF:", e);
-    } finally {
-      // 4) Снова скрыть
-      pdfElement.style.display = prevDisplay || "none";
-    }
+    // 3) Открываем диалог печати браузера
+    //    (в нём выбираешь "Сохранить как PDF")
+    window.print();
   });
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  initSignaturePad();
+  initMaps();
+  initPdfExport(); // <-- не забыть вызвать
+});
 
 // ============================================================
 // INIT
