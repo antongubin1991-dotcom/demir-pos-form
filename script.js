@@ -419,7 +419,96 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ---------- LEAFLET MAPS ---------- */
   initMap("legalMap", "legalAddress", "legalLat", "legalLon");
   initMap("tradeMap", "tradeAddress", "tradeLat", "tradeLon");
+
+  // 🔹 ИНИЦИАЛИЗАЦИЯ ПОДПИСИ
+  initSignaturePad();
 });
+/* ============================================================
+   SIGNATURE PAD
+============================================================ */
+function initSignaturePad() {
+  const canvas = document.getElementById("signaturePad");
+  const clearBtn = document.getElementById("signatureClear");
+  const hiddenInput = document.getElementById("signatureData");
+
+  if (!canvas || !canvas.getContext) return;
+
+  const ctx = canvas.getContext("2d");
+  let drawing = false;
+
+  ctx.lineWidth = 2;
+  ctx.lineCap = "round";
+  ctx.strokeStyle = "#000";
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const point = e.touches ? e.touches[0] : e;
+    return {
+      x: point.clientX - rect.left,
+      y: point.clientY - rect.top
+    };
+  }
+
+  function startDraw(e) {
+    e.preventDefault();
+    drawing = true;
+    const pos = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+  }
+
+  function moveDraw(e) {
+    if (!drawing) return;
+    e.preventDefault();
+    const pos = getPos(e);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+  }
+
+  function endDraw(e) {
+    if (!drawing) return;
+    e.preventDefault();
+    drawing = false;
+    saveSignature();
+  }
+
+  function saveSignature() {
+    if (!hiddenInput) return;
+
+    const dataUrl = canvas.toDataURL("image/png");
+    hiddenInput.value = dataUrl;
+
+    const pdfImg = document.getElementById("pdf_signature");
+    if (pdfImg && dataUrl) {
+      pdfImg.src = dataUrl;
+    }
+  }
+
+  // pointer / mouse / touch
+  canvas.addEventListener("pointerdown", startDraw);
+  canvas.addEventListener("pointermove", moveDraw);
+  canvas.addEventListener("pointerup", endDraw);
+  canvas.addEventListener("pointerleave", endDraw);
+
+  canvas.addEventListener("mousedown", startDraw);
+  canvas.addEventListener("mousemove", moveDraw);
+  window.addEventListener("mouseup", endDraw);
+
+  canvas.addEventListener("touchstart", startDraw, { passive: false });
+  canvas.addEventListener("touchmove", moveDraw, { passive: false });
+  canvas.addEventListener("touchend", endDraw, { passive: false });
+
+  if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (hiddenInput) hiddenInput.value = "";
+      const pdfImg = document.getElementById("pdf_signature");
+      if (pdfImg) {
+        pdfImg.removeAttribute("src");
+      }
+    });
+  }
+}
 /* ============================================================
    LEAFLET MAP + REVERSE GEOCODING
 ============================================================ */
@@ -491,7 +580,7 @@ function initMap(mapId, addressInputId, latInputId, lonInputId) {
 /* ============================================================
    SIGNATURE PAD
 ============================================================ */
-function initSignaturePad(); {
+function initSignaturePad() {
   var canvas = document.getElementById("signaturePad");
   var clearBtn = document.getElementById("signatureClear");
   var hiddenInput = document.getElementById("signatureData");
