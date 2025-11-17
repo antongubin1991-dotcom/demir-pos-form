@@ -221,15 +221,15 @@ function initSignaturePad() {
 // LEAFLET MAPS (минимальная инициализация, если нужен клик → координаты)
 // ============================================================
 function initMaps() {
-  if (typeof L === "undefined") return; // Leaflet не загружен
-
-  const legalMapEl = document.getElementById("legalMap");
-  const tradeMapEl = document.getElementById("tradeMap");
+  if (typeof L === "undefined") return;
 
   const defaultCenter = [42.8746, 74.5698]; // Бишкек
 
-  if (legalMapEl) {
+  const legalMapEl = document.getElementById("legalMap");
+  if (legalMapEl && !legalMapEl.dataset.mapInited) {
     const map = L.map(legalMapEl).setView(defaultCenter, 13);
+    legalMapEl.dataset.mapInited = "1";
+
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
     }).addTo(map);
@@ -247,8 +247,11 @@ function initMaps() {
     });
   }
 
-  if (tradeMapEl) {
+  const tradeMapEl = document.getElementById("tradeMap");
+  if (tradeMapEl && !tradeMapEl.dataset.mapInited) {
     const map = L.map(tradeMapEl).setView(defaultCenter, 13);
+    tradeMapEl.dataset.mapInited = "1";
+
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
     }).addTo(map);
@@ -266,7 +269,6 @@ function initMaps() {
     });
   }
 }
-
 // ============================================================
 // PDF EXPORT — FILL TEMPLATE
 // ============================================================
