@@ -779,33 +779,6 @@ if (savePdfBtn) {
     }
   });
 }
-
-/* Отправка в SLK */
-async function sendToSLK(payload) {
-  try {
-    // Если эндпоинт не настроен — просто лог
-    if (!SLK_ENDPOINT) {
-      console.log("JSON для SLK (только 1–22 строки):", payload);
-      return;
-    }
-
-    const resp = await fetch(SLK_ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    if (!resp.ok) {
-      const text = await resp.text();
-      console.error("Ошибка отправки в SLK:", resp.status, text);
-      alert("Ошибка отправки данных в SLK. Подробности смотри в консоли.");
-    }
-  } catch (e) {
-    console.error("Сетевая ошибка при отправке в SLK:", e);
-    alert("Сетевая ошибка при отправке данных в SLK. Подробности смотри в консоли.");
-  }
-}
-
    /* ============================================================
    SIMPLE SPELLCHECK MOCK
 ============================================================ */
