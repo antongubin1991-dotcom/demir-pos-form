@@ -387,19 +387,33 @@ textarea.field-input {
 /* ============================================================
    PRINT LAYOUT — ПЕЧАТАЕМ ТОЛЬКО PDF-ДОКУМЕНТ
 ============================================================ */
+/* По умолчанию скрываем шаблон PDF */
+#pdfDocument {
+  display: none;
+}
+
+/* Режим печати */
 @media print {
   body {
-    background: #ffffff !important;
-    color: #000000 !important;
+    margin: 0;
   }
 
-  /* Прячем основное приложение (форму, карты, кнопки) */
-  .app {
-    display: none !important;
+  /* Скрыть всё… */
+  body * {
+    visibility: hidden;
   }
 
-  /* Показываем только pdfDocument */
+  /* …кроме pdfDocument */
+  #pdfDocument, #pdfDocument * {
+    visibility: visible;
+  }
+
+  /* Показать pdfDocument на весь лист */
   #pdfDocument {
     display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
   }
 }
