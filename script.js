@@ -727,10 +727,10 @@ function fillPdfTemplate() {
 const savePdfBtn = document.getElementById("savePdf");
 if (savePdfBtn) {
   savePdfBtn.addEventListener("click", async () => {
-    // 1. Собираем JSON (только нужные строки для SLK)
+    // 1. Собираем JSON для SLK
     const formData = collectFormData();
 
-    // 2. Подготовим подпись для PDF (если есть)
+    // 2. Подпись (если есть)
     const sigDataEl = document.getElementById("signatureData");
     const sigData = sigDataEl ? sigDataEl.value : "";
     const pdfSigImg = document.getElementById("pdf_signature");
@@ -738,23 +738,21 @@ if (savePdfBtn) {
 
     if (sigBlock) {
       if (sigData && pdfSigImg) {
-        // есть подпись -> показываем блок и подставляем картинку
         sigBlock.style.display = "block";
         pdfSigImg.src = sigData;
       } else {
-        // нет подписи -> полностью прячем блок, чтобы html2canvas не пытался отрисовать "битую" картинку
         sigBlock.style.display = "none";
         if (pdfSigImg) pdfSigImg.removeAttribute("src");
       }
     }
 
-    // 3. Отправляем в SLK (или просто логируем)
+    // 3. Отправляем JSON в SLK (или логируем)
     await sendToSLK(formData);
 
-    // 4. Заполняем PDF-шаблон (все pdf_* поля)
+    // 4. Заполняем PDF-шаблон (pdf_* поля)
     fillPdfTemplate();
 
-    // 5. Генерация PDF через html2pdf
+    // 5. Берём оригинальный шаблон
     const pdfDoc = document.getElementById("pdfDocument");
     if (!pdfDoc) {
       alert("PDF-шаблон не найден (pdfDocument).");
@@ -765,9 +763,19 @@ if (savePdfBtn) {
       return;
     }
 
-    // Временно показываем блок для корректного рендера
-    const prevDisplay = pdfDoc.style.display;
-    pdfDoc.style.display = "block";
+    // --- ВАЖНО: создаём КЛОН, который реально виден ---
+    const clone = pdfDoc.cloneNode(true);
+    clone.id = "pdfDocumentClone";
+    clone.style.display = "block";
+    clone.style.position = "absolute";
+    clone.style.left = "-9999px";
+    clone.style.top = "0";
+    clone.style.background = "#ffffff";
+    clone.style.color = "#000000";
+    clone.style.width = "800px";
+    clone.style.minHeight = "1100px";
+
+    document.body.appendChild(clone);
 
     try {
       await html2pdf()
@@ -778,19 +786,20 @@ if (savePdfBtn) {
             scale: 2,
             useCORS: true,
             allowTaint: true,
-            logging: false, // можно включить true для отладки
+            logging: false,
             backgroundColor: "#ffffff"
           },
           jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
         })
-        .from(pdfDoc)
+        .from(clone)
         .save();
     } catch (err) {
       console.error("Ошибка html2pdf/html2canvas:", err);
       alert("Ошибка при формировании PDF. Подробности смотри в консоли.");
     } finally {
-      pdfDoc.style.display = prevDisplay || "none";
-      // после генерации можно вернуть блок подписи назад
+      // Удаляем клон после рендера
+      document.body.removeChild(clone);
+      // Возвращаем блок подписи, если мы его скрывали
       if (sigBlock) sigBlock.style.display = "block";
     }
   });
