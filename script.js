@@ -827,89 +827,73 @@ function fillPdfTemplate() {
 const savePdfBtn = document.getElementById("savePdf");
 if (savePdfBtn) {
   savePdfBtn.addEventListener("click", async () => {
-    // 1. Собираем JSON
+    // 1. Собираем JSON (только нужные строки для SLK)
     const formData = collectFormData();
-     /* ============================================================
-   SLK JSON HELPERS (ТОЛЬКО 1–22 ПУНКТЫ ЗАЯВЛЕНИЯ)
-============================================================ */
-function getFieldValue(id, maxLen = 255) {
-  const el = document.getElementById(id);
-  if (!el) return "";
-  const val = (el.value || "").trim();
-  return val.length > maxLen ? val.slice(0, maxLen) : val;
-}
 
-function collectFormData() {
-  return {
-    // 1) Наименование субъекта
-    subjectName: getFieldValue("companyName", 150),
+    // 2. Подготовим подпись для PDF (если есть)
+    const sigDataEl = document.getElementById("signatureData");
+    const sigData = sigDataEl ? sigDataEl.value : "";
+    const pdfSigImg = document.getElementById("pdf_signature");
+    const sigBlock = document.querySelector(".pdf-signature-block");
 
-    // 2) ИНН субъекта
-    subjectInn: getFieldValue("companyBin", 14),
+    if (sigBlock) {
+      if (sigData && pdfSigImg) {
+        // есть подпись -> показываем блок и подставляем картинку
+        sigBlock.style.display = "block";
+        pdfSigImg.src = sigData;
+      } else {
+        // нет подписи -> полностью прячем блок, чтобы html2canvas не пытался отрисовать "битую" картинку
+        sigBlock.style.display = "none";
+        if (pdfSigImg) pdfSigImg.removeAttribute("src");
+      }
+    }
 
-    // 3) Юридический адрес субъекта
-    subjectLegalAddress: getFieldValue("legalAddress", 300),
+    // 3. Отправляем в SLK (или просто логируем)
+    await sendToSLK(formData);
 
-    // 4) Место налоговой регистрации
-    taxRegistrationPlace: getFieldValue("taxRegistrationPlace", 100),
+    // 4. Заполняем PDF-шаблон (все pdf_* поля)
+    fillPdfTemplate();
 
-    // 5) Контактный номер телефона субъекта
-    subjectPhone: getFieldValue("phone", 30),
+    // 5. Генерация PDF через html2pdf
+    const pdfDoc = document.getElementById("pdfDocument");
+    if (!pdfDoc) {
+      alert("PDF-шаблон не найден (pdfDocument).");
+      return;
+    }
+    if (typeof html2pdf === "undefined") {
+      alert("Модуль html2pdf не загружен. Проверьте подключение html2pdf.bundle.min.js.");
+      return;
+    }
 
-    // 6) ПИН руководителя
-    directorPin: getFieldValue("companyHeadInn", 14),
+    // Временно показываем блок для корректного рендера
+    const prevDisplay = pdfDoc.style.display;
+    pdfDoc.style.display = "block";
 
-    // 7) ФИО руководителя
-    directorFio: getFieldValue("companyHead", 150),
-
-    // 8) Адрес объекта предпринимательства
-    businessObjectAddress: getFieldValue("tradeAddress", 300),
-
-    // 9) Статус по регистрации НДС
-    vatStatus: getFieldValue("vatStatus", 50),
-
-    // 10) Налоговые ставки (ставка НДС/НСП нал., безнал.)
-    taxRates: getFieldValue("taxRates", 100),
-
-    // 11) Наименование объекта
-    objectName: getFieldValue("objectName", 150),
-
-    // 12) Объект предпринимательства
-    businessObject: getFieldValue("businessObjectType", 150),
-
-    // 13) Предмет расчета
-    paymentSubject: getFieldValue("paymentSubject", 100),
-
-    // 14) Вид деятельности
-    activityType: getFieldValue("activityType", 200),
-
-    // 15) Заводской номер ККМ/номер версии ККМ
-    kkmSerial: getFieldValue("kkmSerial", 50),
-
-    // 16) Модель ККМ
-    kkmModel: getFieldValue("posModel", 50),
-
-    // 17) РНМ ККМ
-    kkmRegNumber: getFieldValue("kkmRegNumber", 50),
-
-    // 18) ФН
-    fnNumber: getFieldValue("fnNumber", 50),
-
-    // 19) Причина перерегистрации и снятия
-    registrationReason: getFieldValue("registrationReason", 100),
-
-    // 20) Электронная почта
-    email: getFieldValue("email", 100),
-
-    // 21) Почтовый индекс, широта и долгота
-    postalCode: getFieldValue("postalCode", 20),
-    latitude: getFieldValue("latitude", 20),
-    longitude: getFieldValue("longitude", 20),
-
-    // 22) Данные lk.salyk.kg
-    slkLogin: getFieldValue("slkLogin", 100),
-    slkPassword: getFieldValue("slkPassword", 100)
-  };
+    try {
+      await html2pdf()
+        .set({
+          margin: 10,
+          filename: "Demir_POS_Form.pdf",
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            logging: false, // можно включить true для отладки
+            backgroundColor: "#ffffff"
+          },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+        })
+        .from(pdfDoc)
+        .save();
+    } catch (err) {
+      console.error("Ошибка html2pdf/html2canvas:", err);
+      alert("Ошибка при формировании PDF. Подробности смотри в консоли.");
+    } finally {
+      pdfDoc.style.display = prevDisplay || "none";
+      // после генерации можно вернуть блок подписи назад
+      if (sigBlock) sigBlock.style.display = "block";
+    }
+  });
 }
 
 /* Отправка в SLK */
