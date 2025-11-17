@@ -823,6 +823,63 @@ function initSignaturePadForPdf() {
     });
   }
 }
+// ============================================================
+// ВАЛИДАЦИЯ ОБЯЗАТЕЛЬНЫХ ПОЛЕЙ ДЛЯ PDF
+// (комиссии и скидка НЕ обязательные)
+// ============================================================
+
+const pdfRequiredFieldLabels = {
+  companyName: "Наименование юридического лица / ИП",
+  companyBin: "ИНН/БИН",
+  companyHead: "ФИО руководителя",
+  manager: "Сотрудник, привлекший клиента",
+  phone: "Контактный телефон",
+  email: "E-mail",
+  legalAddress: "Юридический адрес",
+  tradeAddress: "Адрес торговой точки",
+  businessObjectType: "Тип объекта бизнеса",
+  activityType: "Вид деятельности",
+  posModel: "Модель POS-терминала",
+  district: "Район (по месту торговли)",
+  ugnsCode: "Код УГНС",
+  responsibleBranches: "Ответственный филиал",
+  description: "Комментарий / описание"
+  // Если хочешь, чтобы подпись была ОБЯЗАТЕЛЬНОЙ:
+  // signatureData: "Подпись клиента"
+};
+
+function clearPdfValidationErrors() {
+  document.querySelectorAll(".field-error").forEach((el) => {
+    el.classList.remove("field-error");
+  });
+}
+
+function validatePdfRequiredFields() {
+  clearPdfValidationErrors();
+
+  const missing = [];
+
+  Object.keys(pdfRequiredFieldLabels).forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    const value = (el.value || el.textContent || "").trim();
+    if (!value) {
+      missing.push(pdfRequiredFieldLabels[id]);
+      el.classList.add("field-error");
+    }
+  });
+
+  if (missing.length > 0) {
+    alert(
+      "Пожалуйста, заполните обязательные поля:\n\n- " +
+      missing.join("\n- ")
+    );
+    return false;
+  }
+
+  return true;
+}
 
 // Обработчик кнопки "Сохранить PDF"
 function initPdfExportForPrint() {
@@ -830,6 +887,11 @@ function initPdfExportForPrint() {
   if (!btn) return;
 
   btn.addEventListener("click", async () => {
+    // 👉 БЛОКИРУЕМ сохранение, если есть незаполненные обязательные поля
+    if (!validatePdfRequiredFields()) {
+      return;
+    }
+
     const payload = collectPdfFormData();
     await sendPdfJsonToSLK(payload);
 
