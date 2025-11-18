@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-  <!-- html2pdf для PDF + логика -->
+  <!-- html2pdf для PDF (сейчас не используется, можно убрать при желании) -->
   <script defer src="translations.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script defer src="script.js"></script>
@@ -369,42 +369,41 @@
 
           <div class="signature-box">
             <canvas id="signaturePad" width="800" height="200"></canvas>
-            </div>
-          
-            <div class="signature-actions">
-              <button type="button" id="signatureClear" class="btn secondary">
-                Очистить подпись
-              </button>
-            </div>
-
-            <!-- base64 подпись для JSON / SLK -->
-            <input type="hidden" id="signatureData" name="signatureData" />
           </div>
+        
+          <div class="signature-actions">
+            <button type="button" id="signatureClear" class="btn secondary">
+              Очистить подпись
+            </button>
+          </div>
+
+          <!-- base64 подпись для JSON / SLK -->
+          <input type="hidden" id="signatureData" name="signatureData" />
         </section>
 
-       <!-- 7. КОММЕНТАРИЙ -->
-<section class="section">
-  <h2 class="section-title">Комментарий</h2>
+        <!-- 7. КОММЕНТАРИЙ -->
+        <section class="section">
+          <h2 class="section-title">Комментарий</h2>
 
-  <!-- Логин/пароль от lk.salyk.kg (в одной строке) -->
-  <div class="grid two">
-    <label class="field">
-      <span class="field-label">Логин от lk.salyk.kg (e-mail)</span>
-      <input id="lkLogin" class="field-input" type="email" />
-    </label>
+          <!-- Логин/пароль от lk.salyk.kg (в одной строке) -->
+          <div class="grid two">
+            <label class="field">
+              <span class="field-label">Логин от lk.salyk.kg (e-mail)</span>
+              <input id="lkLogin" class="field-input" type="email" />
+            </label>
 
-    <label class="field">
-      <span class="field-label">Пароль от lk.salyk.kg</span>
-      <input id="lkPassword" class="field-input" type="text" />
-    </label>
-  </div>
+            <label class="field">
+              <span class="field-label">Пароль от lk.salyk.kg</span>
+              <input id="lkPassword" class="field-input" type="text" />
+            </label>
+          </div>
 
-  <!-- Комментарий -->
-  <label class="field">
-    <span class="field-label" data-key="description">Комментарий</span>
-    <textarea id="description" class="field-input" rows="3"></textarea>
-  </label>
-</section>
+          <!-- Комментарий -->
+          <label class="field">
+            <span class="field-label" data-key="description">Комментарий</span>
+            <textarea id="description" class="field-input" rows="3"></textarea>
+          </label>
+        </section>
         
         <!-- КНОПКА PDF -->
         <section class="section">
@@ -417,7 +416,7 @@
     <!-- ============================================================
          ОФИЦИАЛЬНЫЙ PDF-ДОКУМЕНТ (СКРЫТЫЙ)
     ============================================================ -->
-    <div id="pdfDocument" style="display:none;"
+    <div id="pdfDocument"
          style="
            display:none;
            font-family:'Times New Roman',serif;
@@ -578,6 +577,7 @@
           <td id="pdf_discount_10" style="border:1px solid #000; padding:6px; text-align:center;"></td>
         </tr>
       </table>
+
       <!-- ЛОГИН/ПАРОЛЬ ОТ LK.SALYK.KG -->
       <h3 style="margin:12px 0 6px 0; font-size:12pt;">Логин/пароль от lk.salyk.kg</h3>
       <div style="display:flex; gap:16px; margin-bottom:12px;">
@@ -601,11 +601,9 @@
       <!-- ПОДПИСЬ КЛИЕНТА -->
       <div class="pdf-signature-block">
         <div>Подпись клиента:</div>
-        <div class="pdf-signature-line"></div>
-      </div>
-          _______________________________
+        <div class="pdf-signature-line">
+          <img id="pdf_signature" style="max-height:60px; margin-top:4px;" />
         </div>
-        <img id="pdf_signature" style="max-width: 220px; margin-top: 8px;" />
       </div>
 
       <!-- ПОДПИСИ РУКОВОДИТЕЛЯ И СОТРУДНИКА БАНКА -->
