@@ -37,7 +37,8 @@ function collectFormData() {
       bin:         getFieldValue("companyBin"),
       head:        getFieldValue("companyHead"),
       manager:     getFieldValue("manager"),
-      description: getFieldValue("description")
+      description: getFieldValue("description"),
+      lkCredentials: getFieldValue("lkCredentials")
     },
     contacts: {
       phone: getFieldValue("phone"),
@@ -374,6 +375,7 @@ const autoSaveFields = [
   "businessObjectType", "activityType",
   "legalAddress", "legalLat", "legalLon",
   "tradeAddress", "tradeLat", "tradeLon",
+  "lkCredentials",
   "description"
 ];
 
@@ -595,6 +597,7 @@ function collectPdfFormData() {
       head: getPdfFieldValue("companyHead"),
       manager: getPdfFieldValue("manager"),
       description: getPdfFieldValue("description"),
+      lkCredentials: getPdfFieldValue("lkCredentials"),
     },
     contacts: {
       phone: getPdfFieldValue("phone"),
@@ -669,6 +672,7 @@ function fillPdfTemplateForPrint() {
     ["businessObjectType", "pdf_businessObjectType"],
     ["activityType", "pdf_activityType"],
     ["posModel", "pdf_posModel"],
+    ["lkCredentials", "pdf_lkCredentials"],
     ["description", "pdf_description"],
   ];
 
