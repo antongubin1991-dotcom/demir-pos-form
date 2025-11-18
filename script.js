@@ -764,6 +764,39 @@ function initSignaturePadForPdf() {
   let lastX = 0;
   let lastY = 0;
 
+  // Подгоняем реальное разрешение canvas под CSS-размер и DPI
+  function resizeCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+
+    // Делаем так, чтобы координаты были в CSS-пикселях
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  resizeCanvas();
+  window.addEventListener("resize", resizeCanvas);
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    let clientX, clientY;
+
+    if (e.touches && e.touches.length > 0) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top,
+    };
+  }
+
   function startDraw(x, y) {
     drawing = true;
     lastX = x;
@@ -794,28 +827,34 @@ function initSignaturePadForPdf() {
 
   // Мышь
   canvas.addEventListener("mousedown", (e) => {
-    const rect = canvas.getBoundingClientRect();
-    startDraw(e.clientX - rect.left, e.clientY - rect.top);
+    e.preventDefault();
+    const { x, y } = getPos(e);
+    startDraw(x, y);
   });
+
   canvas.addEventListener("mousemove", (e) => {
-    const rect = canvas.getBoundingClientRect();
-    drawLine(e.clientX - rect.left, e.clientY - rect.top);
+    if (!drawing) return;
+    const { x, y } = getPos(e);
+    drawLine(x, y);
   });
-  window.addEventListener("mouseup", stopDraw);
+
+  window.addEventListener("mouseup", () => {
+    stopDraw();
+  });
 
   // Тач
   canvas.addEventListener("touchstart", (e) => {
     e.preventDefault();
-    const rect = canvas.getBoundingClientRect();
-    const t = e.touches[0];
-    startDraw(t.clientX - rect.left, t.clientY - rect.top);
+    const { x, y } = getPos(e);
+    startDraw(x, y);
   });
+
   canvas.addEventListener("touchmove", (e) => {
     e.preventDefault();
-    const rect = canvas.getBoundingClientRect();
-    const t = e.touches[0];
-    drawLine(t.clientX - rect.left, t.clientY - rect.top);
+    const { x, y } = getPos(e);
+    drawLine(x, y);
   });
+
   canvas.addEventListener("touchend", (e) => {
     e.preventDefault();
     stopDraw();
