@@ -38,7 +38,8 @@ function collectFormData() {
       head:        getFieldValue("companyHead"),
       manager:     getFieldValue("manager"),
       description: getFieldValue("description"),
-      lkCredentials: getFieldValue("lkCredentials")
+      lkLogin:     getFieldValue("lkLogin"),     // ← НОВОЕ
+      lkPassword:  getFieldValue("lkPassword"),
     },
     contacts: {
       phone: getFieldValue("phone"),
@@ -375,7 +376,7 @@ const autoSaveFields = [
   "businessObjectType", "activityType",
   "legalAddress", "legalLat", "legalLon",
   "tradeAddress", "tradeLat", "tradeLon",
-  "lkCredentials",
+  "lkLogin", "lkPassword",
   "description"
 ];
 
@@ -597,7 +598,8 @@ function collectPdfFormData() {
       head: getPdfFieldValue("companyHead"),
       manager: getPdfFieldValue("manager"),
       description: getPdfFieldValue("description"),
-      lkCredentials: getPdfFieldValue("lkCredentials"),
+      lkLogin:     getPdfFieldValue("lkLogin"),     // ← НОВОЕ
+      lkPassword:  getPdfFieldValue("lkPassword"),  // ← НОВОЕ,
     },
     contacts: {
       phone: getPdfFieldValue("phone"),
@@ -672,7 +674,8 @@ function fillPdfTemplateForPrint() {
     ["businessObjectType", "pdf_businessObjectType"],
     ["activityType", "pdf_activityType"],
     ["posModel", "pdf_posModel"],
-    ["lkCredentials", "pdf_lkCredentials"],
+    ["lkLogin", "pdf_lkLogin"],       // ← НОВОЕ
+    ["lkPassword", "pdf_lkPassword"], // ← НОВОЕ
     ["description", "pdf_description"],
   ];
 
@@ -847,6 +850,8 @@ const pdfRequiredFieldLabels = {
   district: "Район (по месту торговли)",
   ugnsCode: "Код УГНС",
   responsibleBranches: "Ответственный филиал",
+  lkLogin: "Логин от lk.salyk.kg (e-mail)",   // ← НОВОЕ
+  lkPassword: "Пароль от lk.salyk.kg",        // ← НОВОЕ
   description: "Комментарий / описание"
   // Если хочешь, чтобы подпись была ОБЯЗАТЕЛЬНОЙ:
   // signatureData: "Подпись клиента"
