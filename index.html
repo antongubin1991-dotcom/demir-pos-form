@@ -385,11 +385,18 @@
 <section class="section">
   <h2 class="section-title">Комментарий</h2>
 
-  <!-- Логин/пароль от lk.salyk.kg -->
-  <label class="field">
-    <span class="field-label">Логин/пароль от lk.salyk.kg</span>
-    <input id="lkCredentials" class="field-input" type="text" />
-  </label>
+  <!-- Логин/пароль от lk.salyk.kg (в одной строке) -->
+  <div class="grid two">
+    <label class="field">
+      <span class="field-label">Логин от lk.salyk.kg (e-mail)</span>
+      <input id="lkLogin" class="field-input" type="email" />
+    </label>
+
+    <label class="field">
+      <span class="field-label">Пароль от lk.salyk.kg</span>
+      <input id="lkPassword" class="field-input" type="text" />
+    </label>
+  </div>
 
   <!-- Комментарий -->
   <label class="field">
@@ -572,8 +579,19 @@
       </table>
       <!-- ЛОГИН/ПАРОЛЬ ОТ LK.SALYK.KG -->
       <h3 style="margin:12px 0 6px 0; font-size:12pt;">Логин/пароль от lk.salyk.kg</h3>
-      <div id="pdf_lkCredentials"
-           style="min-height:40px; border-bottom:1px solid #000; margin-bottom:12px;"></div>
+      <div style="display:flex; gap:16px; margin-bottom:12px;">
+        <div style="flex:1;">
+          <div style="font-size:10pt; margin-bottom:2px;">Логин (e-mail)</div>
+          <div id="pdf_lkLogin"
+               style="min-height:24px; border-bottom:1px solid #000;"></div>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:10pt; margin-bottom:2px;">Пароль</div>
+          <div id="pdf_lkPassword"
+               style="min-height:24px; border-bottom:1px solid #000;"></div>
+        </div>
+      </div>
+
       <!-- КОММЕНТАРИЙ -->
       <h3 style="margin:12px 0 6px 0; font-size:12pt;">Комментарий</h3>
       <div id="pdf_description"
@@ -584,16 +602,6 @@
         <div>Подпись клиента:</div>
         <div class="pdf-signature-line"></div>
       </div>
-
-
-      <!-- КОММЕНТАРИЙ -->
-      <h3 style="margin:12px 0 6px 0; font-size:12pt;">Комментарий</h3>
-      <div id="pdf_description" style="min-height:40px; border-bottom:1px solid #000; margin-bottom:24px;"></div>
-
-      <!-- ПОДПИСЬ КЛИЕНТА -->
-      <div class="pdf-signature-block">
-        <div>Подпись клиента:</div>
-        <div class="pdf-signature-line">
           _______________________________
         </div>
         <img id="pdf_signature" style="max-width: 220px; margin-top: 8px;" />
