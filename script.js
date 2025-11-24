@@ -1055,7 +1055,62 @@ function validatePdfRequiredFields() {
 
   return true;
 }
+// ============================================================
+// ОЧИСТКА ФОРМЫ
+// ============================================================
+function clearFormFields() {
+  // убираем подсветку ошибок
+  clearPdfValidationErrors();
 
+  // чистим все поля, которые сохраняем в localStorage
+  autoSaveFields.forEach((id) => {
+    localStorage.removeItem(id);
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    if (el.tagName === "SELECT") {
+      el.selectedIndex = 0;
+    } else if (el.type === "checkbox" || el.type === "radio") {
+      el.checked = false;
+    } else {
+      el.value = "";
+    }
+  });
+
+  // чекбоксы типов заявок / карт и т.п.
+  document
+    .querySelectorAll(".card input[type='checkbox'], .card input[type='radio']")
+    .forEach((el) => (el.checked = false));
+
+  // поля, которых нет в autoSaveFields, но их тоже полезно сбросить
+  [
+    "contractNumber",
+    "contractDate",
+    "applicationNumber",
+    "applicationDate",
+    "mobilePhone",
+    "workFrom",
+    "workTo"
+  ].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+
+  // ответственное отделение
+  const resp = document.getElementById("responsibleBranches");
+  if (resp) resp.selectedIndex = 0;
+
+  // подпись
+  const canvas = document.getElementById("signaturePad");
+  const hiddenInput = document.getElementById("signatureData");
+  const pdfImg = document.getElementById("pdf_signature");
+  if (canvas && canvas.getContext) {
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  if (hiddenInput) hiddenInput.value = "";
+  if (pdfImg) pdfImg.removeAttribute("src");
+}
 // Обработчик кнопки "Сохранить PDF"
 function initPdfExportForPrint() {
   const btn = document.getElementById("savePdf");
