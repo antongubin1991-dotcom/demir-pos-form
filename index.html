@@ -36,11 +36,14 @@
           <option value="dark">Dark</option>
         </select>
 
-        <select id="langSelect" class="field-input">
-          <option value="ru">RU</option>
-          <option value="kg">KG</option>
-          <option value="en">EN</option>
-        </select>
+        <div class="lang-switch">
+  <button id="langBtn" class="lang-btn">RU ▼</button>
+  <div id="langMenu" class="lang-menu hidden">
+    <div data-lang="ru">RU</div>
+    <div data-lang="kg">KG</div>
+    <div data-lang="en">EN</div>
+  </div>
+</div>
       </div>
     </header>
 
