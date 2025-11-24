@@ -448,6 +448,41 @@ const districtsData = [
 ];
 
 /* ============================================================
+   LANGUAGE SWITCH
+============================================================ */
+const langSelect = document.getElementById("langSelect");
+
+if (langSelect) {
+  const savedLang = localStorage.getItem("lang") || "ru";
+  langSelect.value = savedLang;
+
+  function applyTranslations(lang) {
+    document.querySelectorAll("[data-key]").forEach((el) => {
+      if (["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName)) return;
+      if (el.classList.contains("no-translate")) return;
+
+      const key = el.getAttribute("data-key");
+      const tr = window.translations?.[lang]?.[key];
+      if (tr) el.textContent = tr;
+    });
+
+    document.querySelectorAll("[data-placeholder]").forEach((el) => {
+      const key = el.getAttribute("data-placeholder");
+      const tr = window.translations?.[lang]?.[key];
+      if (tr) el.placeholder = tr;
+    });
+
+    localStorage.setItem("lang", lang);
+  }
+
+  applyTranslations(savedLang);
+
+  langSelect.addEventListener("change", () => {
+    applyTranslations(langSelect.value);
+  });
+}
+
+/* ============================================================
    AUTO-SAVE FIELDS
 ============================================================ */
 const autoSaveFields = [
@@ -505,69 +540,10 @@ function updateDistrictFromAddress(addressText) {
 /* ============================================================
    DOMContentLoaded INITIALIZATION
 ============================================================ */
-/* ============================================================
-   DOMContentLoaded INITIALIZATION
-============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
   // Ответственный филиал
   initResponsibleBranchesSelect();
 
-  // Переключатель языка (кнопка + меню)
-  const btn = document.getElementById("langBtn");
-  const menu = document.getElementById("langMenu");
-
-  function applyTranslations(lang) {
-    document.querySelectorAll("[data-key]").forEach((el) => {
-      if (["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName)) return;
-      if (el.classList.contains("no-translate")) return;
-
-      const key = el.getAttribute("data-key");
-      const tr = window.translations?.[lang]?.[key];
-      if (tr) el.textContent = tr;
-    });
-
-    document.querySelectorAll("[data-placeholder]").forEach((el) => {
-      const key = el.getAttribute("data-placeholder");
-      const tr = window.translations?.[lang]?.[key];
-      if (tr) el.placeholder = tr;
-    });
-
-    localStorage.setItem("lang", lang);
-  }
-
-  if (btn && menu) {
-    btn.addEventListener("click", () => {
-      menu.classList.toggle("hidden");
-    });
-
-    menu.querySelectorAll("div").forEach(item => {
-      item.addEventListener("click", () => {
-        const lang = item.dataset.lang;
-        localStorage.setItem("lang", lang);
-        btn.textContent = lang.toUpperCase() + " ▼";
-        applyTranslations(lang);
-        menu.classList.add("hidden");
-      });
-    });
-
-    // стартовое значение языка
-    const savedLang = localStorage.getItem("lang") || "ru";
-    btn.textContent = savedLang.toUpperCase() + " ▼";
-    applyTranslations(savedLang);
-  }
-
-  // здесь ниже должны идти остальные init:
-  // initBusinessSelects()
-  // initActivitySelects()
-  // initDistrictSelect()
-  // initPosModelSelect()
-  // initAutoDistrictDetect()
-  // initMap(...)
-  // initCbsIntegration()
-  // initSignaturePadForPdf()
-  // initPdfExportForPrint()
-  // initClearForm()
-});
   /* ---------- BUSINESS SELECTS ---------- */
   const bo = document.getElementById("businessObjectType");
   const at = document.getElementById("activityType");
@@ -651,66 +627,31 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 // Красивое форматирование адреса из ответа Nominatim
 function formatNominatimAddress(data) {
-  if (!data || !data.address) {
-    return (data && data.display_name) ? data.display_name : "";
-  }
+  if (!data || !data.address) return data?.display_name || "";
 
   const a = data.address;
   const parts = [];
 
-  // ---------- ГОРОД ----------
-  const rawCity = a.city || a.town || a.village;
-  if (rawCity) {
-    // убираем любое "город", "г." в начале, нормализуем к "г. ..."
-    let cityBase = rawCity.replace(/^\s*(г\.|город)\s+/i, "").trim();
-    if (cityBase) {
-      parts.push("г. " + cityBase);
-    }
-  }
+  const city = a.city || a.town || a.village;
+  if (city) parts.push(`г. ${city}`);
 
-  // ---------- РАЙОН ----------
-  if (a.city_district) {
-    parts.push(a.city_district);
-  }
+  // район
+  if (a.city_district) parts.push(a.city_district);
 
-  // ---------- Ж/м, микрорайон и т.п. ----------
-  if (a.suburb) {
-    parts.push(a.suburb);
-  }
+  // ж/м, микрорайон и т.п.
+  if (a.suburb) parts.push(a.suburb);
 
-  // ---------- УЛИЦА + ДОМ ----------
+  // улица + дом
   const streetParts = [];
-  if (a.road) {
-    let roadBase = a.road.trim();
+  if (a.road) streetParts.push(`ул. ${a.road}`);
+  if (a.house_number) streetParts.push(a.house_number);
+  if (streetParts.length) parts.push(streetParts.join(", "));
 
-    // убираем "ул." / "улица" в начале
-    roadBase = roadBase.replace(/^\s*(ул\.?|улица)\s+/i, "");
-    // убираем "улица" в конце
-    roadBase = roadBase.replace(/\s+улица$/i, "");
-    roadBase = roadBase.trim();
+  // индекс
+  if (a.postcode) parts.push(a.postcode);
 
-    if (roadBase) {
-      streetParts.push("ул. " + roadBase);
-    }
-  }
-
-  if (a.house_number) {
-    streetParts.push(a.house_number);
-  }
-
-  if (streetParts.length) {
-    parts.push(streetParts.join(", "));
-  }
-
-  // ---------- ИНДЕКС ----------
-  if (a.postcode) {
-    parts.push(a.postcode);
-  }
-
-  // ---------- СТРАНА ----------
-  if (a.country) {
-    parts.push(a.country);
-  }
+  // страна
+  if (a.country) parts.push(a.country);
 
   return parts.join(", ");
 }
@@ -729,6 +670,77 @@ function formatNominatimAddress(data) {
     });
   }
 });
+/* ============================================================
+   LEAFLET MAP + REVERSE GEOCODING
+============================================================ */
+function initMap(mapId, addressInputId, latInputId, lonInputId) {
+  const mapDiv = document.getElementById(mapId);
+  if (!mapDiv || typeof L === "undefined") return;
+
+  const defaultLat = 42.8746;
+  const defaultLon = 74.5698;
+
+  const savedLat = parseFloat(localStorage.getItem(latInputId) || defaultLat);
+  const savedLon = parseFloat(localStorage.getItem(lonInputId) || defaultLon);
+
+  const map = L.map(mapId).setView([savedLat, savedLon], 13);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: "© OpenStreetMap"
+  }).addTo(map);
+
+  const marker = L.marker([savedLat, savedLon], { draggable: true }).addTo(map);
+
+  function updateFields(lat, lon, doReverse = true) {
+    const latEl = document.getElementById(latInputId);
+    const lonEl = document.getElementById(lonInputId);
+    const addrEl = document.getElementById(addressInputId);
+
+    if (latEl) {
+      latEl.value = lat.toFixed(6);
+      localStorage.setItem(latInputId, lat.toFixed(6));
+    }
+    if (lonEl) {
+      lonEl.value = lon.toFixed(6);
+      localStorage.setItem(lonInputId, lon.toFixed(6));
+    }
+    if (doReverse && addrEl) {
+  fetch(
+    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ru`
+  )
+    .then((r) => r.json())
+    .then((data) => {
+      if (!data) return;
+
+      const pretty = formatNominatimAddress(data);
+      const text = pretty || data.display_name || "";
+
+      if (text) {
+        addrEl.value = text;
+        localStorage.setItem(addressInputId, text);
+
+        if (addressInputId === "tradeAddress") {
+          updateDistrictFromAddress(text);
+        }
+      }
+    })
+    .catch(() => {});
+}
+
+  // начальное состояние
+  updateFields(savedLat, savedLon, true);
+
+  marker.on("dragend", (e) => {
+    const pos = e.target.getLatLng();
+    updateFields(pos.lat, pos.lng, true);
+  });
+
+  map.on("click", (e) => {
+    marker.setLatLng(e.latlng);
+    updateFields(e.latlng.lat, e.latlng.lng, true);
+  });
+}
 
 // ============================================================
 // PDF + подпись — независимый блок (не ломает старый код)
@@ -745,14 +757,13 @@ function getPdfFieldValue(id) {
 function collectPdfFormData() {
   return {
     company: {
-      name:        getPdfFieldValue("companyName"),
-      bin:         getPdfFieldValue("companyBin"),
-      head:        getPdfFieldValue("companyHead"),
-      manager:     getPdfFieldValue("manager"),
+      name: getPdfFieldValue("companyName"),
+      bin: getPdfFieldValue("companyBin"),
+      head: getPdfFieldValue("companyHead"),
+      manager: getPdfFieldValue("manager"),
       description: getPdfFieldValue("description"),
-      lkLogin:     getPdfFieldValue("lkLogin"),
-      lkPassword:  getPdfFieldValue("lkPassword"),
-      clientStatus:getPdfFieldValue("clientStatus"),
+      lkLogin:     getPdfFieldValue("lkLogin"),     // ← НОВОЕ
+      lkPassword:  getPdfFieldValue("lkPassword"),  // ← НОВОЕ,
     },
     contacts: {
       phone: getPdfFieldValue("phone"),
@@ -761,28 +772,28 @@ function collectPdfFormData() {
     pos: {
       model: getPdfFieldValue("posModel"),
       commissions: {
-        comm_visa_dkb:     getPdfFieldValue("comm_visa_dkb"),
-        comm_bonus_dkb:    getPdfFieldValue("comm_bonus_dkb"),
-        comm_visa_other:   getPdfFieldValue("comm_visa_other"),
-        comm_elcart_dkb:   getPdfFieldValue("comm_elcart_dkb"),
+        comm_visa_dkb: getPdfFieldValue("comm_visa_dkb"),
+        comm_bonus_dkb: getPdfFieldValue("comm_bonus_dkb"),
+        comm_visa_other: getPdfFieldValue("comm_visa_other"),
+        comm_elcart_dkb: getPdfFieldValue("comm_elcart_dkb"),
         comm_elcart_other: getPdfFieldValue("comm_elcart_other"),
-        comm_mc_dkb:       getPdfFieldValue("comm_mc_dkb"),
-        comm_mc_other:     getPdfFieldValue("comm_mc_other"),
+        comm_mc_dkb: getPdfFieldValue("comm_mc_dkb"),
+        comm_mc_other: getPdfFieldValue("comm_mc_other"),
       },
       discount_10: getPdfFieldValue("discount_10"),
     },
     region: {
-      district:     getPdfFieldValue("district"),
-      ugnsCode:     getPdfFieldValue("ugnsCode"),
+      district: getPdfFieldValue("district"),
+      ugnsCode: getPdfFieldValue("ugnsCode"),
       legalAddress: getPdfFieldValue("legalAddress"),
-      legalLat:     getPdfFieldValue("legalLat"),
-      legalLon:     getPdfFieldValue("legalLon"),
+      legalLat: getPdfFieldValue("legalLat"),
+      legalLon: getPdfFieldValue("legalLon"),
       tradeAddress: getPdfFieldValue("tradeAddress"),
-      tradeLat:     getPdfFieldValue("tradeLat"),
-      tradeLon:     getPdfFieldValue("tradeLon"),
+      tradeLat: getPdfFieldValue("tradeLat"),
+      tradeLon: getPdfFieldValue("tradeLon"),
     },
     business: {
-      objectType:   getPdfFieldValue("businessObjectType"),
+      objectType: getPdfFieldValue("businessObjectType"),
       activityType: getPdfFieldValue("activityType"),
     },
     signature: getPdfFieldValue("signatureData"),
@@ -812,6 +823,7 @@ async function sendPdfJsonToSLK(payload) {
     console.error("Сетевая ошибка отправки PDF JSON:", e);
   }
 }
+
 // Заполнение скрытого шаблона PDF
 function fillPdfTemplateForPrint() {
   const pairs = [
@@ -826,8 +838,8 @@ function fillPdfTemplateForPrint() {
     ["businessObjectType", "pdf_businessObjectType"],
     ["activityType", "pdf_activityType"],
     ["posModel", "pdf_posModel"],
-    ["lkLogin", "pdf_lkLogin"],       // логин lk.salyk.kg
-    ["lkPassword", "pdf_lkPassword"], // пароль lk.salyk.kg
+    ["lkLogin", "pdf_lkLogin"],       // ← НОВОЕ
+    ["lkPassword", "pdf_lkPassword"], // ← НОВОЕ
     ["description", "pdf_description"],
   ];
 
@@ -903,8 +915,127 @@ function fillPdfTemplateForPrint() {
   }
 }
 
+// Подпись на canvas (отдельно, чтобы не мешать твоему коду)
+function initSignaturePadForPdf() {
+  const canvas = document.getElementById("signaturePad");
+  const clearBtn = document.getElementById("signatureClear");
+  const hiddenInput = document.getElementById("signatureData");
+
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  let drawing = false;
+  let lastX = 0;
+  let lastY = 0;
+
+  // Подгоняем реальное разрешение canvas под CSS-размер и DPI
+  function resizeCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+
+    // Делаем так, чтобы координаты были в CSS-пикселях
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  resizeCanvas();
+  window.addEventListener("resize", resizeCanvas);
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    let clientX, clientY;
+
+    if (e.touches && e.touches.length > 0) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top,
+    };
+  }
+
+  function startDraw(x, y) {
+    drawing = true;
+    lastX = x;
+    lastY = y;
+  }
+
+  function drawLine(x, y) {
+    if (!drawing) return;
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    lastX = x;
+    lastY = y;
+  }
+
+  function stopDraw() {
+    if (!drawing) return;
+    drawing = false;
+    const dataURL = canvas.toDataURL("image/png");
+    if (hiddenInput) hiddenInput.value = dataURL;
+    const pdfImg = document.getElementById("pdf_signature");
+    if (pdfImg) pdfImg.src = dataURL;
+  }
+
+  // Мышь
+  canvas.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    const { x, y } = getPos(e);
+    startDraw(x, y);
+  });
+
+  canvas.addEventListener("mousemove", (e) => {
+    if (!drawing) return;
+    const { x, y } = getPos(e);
+    drawLine(x, y);
+  });
+
+  window.addEventListener("mouseup", () => {
+    stopDraw();
+  });
+
+  // Тач
+  canvas.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    const { x, y } = getPos(e);
+    startDraw(x, y);
+  });
+
+  canvas.addEventListener("touchmove", (e) => {
+    e.preventDefault();
+    const { x, y } = getPos(e);
+    drawLine(x, y);
+  });
+
+  canvas.addEventListener("touchend", (e) => {
+    e.preventDefault();
+    stopDraw();
+  });
+
+  if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (hiddenInput) hiddenInput.value = "";
+      const pdfImg = document.getElementById("pdf_signature");
+      if (pdfImg) pdfImg.removeAttribute("src");
+    });
+  }
+}
 // ============================================================
 // ВАЛИДАЦИЯ ОБЯЗАТЕЛЬНЫХ ПОЛЕЙ ДЛЯ PDF
+// (комиссии и скидка НЕ обязательные)
 // ============================================================
 
 const pdfRequiredFieldLabels = {
@@ -922,10 +1053,12 @@ const pdfRequiredFieldLabels = {
   district: "Район (по месту торговли)",
   ugnsCode: "Код УГНС",
   responsibleBranches: "Ответственный филиал",
-  lkLogin: "Логин от lk.salyk.kg (e-mail)",
-  lkPassword: "Пароль от lk.salyk.kg",
+  lkLogin: "Логин от lk.salyk.kg (e-mail)",   // ← НОВОЕ
+  lkPassword: "Пароль от lk.salyk.kg",        // ← НОВОЕ
   clientStatus: "Статус клиента",
   description: "Комментарий / описание"
+  // Если хочешь, чтобы подпись была ОБЯЗАТЕЛЬНОЙ:
+  // signatureData: "Подпись клиента"
 };
 
 function clearPdfValidationErrors() {
@@ -1022,6 +1155,7 @@ function initPdfExportForPrint() {
   if (!btn) return;
 
   btn.addEventListener("click", async () => {
+    // 👉 БЛОКИРУЕМ сохранение, если есть незаполненные обязательные поля
     if (!validatePdfRequiredFields()) {
       return;
     }
@@ -1029,7 +1163,7 @@ function initPdfExportForPrint() {
     const payload = collectPdfFormData();
     await sendPdfJsonToSLK(payload);
 
-    fillPdfTemplateForPrint(); // если используешь, либо переименуй под свою функцию
+    fillPdfTemplateForPrint();
 
     const pdfElement = document.getElementById("pdfDocument");
     if (!pdfElement) {
@@ -1070,15 +1204,15 @@ function initPdfExportForPrint() {
   });
 }
 
-// Инициализация подписи и PDF-блока
+// Инициализация нашего блока (не трогает твои существующие DOMContentLoaded)
 document.addEventListener("DOMContentLoaded", () => {
   initSignaturePadForPdf();
   initPdfExportForPrint();
 });
 
-// ============================================================
-// SIMPLE SPELLCHECK MOCK
-// ============================================================
+/* ============================================================
+   SIMPLE SPELLCHECK MOCK
+============================================================ */
 const spellPanel = document.getElementById("spellcheckPanel");
 
 function fakeSpellCheck() {
