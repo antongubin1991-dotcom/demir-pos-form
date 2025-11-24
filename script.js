@@ -543,7 +543,31 @@ function updateDistrictFromAddress(addressText) {
 document.addEventListener("DOMContentLoaded", () => {
   // Ответственный филиал
   initResponsibleBranchesSelect();
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("langBtn");
+  const menu = document.getElementById("langMenu");
 
+  if (btn && menu) {
+    btn.addEventListener("click", () => {
+      menu.classList.toggle("hidden");
+    });
+
+    menu.querySelectorAll("div").forEach(item => {
+      item.addEventListener("click", () => {
+        const lang = item.dataset.lang;
+        localStorage.setItem("lang", lang);
+        btn.textContent = lang.toUpperCase() + " ▼";
+        applyTranslations(lang);
+        menu.classList.add("hidden");
+      });
+    });
+
+    // стартовое значение
+    const savedLang = localStorage.getItem("lang") || "ru";
+    btn.textContent = savedLang.toUpperCase() + " ▼";
+    applyTranslations(savedLang);
+  }
+});
   /* ---------- BUSINESS SELECTS ---------- */
   const bo = document.getElementById("businessObjectType");
   const at = document.getElementById("activityType");
