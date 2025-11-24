@@ -543,7 +543,31 @@ function updateDistrictFromAddress(addressText) {
 document.addEventListener("DOMContentLoaded", () => {
   // Ответственный филиал
   initResponsibleBranchesSelect();
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("langBtn");
+  const menu = document.getElementById("langMenu");
 
+  if (btn && menu) {
+    btn.addEventListener("click", () => {
+      menu.classList.toggle("hidden");
+    });
+
+    menu.querySelectorAll("div").forEach(item => {
+      item.addEventListener("click", () => {
+        const lang = item.dataset.lang;
+        localStorage.setItem("lang", lang);
+        btn.textContent = lang.toUpperCase() + " ▼";
+        applyTranslations(lang);
+        menu.classList.add("hidden");
+      });
+    });
+
+    // стартовое значение
+    const savedLang = localStorage.getItem("lang") || "ru";
+    btn.textContent = savedLang.toUpperCase() + " ▼";
+    applyTranslations(savedLang);
+  }
+});
   /* ---------- BUSINESS SELECTS ---------- */
   const bo = document.getElementById("businessObjectType");
   const at = document.getElementById("activityType");
@@ -627,31 +651,66 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 // Красивое форматирование адреса из ответа Nominatim
 function formatNominatimAddress(data) {
-  if (!data || !data.address) return data?.display_name || "";
+  if (!data || !data.address) {
+    return (data && data.display_name) ? data.display_name : "";
+  }
 
   const a = data.address;
   const parts = [];
 
-  const city = a.city || a.town || a.village;
-  if (city) parts.push(`г. ${city}`);
+  // ---------- ГОРОД ----------
+  const rawCity = a.city || a.town || a.village;
+  if (rawCity) {
+    // убираем любое "город", "г." в начале, нормализуем к "г. ..."
+    let cityBase = rawCity.replace(/^\s*(г\.|город)\s+/i, "").trim();
+    if (cityBase) {
+      parts.push("г. " + cityBase);
+    }
+  }
 
-  // район
-  if (a.city_district) parts.push(a.city_district);
+  // ---------- РАЙОН ----------
+  if (a.city_district) {
+    parts.push(a.city_district);
+  }
 
-  // ж/м, микрорайон и т.п.
-  if (a.suburb) parts.push(a.suburb);
+  // ---------- Ж/м, микрорайон и т.п. ----------
+  if (a.suburb) {
+    parts.push(a.suburb);
+  }
 
-  // улица + дом
+  // ---------- УЛИЦА + ДОМ ----------
   const streetParts = [];
-  if (a.road) streetParts.push(`ул. ${a.road}`);
-  if (a.house_number) streetParts.push(a.house_number);
-  if (streetParts.length) parts.push(streetParts.join(", "));
+  if (a.road) {
+    let roadBase = a.road.trim();
 
-  // индекс
-  if (a.postcode) parts.push(a.postcode);
+    // убираем "ул." / "улица" в начале
+    roadBase = roadBase.replace(/^\s*(ул\.?|улица)\s+/i, "");
+    // убираем "улица" в конце
+    roadBase = roadBase.replace(/\s+улица$/i, "");
+    roadBase = roadBase.trim();
 
-  // страна
-  if (a.country) parts.push(a.country);
+    if (roadBase) {
+      streetParts.push("ул. " + roadBase);
+    }
+  }
+
+  if (a.house_number) {
+    streetParts.push(a.house_number);
+  }
+
+  if (streetParts.length) {
+    parts.push(streetParts.join(", "));
+  }
+
+  // ---------- ИНДЕКС ----------
+  if (a.postcode) {
+    parts.push(a.postcode);
+  }
+
+  // ---------- СТРАНА ----------
+  if (a.country) {
+    parts.push(a.country);
+  }
 
   return parts.join(", ");
 }
@@ -673,6 +732,71 @@ function formatNominatimAddress(data) {
 /* ============================================================
    LEAFLET MAP + REVERSE GEOCODING
 ============================================================ */
+
+// Красивое форматирование адреса из ответа Nominatim
+function formatNominatimAddress(data) {
+  if (!data || !data.address) {
+    return data?.display_name || "";
+  }
+
+  const a = data.address;
+  const parts = [];
+
+  // ---------- ГОРОД ----------
+  let city = a.city || a.town || a.village || "";
+
+  if (city) {
+    city = city
+      .replace(/^(г\.|город|гор\.|г|city)\s*/i, "") // убираем любое начало
+      .replace(/\s*(город|г\.)$/i, "") // убираем хвост
+      .trim();
+
+    // если Nominatim отдаёт "город Бишкек"
+    city = city.replace(/^город\s+/i, "").trim();
+
+    if (city.toLowerCase() === "бишкек" || city.toLowerCase() === "город бишкек") {
+      city = "Бишкек";
+    }
+
+    parts.push("г. " + city);
+  }
+
+  // ---------- РАЙОН ----------
+  if (a.city_district) parts.push(a.city_district);
+
+  // ---------- Ж/м ----------
+  if (a.suburb) parts.push(a.suburb);
+
+  // ---------- УЛИЦА ----------
+  let street = a.road || "";
+  let house = a.house_number || "";
+
+  if (street) {
+    street = street
+      .replace(/^(ул\.?|улица|str\.?)\s*/i, "")       // убираем начало
+      .replace(/\s+(улица|street)$/i, "")            // убираем конец
+      .trim();
+
+    // частый баг Nominatim: Фрунзе Михаила → Михаила Фрунзе
+    street = street.replace(
+      /^([А-ЯЁ][а-яё]+)\s+([А-ЯЁ][а-яё]+)$/u,
+      "$2 $1"
+    );
+
+    // убираем удвоенные имена: «Фрунзе Михаила улица»
+    street = street.replace(/\s+улица$/i, "");
+
+    parts.push("ул. " + street + (house ? ", " + house : ""));
+  }
+
+  // ---------- ИНДЕКС ----------
+  if (a.postcode) parts.push(a.postcode);
+
+  // ---------- СТРАНА ----------
+  if (a.country) parts.push(a.country);
+
+  return parts.join(", ");
+}
 function initMap(mapId, addressInputId, latInputId, lonInputId) {
   const mapDiv = document.getElementById(mapId);
   if (!mapDiv || typeof L === "undefined") return;
@@ -705,24 +829,30 @@ function initMap(mapId, addressInputId, latInputId, lonInputId) {
       lonEl.value = lon.toFixed(6);
       localStorage.setItem(lonInputId, lon.toFixed(6));
     }
-    if (doReverse && addrEl) {
-  fetch(
-    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ru`
-  )
-    .then((r) => r.json())
-    .then((data) => {
-      if (!data) return;
-      if (text) {
-        addrEl.value = text;
-        localStorage.setItem(addressInputId, text);
 
-        if (addressInputId === "tradeAddress") {
-          updateDistrictFromAddress(text);
-        }
-      }
-    })
-    .catch(() => {});
-}
+    if (doReverse && addrEl) {
+      fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ru`
+      )
+        .then((r) => r.json())
+        .then((data) => {
+          if (!data) return;
+
+          const pretty = formatNominatimAddress(data);
+          const text = pretty || data.display_name || "";
+
+          if (text) {
+            addrEl.value = text;
+            localStorage.setItem(addressInputId, text);
+
+            if (addressInputId === "tradeAddress") {
+              updateDistrictFromAddress(text);
+            }
+          }
+        })
+        .catch(() => {});
+    }
+  }
 
   // начальное состояние
   updateFields(savedLat, savedLon, true);
@@ -753,13 +883,14 @@ function getPdfFieldValue(id) {
 function collectPdfFormData() {
   return {
     company: {
-      name: getPdfFieldValue("companyName"),
-      bin: getPdfFieldValue("companyBin"),
-      head: getPdfFieldValue("companyHead"),
-      manager: getPdfFieldValue("manager"),
+      name:        getPdfFieldValue("companyName"),
+      bin:         getPdfFieldValue("companyBin"),
+      head:        getPdfFieldValue("companyHead"),
+      manager:     getPdfFieldValue("manager"),
       description: getPdfFieldValue("description"),
-      lkLogin:     getPdfFieldValue("lkLogin"),     // ← НОВОЕ
-      lkPassword:  getPdfFieldValue("lkPassword"),  // ← НОВОЕ,
+      lkLogin:     getPdfFieldValue("lkLogin"),
+      lkPassword:  getPdfFieldValue("lkPassword"),
+      clientStatus:getPdfFieldValue("clientStatus"),
     },
     contacts: {
       phone: getPdfFieldValue("phone"),
@@ -768,28 +899,28 @@ function collectPdfFormData() {
     pos: {
       model: getPdfFieldValue("posModel"),
       commissions: {
-        comm_visa_dkb: getPdfFieldValue("comm_visa_dkb"),
-        comm_bonus_dkb: getPdfFieldValue("comm_bonus_dkb"),
-        comm_visa_other: getPdfFieldValue("comm_visa_other"),
-        comm_elcart_dkb: getPdfFieldValue("comm_elcart_dkb"),
+        comm_visa_dkb:     getPdfFieldValue("comm_visa_dkb"),
+        comm_bonus_dkb:    getPdfFieldValue("comm_bonus_dkb"),
+        comm_visa_other:   getPdfFieldValue("comm_visa_other"),
+        comm_elcart_dkb:   getPdfFieldValue("comm_elcart_dkb"),
         comm_elcart_other: getPdfFieldValue("comm_elcart_other"),
-        comm_mc_dkb: getPdfFieldValue("comm_mc_dkb"),
-        comm_mc_other: getPdfFieldValue("comm_mc_other"),
+        comm_mc_dkb:       getPdfFieldValue("comm_mc_dkb"),
+        comm_mc_other:     getPdfFieldValue("comm_mc_other"),
       },
       discount_10: getPdfFieldValue("discount_10"),
     },
     region: {
-      district: getPdfFieldValue("district"),
-      ugnsCode: getPdfFieldValue("ugnsCode"),
+      district:     getPdfFieldValue("district"),
+      ugnsCode:     getPdfFieldValue("ugnsCode"),
       legalAddress: getPdfFieldValue("legalAddress"),
-      legalLat: getPdfFieldValue("legalLat"),
-      legalLon: getPdfFieldValue("legalLon"),
+      legalLat:     getPdfFieldValue("legalLat"),
+      legalLon:     getPdfFieldValue("legalLon"),
       tradeAddress: getPdfFieldValue("tradeAddress"),
-      tradeLat: getPdfFieldValue("tradeLat"),
-      tradeLon: getPdfFieldValue("tradeLon"),
+      tradeLat:     getPdfFieldValue("tradeLat"),
+      tradeLon:     getPdfFieldValue("tradeLon"),
     },
     business: {
-      objectType: getPdfFieldValue("businessObjectType"),
+      objectType:   getPdfFieldValue("businessObjectType"),
       activityType: getPdfFieldValue("activityType"),
     },
     signature: getPdfFieldValue("signatureData"),
@@ -819,7 +950,6 @@ async function sendPdfJsonToSLK(payload) {
     console.error("Сетевая ошибка отправки PDF JSON:", e);
   }
 }
-
 // Заполнение скрытого шаблона PDF
 function fillPdfTemplateForPrint() {
   const pairs = [
@@ -834,8 +964,8 @@ function fillPdfTemplateForPrint() {
     ["businessObjectType", "pdf_businessObjectType"],
     ["activityType", "pdf_activityType"],
     ["posModel", "pdf_posModel"],
-    ["lkLogin", "pdf_lkLogin"],       // ← НОВОЕ
-    ["lkPassword", "pdf_lkPassword"], // ← НОВОЕ
+    ["lkLogin", "pdf_lkLogin"],       // логин lk.salyk.kg
+    ["lkPassword", "pdf_lkPassword"], // пароль lk.salyk.kg
     ["description", "pdf_description"],
   ];
 
@@ -910,8 +1040,62 @@ function fillPdfTemplateForPrint() {
     pdfSigImg.src = sigData;
   }
 }
+// Обработчик кнопки "Сохранить PDF"
+function initPdfExportForPrint() {
+  const btn = document.getElementById("savePdf");
+  if (!btn) return;
 
-// Подпись на canvas (отдельно, чтобы не мешать твоему коду)
+  btn.addEventListener("click", async () => {
+    // блокируем сохранение, если есть незаполненные обязательные поля
+    if (!validatePdfRequiredFields()) {
+      return;
+    }
+
+    const payload = collectPdfFormData();
+    await sendPdfJsonToSLK(payload);
+
+    // 👉 здесь функция уже точно определена
+    fillPdfTemplateForPrint();
+
+    const pdfElement = document.getElementById("pdfDocument");
+    if (!pdfElement) {
+      console.error("pdfDocument не найден");
+      return;
+    }
+
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      alert("Разрешите всплывающие окна для печати PDF");
+      return;
+    }
+
+    printWindow.document.open();
+    printWindow.document.write(`
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <title>Demir POS Form</title>
+</head>
+<body></body>
+</html>`);
+    printWindow.document.close();
+
+    const clone = pdfElement.cloneNode(true);
+    clone.style.display = "block";
+    clone.style.margin = "20px auto";
+    clone.style.width = "800px";
+
+    printWindow.document.body.appendChild(clone);
+
+    setTimeout(() => {
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    }, 100);
+  });
+}
+// Подпись на canvas
 function initSignaturePadForPdf() {
   const canvas = document.getElementById("signaturePad");
   const clearBtn = document.getElementById("signatureClear");
@@ -924,15 +1108,12 @@ function initSignaturePadForPdf() {
   let lastX = 0;
   let lastY = 0;
 
-  // Подгоняем реальное разрешение canvas под CSS-размер и DPI
   function resizeCanvas() {
     const rect = canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
 
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
-
-    // Делаем так, чтобы координаты были в CSS-пикселях
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
@@ -985,7 +1166,6 @@ function initSignaturePadForPdf() {
     if (pdfImg) pdfImg.src = dataURL;
   }
 
-  // Мышь
   canvas.addEventListener("mousedown", (e) => {
     e.preventDefault();
     const { x, y } = getPos(e);
@@ -1002,7 +1182,6 @@ function initSignaturePadForPdf() {
     stopDraw();
   });
 
-  // Тач
   canvas.addEventListener("touchstart", (e) => {
     e.preventDefault();
     const { x, y } = getPos(e);
@@ -1029,9 +1208,9 @@ function initSignaturePadForPdf() {
     });
   }
 }
+
 // ============================================================
 // ВАЛИДАЦИЯ ОБЯЗАТЕЛЬНЫХ ПОЛЕЙ ДЛЯ PDF
-// (комиссии и скидка НЕ обязательные)
 // ============================================================
 
 const pdfRequiredFieldLabels = {
@@ -1049,12 +1228,10 @@ const pdfRequiredFieldLabels = {
   district: "Район (по месту торговли)",
   ugnsCode: "Код УГНС",
   responsibleBranches: "Ответственный филиал",
-  lkLogin: "Логин от lk.salyk.kg (e-mail)",   // ← НОВОЕ
-  lkPassword: "Пароль от lk.salyk.kg",        // ← НОВОЕ
+  lkLogin: "Логин от lk.salyk.kg (e-mail)",
+  lkPassword: "Пароль от lk.salyk.kg",
   clientStatus: "Статус клиента",
   description: "Комментарий / описание"
-  // Если хочешь, чтобы подпись была ОБЯЗАТЕЛЬНОЙ:
-  // signatureData: "Подпись клиента"
 };
 
 function clearPdfValidationErrors() {
@@ -1145,9 +1322,69 @@ function clearFormFields() {
   if (hiddenInput) hiddenInput.value = "";
   if (pdfImg) pdfImg.removeAttribute("src");
 }
-/* ============================================================
-   SIMPLE SPELLCHECK MOCK
-============================================================ */
+// Обработчик кнопки "Сохранить PDF"
+function initPdfExportForPrint() {
+  const btn = document.getElementById("savePdf");
+  if (!btn) return;
+
+  btn.addEventListener("click", async () => {
+    if (!validatePdfRequiredFields()) {
+      return;
+    }
+
+    const payload = collectPdfFormData();
+    await sendPdfJsonToSLK(payload);
+
+    fillPdfTemplateForPrint(); // если используешь, либо переименуй под свою функцию
+
+    const pdfElement = document.getElementById("pdfDocument");
+    if (!pdfElement) {
+      console.error("pdfDocument не найден");
+      return;
+    }
+
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      alert("Разрешите всплывающие окна для печати PDF");
+      return;
+    }
+
+    printWindow.document.open();
+    printWindow.document.write(`
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <title>Demir POS Form</title>
+</head>
+<body></body>
+</html>`);
+    printWindow.document.close();
+
+    const clone = pdfElement.cloneNode(true);
+    clone.style.display = "block";
+    clone.style.margin = "20px auto";
+    clone.style.width = "800px";
+
+    printWindow.document.body.appendChild(clone);
+
+    setTimeout(() => {
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    }, 100);
+  });
+}
+
+// Инициализация подписи и PDF-блока
+document.addEventListener("DOMContentLoaded", () => {
+  initSignaturePadForPdf();
+  initPdfExportForPrint();
+});
+
+// ============================================================
+// SIMPLE SPELLCHECK MOCK
+// ============================================================
 const spellPanel = document.getElementById("spellcheckPanel");
 
 function fakeSpellCheck() {
