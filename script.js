@@ -673,6 +673,33 @@ function formatNominatimAddress(data) {
 /* ============================================================
    LEAFLET MAP + REVERSE GEOCODING
 ============================================================ */
+
+// Красивое форматирование адреса из ответа Nominatim
+function formatNominatimAddress(data) {
+  if (!data || !data.address) {
+    return (data && data.display_name) ? data.display_name : "";
+  }
+
+  const a = data.address;
+  const parts = [];
+
+  const city = a.city || a.town || a.village;
+  if (city) parts.push("г. " + city);
+
+  if (a.city_district) parts.push(a.city_district);
+  if (a.suburb) parts.push(a.suburb);
+
+  const streetParts = [];
+  if (a.road) streetParts.push("ул. " + a.road);
+  if (a.house_number) streetParts.push(a.house_number);
+  if (streetParts.length) parts.push(streetParts.join(", "));
+
+  if (a.postcode) parts.push(a.postcode);
+  if (a.country) parts.push(a.country);
+
+  return parts.join(", ");
+}
+
 function initMap(mapId, addressInputId, latInputId, lonInputId) {
   const mapDiv = document.getElementById(mapId);
   if (!mapDiv || typeof L === "undefined") return;
@@ -705,28 +732,30 @@ function initMap(mapId, addressInputId, latInputId, lonInputId) {
       lonEl.value = lon.toFixed(6);
       localStorage.setItem(lonInputId, lon.toFixed(6));
     }
+
     if (doReverse && addrEl) {
-  fetch(
-    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ru`
-  )
-    .then((r) => r.json())
-    .then((data) => {
-      if (!data) return;
+      fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ru`
+      )
+        .then((r) => r.json())
+        .then((data) => {
+          if (!data) return;
 
-      const pretty = formatNominatimAddress(data);
-      const text = pretty || data.display_name || "";
+          const pretty = formatNominatimAddress(data);
+          const text = pretty || data.display_name || "";
 
-      if (text) {
-        addrEl.value = text;
-        localStorage.setItem(addressInputId, text);
+          if (text) {
+            addrEl.value = text;
+            localStorage.setItem(addressInputId, text);
 
-        if (addressInputId === "tradeAddress") {
-          updateDistrictFromAddress(text);
-        }
-      }
-    })
-    .catch(() => {});
-}
+            if (addressInputId === "tradeAddress") {
+              updateDistrictFromAddress(text);
+            }
+          }
+        })
+        .catch(() => {});
+    }
+  }
 
   // начальное состояние
   updateFields(savedLat, savedLon, true);
@@ -757,13 +786,14 @@ function getPdfFieldValue(id) {
 function collectPdfFormData() {
   return {
     company: {
-      name: getPdfFieldValue("companyName"),
-      bin: getPdfFieldValue("companyBin"),
-      head: getPdfFieldValue("companyHead"),
-      manager: getPdfFieldValue("manager"),
+      name:        getPdfFieldValue("companyName"),
+      bin:         getPdfFieldValue("companyBin"),
+      head:        getPdfFieldValue("companyHead"),
+      manager:     getPdfFieldValue("manager"),
       description: getPdfFieldValue("description"),
-      lkLogin:     getPdfFieldValue("lkLogin"),     // ← НОВОЕ
-      lkPassword:  getPdfFieldValue("lkPassword"),  // ← НОВОЕ,
+      lkLogin:     getPdfFieldValue("lkLogin"),
+      lkPassword:  getPdfFieldValue("lkPassword"),
+      clientStatus:getPdfFieldValue("clientStatus"),
     },
     contacts: {
       phone: getPdfFieldValue("phone"),
@@ -772,28 +802,28 @@ function collectPdfFormData() {
     pos: {
       model: getPdfFieldValue("posModel"),
       commissions: {
-        comm_visa_dkb: getPdfFieldValue("comm_visa_dkb"),
-        comm_bonus_dkb: getPdfFieldValue("comm_bonus_dkb"),
-        comm_visa_other: getPdfFieldValue("comm_visa_other"),
-        comm_elcart_dkb: getPdfFieldValue("comm_elcart_dkb"),
+        comm_visa_dkb:     getPdfFieldValue("comm_visa_dkb"),
+        comm_bonus_dkb:    getPdfFieldValue("comm_bonus_dkb"),
+        comm_visa_other:   getPdfFieldValue("comm_visa_other"),
+        comm_elcart_dkb:   getPdfFieldValue("comm_elcart_dkb"),
         comm_elcart_other: getPdfFieldValue("comm_elcart_other"),
-        comm_mc_dkb: getPdfFieldValue("comm_mc_dkb"),
-        comm_mc_other: getPdfFieldValue("comm_mc_other"),
+        comm_mc_dkb:       getPdfFieldValue("comm_mc_dkb"),
+        comm_mc_other:     getPdfFieldValue("comm_mc_other"),
       },
       discount_10: getPdfFieldValue("discount_10"),
     },
     region: {
-      district: getPdfFieldValue("district"),
-      ugnsCode: getPdfFieldValue("ugnsCode"),
+      district:     getPdfFieldValue("district"),
+      ugnsCode:     getPdfFieldValue("ugnsCode"),
       legalAddress: getPdfFieldValue("legalAddress"),
-      legalLat: getPdfFieldValue("legalLat"),
-      legalLon: getPdfFieldValue("legalLon"),
+      legalLat:     getPdfFieldValue("legalLat"),
+      legalLon:     getPdfFieldValue("legalLon"),
       tradeAddress: getPdfFieldValue("tradeAddress"),
-      tradeLat: getPdfFieldValue("tradeLat"),
-      tradeLon: getPdfFieldValue("tradeLon"),
+      tradeLat:     getPdfFieldValue("tradeLat"),
+      tradeLon:     getPdfFieldValue("tradeLon"),
     },
     business: {
-      objectType: getPdfFieldValue("businessObjectType"),
+      objectType:   getPdfFieldValue("businessObjectType"),
       activityType: getPdfFieldValue("activityType"),
     },
     signature: getPdfFieldValue("signatureData"),
@@ -824,98 +854,7 @@ async function sendPdfJsonToSLK(payload) {
   }
 }
 
-// Заполнение скрытого шаблона PDF
-function fillPdfTemplateForPrint() {
-  const pairs = [
-    ["companyName", "pdf_companyName"],
-    ["companyBin", "pdf_companyBin"],
-    ["companyHead", "pdf_companyHead"],
-    ["manager", "pdf_manager"],
-    ["phone", "pdf_phone"],
-    ["email", "pdf_email"],
-    ["legalAddress", "pdf_legalAddress"],
-    ["tradeAddress", "pdf_tradeAddress"],
-    ["businessObjectType", "pdf_businessObjectType"],
-    ["activityType", "pdf_activityType"],
-    ["posModel", "pdf_posModel"],
-    ["lkLogin", "pdf_lkLogin"],       // ← НОВОЕ
-    ["lkPassword", "pdf_lkPassword"], // ← НОВОЕ
-    ["description", "pdf_description"],
-  ];
-
-  pairs.forEach(([srcId, destId]) => {
-    const src = document.getElementById(srcId);
-    const dest = document.getElementById(destId);
-    if (!dest) return;
-    const value = src ? (src.value || src.textContent || "").trim() : "";
-    dest.textContent = value;
-  });
-
-  // Район + УГНС
-  const districtSelect = document.getElementById("district");
-  const ugnsCode = document.getElementById("ugnsCode");
-  const pdfDistrictUgns = document.getElementById("pdf_district_ugns");
-  if (pdfDistrictUgns) {
-    const districtText = districtSelect
-      ? (districtSelect.options[districtSelect.selectedIndex]?.text || "").trim()
-      : "";
-    const ugns = ugnsCode ? (ugnsCode.value || "").trim() : "";
-    pdfDistrictUgns.textContent = [districtText, ugns].filter(Boolean).join(" / ");
-  }
-
-  // Комиссии
-  const commMap = [
-    ["comm_visa_dkb", "pdf_comm_visa_dkb"],
-    ["comm_bonus_dkb", "pdf_comm_bonus_dkb"],
-    ["comm_visa_other", "pdf_comm_visa_other"],
-    ["comm_elcart_dkb", "pdf_comm_elcart_dkb"],
-    ["comm_elcart_other", "pdf_comm_elcart_other"],
-    ["comm_mc_dkb", "pdf_comm_mc_dkb"],
-    ["comm_mc_other", "pdf_comm_mc_other"],
-  ];
-
-  commMap.forEach(([srcId, destId]) => {
-    const src = document.getElementById(srcId);
-    const dest = document.getElementById(destId);
-    if (!dest) return;
-    const v = src ? (src.value || "").trim() : "";
-    dest.textContent = v ? v.replace(".", ",") : "";
-  });
-
-  // Скидка
-  const discount10 = document.getElementById("discount_10");
-  const pdfDiscount10 = document.getElementById("pdf_discount_10");
-  if (pdfDiscount10) {
-    const v = discount10 ? (discount10.value || "").trim() : "";
-    pdfDiscount10.textContent = v ? v.replace(".", ",") : "";
-  }
-
-  // Дата заявки → pdf_date (если заполняешь поле applicationDate)
-  const appDateInput = document.querySelector('input[name="applicationDate"]');
-  const pdfDate = document.getElementById("pdf_date");
-  if (pdfDate && appDateInput && appDateInput.value) {
-    const d = new Date(appDateInput.value);
-    if (!isNaN(d.getTime())) {
-      const day = String(d.getDate()).padStart(2, "0");
-      const months = [
-        "января","февраля","марта","апреля","мая","июня",
-        "июля","августа","сентября","октября","ноября","декабря"
-      ];
-      const monthName = months[d.getMonth()];
-      const year = d.getFullYear();
-      pdfDate.textContent = `«${day}» ${monthName} ${year} г.`;
-    }
-  }
-
-  // Подпись
-  const sigData = getPdfFieldValue("signatureData");
-  const pdfSigImg = document.getElementById("pdf_signature");
-  if (pdfSigImg && sigData) {
-    pdfSigImg.src = sigData;
-  }
-}
-
-// Подпись на canvas (отдельно, чтобы не мешать твоему коду)
+// Подпись на canvas
 function initSignaturePadForPdf() {
   const canvas = document.getElementById("signaturePad");
   const clearBtn = document.getElementById("signatureClear");
@@ -928,15 +867,12 @@ function initSignaturePadForPdf() {
   let lastX = 0;
   let lastY = 0;
 
-  // Подгоняем реальное разрешение canvas под CSS-размер и DPI
   function resizeCanvas() {
     const rect = canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
 
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
-
-    // Делаем так, чтобы координаты были в CSS-пикселях
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
@@ -989,7 +925,6 @@ function initSignaturePadForPdf() {
     if (pdfImg) pdfImg.src = dataURL;
   }
 
-  // Мышь
   canvas.addEventListener("mousedown", (e) => {
     e.preventDefault();
     const { x, y } = getPos(e);
@@ -1006,7 +941,6 @@ function initSignaturePadForPdf() {
     stopDraw();
   });
 
-  // Тач
   canvas.addEventListener("touchstart", (e) => {
     e.preventDefault();
     const { x, y } = getPos(e);
@@ -1033,9 +967,9 @@ function initSignaturePadForPdf() {
     });
   }
 }
+
 // ============================================================
 // ВАЛИДАЦИЯ ОБЯЗАТЕЛЬНЫХ ПОЛЕЙ ДЛЯ PDF
-// (комиссии и скидка НЕ обязательные)
 // ============================================================
 
 const pdfRequiredFieldLabels = {
@@ -1053,12 +987,10 @@ const pdfRequiredFieldLabels = {
   district: "Район (по месту торговли)",
   ugnsCode: "Код УГНС",
   responsibleBranches: "Ответственный филиал",
-  lkLogin: "Логин от lk.salyk.kg (e-mail)",   // ← НОВОЕ
-  lkPassword: "Пароль от lk.salyk.kg",        // ← НОВОЕ
+  lkLogin: "Логин от lk.salyk.kg (e-mail)",
+  lkPassword: "Пароль от lk.salyk.kg",
   clientStatus: "Статус клиента",
   description: "Комментарий / описание"
-  // Если хочешь, чтобы подпись была ОБЯЗАТЕЛЬНОЙ:
-  // signatureData: "Подпись клиента"
 };
 
 function clearPdfValidationErrors() {
@@ -1093,69 +1025,13 @@ function validatePdfRequiredFields() {
 
   return true;
 }
-// ============================================================
-// ОЧИСТКА ФОРМЫ
-// ============================================================
-function clearFormFields() {
-  // убираем подсветку ошибок
-  clearPdfValidationErrors();
 
-  // чистим все поля, которые сохраняем в localStorage
-  autoSaveFields.forEach((id) => {
-    localStorage.removeItem(id);
-    const el = document.getElementById(id);
-    if (!el) return;
-
-    if (el.tagName === "SELECT") {
-      el.selectedIndex = 0;
-    } else if (el.type === "checkbox" || el.type === "radio") {
-      el.checked = false;
-    } else {
-      el.value = "";
-    }
-  });
-
-  // чекбоксы типов заявок / карт и т.п.
-  document
-    .querySelectorAll(".card input[type='checkbox'], .card input[type='radio']")
-    .forEach((el) => (el.checked = false));
-
-  // поля, которых нет в autoSaveFields, но их тоже полезно сбросить
-  [
-    "contractNumber",
-    "contractDate",
-    "applicationNumber",
-    "applicationDate",
-    "mobilePhone",
-    "workFrom",
-    "workTo"
-  ].forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) el.value = "";
-  });
-
-  // ответственное отделение
-  const resp = document.getElementById("responsibleBranches");
-  if (resp) resp.selectedIndex = 0;
-
-  // подпись
-  const canvas = document.getElementById("signaturePad");
-  const hiddenInput = document.getElementById("signatureData");
-  const pdfImg = document.getElementById("pdf_signature");
-  if (canvas && canvas.getContext) {
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-  }
-  if (hiddenInput) hiddenInput.value = "";
-  if (pdfImg) pdfImg.removeAttribute("src");
-}
 // Обработчик кнопки "Сохранить PDF"
 function initPdfExportForPrint() {
   const btn = document.getElementById("savePdf");
   if (!btn) return;
 
   btn.addEventListener("click", async () => {
-    // 👉 БЛОКИРУЕМ сохранение, если есть незаполненные обязательные поля
     if (!validatePdfRequiredFields()) {
       return;
     }
@@ -1163,7 +1039,7 @@ function initPdfExportForPrint() {
     const payload = collectPdfFormData();
     await sendPdfJsonToSLK(payload);
 
-    fillPdfTemplateForPrint();
+    fillPdfTemplateForPrint(); // если используешь, либо переименуй под свою функцию
 
     const pdfElement = document.getElementById("pdfDocument");
     if (!pdfElement) {
@@ -1204,15 +1080,15 @@ function initPdfExportForPrint() {
   });
 }
 
-// Инициализация нашего блока (не трогает твои существующие DOMContentLoaded)
+// Инициализация подписи и PDF-блока
 document.addEventListener("DOMContentLoaded", () => {
   initSignaturePadForPdf();
   initPdfExportForPrint();
 });
 
-/* ============================================================
-   SIMPLE SPELLCHECK MOCK
-============================================================ */
+// ============================================================
+// SIMPLE SPELLCHECK MOCK
+// ============================================================
 const spellPanel = document.getElementById("spellcheckPanel");
 
 function fakeSpellCheck() {
