@@ -625,33 +625,63 @@ document.addEventListener("DOMContentLoaded", () => {
       updateDistrictFromAddress(tradeAddress.value);
     }
   }
-// Красивое форматирование адреса из ответа Nominatim
+/* Красивое форматирование адреса из ответа Nominatim */
 function formatNominatimAddress(data) {
-  if (!data || !data.address) return data?.display_name || "";
+  if (!data || !data.address) {
+    return (data && data.display_name) ? data.display_name : "";
+  }
 
   const a = data.address;
   const parts = [];
 
-  const city = a.city || a.town || a.village;
-  if (city) parts.push(`г. ${city}`);
+  // Город
+  const rawCity = a.city || a.town || a.village;
+  if (rawCity) {
+    let cityLabel = rawCity.trim();
+    // если уже есть "г." или "город" — не добавляем ещё раз "г."
+    if (!/^г\./i.test(cityLabel) && !/^город/i.test(cityLabel)) {
+      cityLabel = "г. " + cityLabel;
+    }
+    parts.push(cityLabel);
+  }
 
-  // район
-  if (a.city_district) parts.push(a.city_district);
+  // Район
+  if (a.city_district) {
+    parts.push(a.city_district);
+  }
 
-  // ж/м, микрорайон и т.п.
-  if (a.suburb) parts.push(a.suburb);
+  // Ж/м, микрорайон и т.п.
+  if (a.suburb) {
+    parts.push(a.suburb);
+  }
 
-  // улица + дом
+  // Улица + дом
   const streetParts = [];
-  if (a.road) streetParts.push(`ул. ${a.road}`);
-  if (a.house_number) streetParts.push(a.house_number);
-  if (streetParts.length) parts.push(streetParts.join(", "));
+  if (a.road) {
+    let roadLabel = a.road.trim();
+    // если в строке уже есть "улица" или "street", не лепим "ул." ещё раз
+    if (/улица/i.test(roadLabel) || /street/i.test(roadLabel) || /^ул\.?/i.test(roadLabel)) {
+      streetParts.push(roadLabel);
+    } else {
+      streetParts.push("ул. " + roadLabel);
+    }
+  }
+  if (a.house_number) {
+    streetParts.push(a.house_number);
+  }
+  if (streetParts.length) {
+    parts.push(streetParts.join(", "));
+  }
 
-  // индекс
-  if (a.postcode) parts.push(a.postcode);
+  // Индекс
+  if (a.postcode) {
+    parts.push(a.postcode);
+  }
 
-  // страна
-  if (a.country) parts.push(a.country);
+  // Страна
+  if (a.country) {
+    parts.push(a.country);
+  }
 
   return parts.join(", ");
 }
