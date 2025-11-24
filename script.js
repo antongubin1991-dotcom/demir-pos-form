@@ -690,9 +690,6 @@ function formatNominatimAddress(data) {
 
   return parts.join(", ");
 }
-
-  return parts.join(", ");
-}
   /* ---------- LEAFLET MAPS ---------- */
   initMap("legalMap", "legalAddress", "legalLat", "legalLon");
   initMap("tradeMap", "tradeAddress", "tradeLat", "tradeLon");
