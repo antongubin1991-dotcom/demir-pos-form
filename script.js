@@ -625,7 +625,36 @@ document.addEventListener("DOMContentLoaded", () => {
       updateDistrictFromAddress(tradeAddress.value);
     }
   }
+// Красивое форматирование адреса из ответа Nominatim
+function formatNominatimAddress(data) {
+  if (!data || !data.address) return data?.display_name || "";
 
+  const a = data.address;
+  const parts = [];
+
+  const city = a.city || a.town || a.village;
+  if (city) parts.push(`г. ${city}`);
+
+  // район
+  if (a.city_district) parts.push(a.city_district);
+
+  // ж/м, микрорайон и т.п.
+  if (a.suburb) parts.push(a.suburb);
+
+  // улица + дом
+  const streetParts = [];
+  if (a.road) streetParts.push(`ул. ${a.road}`);
+  if (a.house_number) streetParts.push(a.house_number);
+  if (streetParts.length) parts.push(streetParts.join(", "));
+
+  // индекс
+  if (a.postcode) parts.push(a.postcode);
+
+  // страна
+  if (a.country) parts.push(a.country);
+
+  return parts.join(", ");
+}
   /* ---------- LEAFLET MAPS ---------- */
   initMap("legalMap", "legalAddress", "legalLat", "legalLon");
   initMap("tradeMap", "tradeAddress", "tradeLat", "tradeLon");
@@ -676,25 +705,28 @@ function initMap(mapId, addressInputId, latInputId, lonInputId) {
       lonEl.value = lon.toFixed(6);
       localStorage.setItem(lonInputId, lon.toFixed(6));
     }
-
     if (doReverse && addrEl) {
-      fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ru`
-      )
-        .then((r) => r.json())
-        .then((data) => {
-          if (data && data.display_name) {
-            addrEl.value = data.display_name;
-            localStorage.setItem(addressInputId, data.display_name);
+  fetch(
+    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ru`
+  )
+    .then((r) => r.json())
+    .then((data) => {
+      if (!data) return;
 
-            if (addressInputId === "tradeAddress") {
-              updateDistrictFromAddress(data.display_name);
-            }
-          }
-        })
-        .catch(() => {});
-    }
-  }
+      const pretty = formatNominatimAddress(data);
+      const text = pretty || data.display_name || "";
+
+      if (text) {
+        addrEl.value = text;
+        localStorage.setItem(addressInputId, text);
+
+        if (addressInputId === "tradeAddress") {
+          updateDistrictFromAddress(text);
+        }
+      }
+    })
+    .catch(() => {});
+}
 
   // начальное состояние
   updateFields(savedLat, savedLon, true);
