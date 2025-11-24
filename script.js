@@ -625,7 +625,7 @@ document.addEventListener("DOMContentLoaded", () => {
       updateDistrictFromAddress(tradeAddress.value);
     }
   }
-/* Красивое форматирование адреса из ответа Nominatim */
+// Красивое форматирование адреса из ответа Nominatim
 function formatNominatimAddress(data) {
   if (!data || !data.address) {
     return (data && data.display_name) ? data.display_name : "";
@@ -634,51 +634,74 @@ function formatNominatimAddress(data) {
   const a = data.address;
   const parts = [];
 
-  // Город
+  // ---------- ГОРОД ----------
   const rawCity = a.city || a.town || a.village;
   if (rawCity) {
     let cityLabel = rawCity.trim();
-    // если уже есть "г." или "город" — не добавляем ещё раз "г."
-    if (!/^г\./i.test(cityLabel) && !/^город/i.test(cityLabel)) {
+
+    // "город Бишкек" → "г. Бишкек"
+    if (/^город\s+/i.test(cityLabel)) {
+      cityLabel = cityLabel.replace(/^город\s+/i, "г. ");
+    } else if (!/^г\./i.test(cityLabel)) {
+      // если ещё нет "г." и не было "город"
       cityLabel = "г. " + cityLabel;
     }
+
     parts.push(cityLabel);
   }
 
-  // Район
+  // ---------- РАЙОН ----------
   if (a.city_district) {
     parts.push(a.city_district);
   }
 
-  // Ж/м, микрорайон и т.п.
+  // ---------- Ж/М, микрорайон и т.п. ----------
   if (a.suburb) {
     parts.push(a.suburb);
   }
 
-  // Улица + дом
+  // ---------- УЛИЦА + ДОМ ----------
   const streetParts = [];
   if (a.road) {
     let roadLabel = a.road.trim();
-    // если в строке уже есть "улица" или "street", не лепим "ул." ещё раз
-    if (/улица/i.test(roadLabel) || /street/i.test(roadLabel) || /^ул\.?/i.test(roadLabel)) {
-      streetParts.push(roadLabel);
-    } else {
-      streetParts.push("ул. " + roadLabel);
+
+    // варианты:
+    // "Кулатова улица" → "ул. Кулатова"
+    if (/\s+улица$/i.test(roadLabel)) {
+      const base = roadLabel.replace(/\s+улица$/i, "").trim();
+      roadLabel = "ул. " + base;
     }
+    // "улица Кулатова" → "ул. Кулатова"
+    else if (/^улица\s+/i.test(roadLabel)) {
+      const base = roadLabel.replace(/^улица\s+/i, "").trim();
+      roadLabel = "ул. " + base;
+    }
+    // уже "ул. Кулатова" — оставляем как есть
+    else if (/^ул\.?\s+/i.test(roadLabel)) {
+      // ничего не делаем
+    }
+    // всё остальное → просто "ул. <название>"
+    else {
+      roadLabel = "ул. " + roadLabel;
+    }
+
+    streetParts.push(roadLabel);
   }
+
   if (a.house_number) {
     streetParts.push(a.house_number);
   }
+
   if (streetParts.length) {
     parts.push(streetParts.join(", "));
   }
 
-  // Индекс
+  // ---------- ИНДЕКС ----------
   if (a.postcode) {
     parts.push(a.postcode);
   }
 
-  // Страна
+  // ---------- СТРАНА ----------
   if (a.country) {
     parts.push(a.country);
   }
