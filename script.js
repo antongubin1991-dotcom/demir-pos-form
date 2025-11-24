@@ -637,17 +637,11 @@ function formatNominatimAddress(data) {
   // ---------- ГОРОД ----------
   const rawCity = a.city || a.town || a.village;
   if (rawCity) {
-    let cityLabel = rawCity.trim();
-
-    // "город Бишкек" → "г. Бишкек"
-    if (/^город\s+/i.test(cityLabel)) {
-      cityLabel = cityLabel.replace(/^город\s+/i, "г. ");
-    } else if (!/^г\./i.test(cityLabel)) {
-      // если ещё нет "г." и не было "город"
-      cityLabel = "г. " + cityLabel;
+    // убираем любое "город", "г." в начале, нормализуем к "г. ..."
+    let cityBase = rawCity.replace(/^\s*(г\.|город)\s+/i, "").trim();
+    if (cityBase) {
+      parts.push("г. " + cityBase);
     }
-
-    parts.push(cityLabel);
   }
 
   // ---------- РАЙОН ----------
@@ -655,7 +649,7 @@ function formatNominatimAddress(data) {
     parts.push(a.city_district);
   }
 
-  // ---------- Ж/М, микрорайон и т.п. ----------
+  // ---------- Ж/м, микрорайон и т.п. ----------
   if (a.suburb) {
     parts.push(a.suburb);
   }
@@ -663,29 +657,17 @@ function formatNominatimAddress(data) {
   // ---------- УЛИЦА + ДОМ ----------
   const streetParts = [];
   if (a.road) {
-    let roadLabel = a.road.trim();
+    let roadBase = a.road.trim();
 
-    // варианты:
-    // "Кулатова улица" → "ул. Кулатова"
-    if (/\s+улица$/i.test(roadLabel)) {
-      const base = roadLabel.replace(/\s+улица$/i, "").trim();
-      roadLabel = "ул. " + base;
-    }
-    // "улица Кулатова" → "ул. Кулатова"
-    else if (/^улица\s+/i.test(roadLabel)) {
-      const base = roadLabel.replace(/^улица\s+/i, "").trim();
-      roadLabel = "ул. " + base;
-    }
-    // уже "ул. Кулатова" — оставляем как есть
-    else if (/^ул\.?\s+/i.test(roadLabel)) {
-      // ничего не делаем
-    }
-    // всё остальное → просто "ул. <название>"
-    else {
-      roadLabel = "ул. " + roadLabel;
-    }
+    // убираем "ул." / "улица" в начале
+    roadBase = roadBase.replace(/^\s*(ул\.?|улица)\s+/i, "");
+    // убираем "улица" в конце
+    roadBase = roadBase.replace(/\s+улица$/i, "");
+    roadBase = roadBase.trim();
 
-    streetParts.push(roadLabel);
+    if (roadBase) {
+      streetParts.push("ул. " + roadBase);
+    }
   }
 
   if (a.house_number) {
@@ -705,6 +687,9 @@ function formatNominatimAddress(data) {
   if (a.country) {
     parts.push(a.country);
   }
+
+  return parts.join(", ");
+}
 
   return parts.join(", ");
 }
