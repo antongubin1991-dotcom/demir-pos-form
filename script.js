@@ -109,7 +109,128 @@ async function sendToSLK(payload) {
     alert("Сетевая ошибка при отправке в SLK. Подробности смотри в консоли.");
   }
 }
+/* ============================================================
+   CBS ENDPOINT (поиск по ИНН для действующих клиентов)
+============================================================ */
+const CBS_ENDPOINT = ""; 
+// например: "/api/cbs/client-by-inn"
+// ожидаем, что backend вернёт JSON вида:
+// {
+//   "companyName": "...",
+//   "companyBin": "...",
+//   "companyHead": "...",
+//   "companyHeadInn": "...",
+//   "email": "...",
+//   "phone": "...",
+//   "legalAddress": "...",
+//   "tradeAddress": "..."
+// }
+function fillFormFromCbs(data) {
+  if (!data) return;
 
+  // Компания
+  if (data.companyName) {
+    const el = document.getElementById("companyName");
+    if (el && !el.value) el.value = data.companyName;
+  }
+  if (data.companyBin) {
+    const el = document.getElementById("companyBin");
+    if (el && !el.value) el.value = data.companyBin;
+  }
+  if (data.companyHead) {
+    const el = document.getElementById("companyHead");
+    if (el && !el.value) el.value = data.companyHead;
+  }
+  if (data.companyHeadInn) {
+    const el = document.getElementById("companyHeadInn");
+    if (el && !el.value) el.value = data.companyHeadInn;
+  }
+
+  // Контакты
+  if (data.email) {
+    const el = document.getElementById("email");
+    if (el && !el.value) el.value = data.email;
+  }
+  if (data.phone) {
+    const el = document.getElementById("phone");
+    if (el && !el.value) el.value = data.phone;
+  }
+
+  // Адреса
+  if (data.legalAddress) {
+    const el = document.getElementById("legalAddress");
+    if (el && !el.value) el.value = data.legalAddress;
+  }
+  if (data.tradeAddress) {
+    const el = document.getElementById("tradeAddress");
+    if (el && !el.value) el.value = data.tradeAddress;
+  }
+
+  // если ещё что-то понадобится из CBS — допишем сюда
+}
+async function fetchCbsByInn(inn) {
+  if (!CBS_ENDPOINT) {
+    console.log("CBS_ENDPOINT не настроен, пропускаем запрос к CBS. ИНН:", inn);
+    return null;
+  }
+
+  try {
+    const res = await fetch(CBS_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ inn: inn.trim() })
+    });
+
+    if (!res.ok) {
+      console.error("Ошибка ответа CBS:", res.status, await res.text());
+      alert("Не удалось получить данные клиента из CBS. Проверьте ИНН или попробуйте позже.");
+      return null;
+    }
+
+    const data = await res.json();
+    if (!data) {
+      alert("По указанному ИНН данные клиента в CBS не найдены.");
+      return null;
+    }
+
+    return data;
+  } catch (e) {
+    console.error("Сетевая ошибка при запросе в CBS:", e);
+    alert("Ошибка подключения к CBS. Проверьте сеть или обратитесь в ИТ.");
+    return null;
+  }
+}
+function initCbsIntegration() {
+  const statusSelect = document.getElementById("clientStatus");
+  const innInput = document.getElementById("companyBin");
+
+  if (!statusSelect || !innInput) return;
+
+  async function tryFetchIfExisting() {
+    const status = statusSelect.value;
+    const inn = (innInput.value || "").trim();
+
+    if (status !== "existing") return;
+    if (inn.length < 8) return; // минимальная длина, можно 14, если строго ИНН
+
+    const data = await fetchCbsByInn(inn);
+    if (data) {
+      fillFormFromCbs(data);
+    }
+  }
+
+  // При смене статуса на "действующий" — если ИНН уже введён, сразу тянем CBS
+  statusSelect.addEventListener("change", () => {
+    if (statusSelect.value === "existing") {
+      tryFetchIfExisting();
+    }
+  });
+
+  // При потере фокуса / изменении ИНН — если статус "действующий", тянем CBS
+  innInput.addEventListener("blur", () => {
+    tryFetchIfExisting();
+  });
+}
 /* ============================================================
    BUSINESS OBJECT TYPES
 ============================================================ */
@@ -377,7 +498,8 @@ const autoSaveFields = [
   "legalAddress", "legalLat", "legalLon",
   "tradeAddress", "tradeLat", "tradeLon",
   "lkLogin", "lkPassword",
-  "description"
+  "description",
+  "clientStatus"
 ];
 
 autoSaveFields.forEach((id) => {
@@ -507,6 +629,8 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ---------- LEAFLET MAPS ---------- */
   initMap("legalMap", "legalAddress", "legalLat", "legalLon");
   initMap("tradeMap", "tradeAddress", "tradeLat", "tradeLon");
+// 🔹 ИНИЦИАЛИЗАЦИЯ CBS
+  initCbsIntegration();
 });
 
 /* ============================================================
@@ -891,6 +1015,7 @@ const pdfRequiredFieldLabels = {
   responsibleBranches: "Ответственный филиал",
   lkLogin: "Логин от lk.salyk.kg (e-mail)",   // ← НОВОЕ
   lkPassword: "Пароль от lk.salyk.kg",        // ← НОВОЕ
+  clientStatus: "Статус клиента",
   description: "Комментарий / описание"
   // Если хочешь, чтобы подпись была ОБЯЗАТЕЛЬНОЙ:
   // signatureData: "Подпись клиента"
