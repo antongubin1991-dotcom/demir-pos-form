@@ -631,8 +631,16 @@ document.addEventListener("DOMContentLoaded", () => {
   initMap("tradeMap", "tradeAddress", "tradeLat", "tradeLon");
 // 🔹 ИНИЦИАЛИЗАЦИЯ CBS
   initCbsIntegration();
+// 🔹 КНОПКА ОЧИСТКИ ФОРМЫ
+  const clearBtn = document.getElementById("clearForm");
+  if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+      if (confirm("Очистить все поля формы?")) {
+        clearFormFields();
+      }
+    });
+  }
 });
-
 /* ============================================================
    LEAFLET MAP + REVERSE GEOCODING
 ============================================================ */
