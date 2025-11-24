@@ -712,10 +712,6 @@ function initMap(mapId, addressInputId, latInputId, lonInputId) {
     .then((r) => r.json())
     .then((data) => {
       if (!data) return;
-
-      const pretty = formatNominatimAddress(data);
-      const text = pretty || data.display_name || "";
-
       if (text) {
         addrEl.value = text;
         localStorage.setItem(addressInputId, text);
@@ -1149,67 +1145,6 @@ function clearFormFields() {
   if (hiddenInput) hiddenInput.value = "";
   if (pdfImg) pdfImg.removeAttribute("src");
 }
-// Обработчик кнопки "Сохранить PDF"
-function initPdfExportForPrint() {
-  const btn = document.getElementById("savePdf");
-  if (!btn) return;
-
-  btn.addEventListener("click", async () => {
-    // 👉 БЛОКИРУЕМ сохранение, если есть незаполненные обязательные поля
-    if (!validatePdfRequiredFields()) {
-      return;
-    }
-
-    const payload = collectPdfFormData();
-    await sendPdfJsonToSLK(payload);
-
-    fillPdfTemplateForPrint();
-
-    const pdfElement = document.getElementById("pdfDocument");
-    if (!pdfElement) {
-      console.error("pdfDocument не найден");
-      return;
-    }
-
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) {
-      alert("Разрешите всплывающие окна для печати PDF");
-      return;
-    }
-
-    printWindow.document.open();
-    printWindow.document.write(`
-<!doctype html>
-<html lang="ru">
-<head>
-  <meta charset="utf-8" />
-  <title>Demir POS Form</title>
-</head>
-<body></body>
-</html>`);
-    printWindow.document.close();
-
-    const clone = pdfElement.cloneNode(true);
-    clone.style.display = "block";
-    clone.style.margin = "20px auto";
-    clone.style.width = "800px";
-
-    printWindow.document.body.appendChild(clone);
-
-    setTimeout(() => {
-      printWindow.focus();
-      printWindow.print();
-      printWindow.close();
-    }, 100);
-  });
-}
-
-// Инициализация нашего блока (не трогает твои существующие DOMContentLoaded)
-document.addEventListener("DOMContentLoaded", () => {
-  initSignaturePadForPdf();
-  initPdfExportForPrint();
-});
-
 /* ============================================================
    SIMPLE SPELLCHECK MOCK
 ============================================================ */
