@@ -906,7 +906,151 @@ async function sendPdfJsonToSLK(payload) {
     console.error("Сетевая ошибка отправки PDF JSON:", e);
   }
 }
+// Заполнение скрытого шаблона PDF
+function fillPdfTemplateForPrint() {
+  const pairs = [
+    ["companyName", "pdf_companyName"],
+    ["companyBin", "pdf_companyBin"],
+    ["companyHead", "pdf_companyHead"],
+    ["manager", "pdf_manager"],
+    ["phone", "pdf_phone"],
+    ["email", "pdf_email"],
+    ["legalAddress", "pdf_legalAddress"],
+    ["tradeAddress", "pdf_tradeAddress"],
+    ["businessObjectType", "pdf_businessObjectType"],
+    ["activityType", "pdf_activityType"],
+    ["posModel", "pdf_posModel"],
+    ["lkLogin", "pdf_lkLogin"],       // логин lk.salyk.kg
+    ["lkPassword", "pdf_lkPassword"], // пароль lk.salyk.kg
+    ["description", "pdf_description"],
+  ];
 
+  pairs.forEach(([srcId, destId]) => {
+    const src = document.getElementById(srcId);
+    const dest = document.getElementById(destId);
+    if (!dest) return;
+    const value = src ? (src.value || src.textContent || "").trim() : "";
+    dest.textContent = value;
+  });
+
+  // Район + УГНС
+  const districtSelect = document.getElementById("district");
+  const ugnsCode = document.getElementById("ugnsCode");
+  const pdfDistrictUgns = document.getElementById("pdf_district_ugns");
+  if (pdfDistrictUgns) {
+    const districtText = districtSelect
+      ? (districtSelect.options[districtSelect.selectedIndex]?.text || "").trim()
+      : "";
+    const ugns = ugnsCode ? (ugnsCode.value || "").trim() : "";
+    pdfDistrictUgns.textContent = [districtText, ugns].filter(Boolean).join(" / ");
+  }
+
+  // Комиссии
+  const commMap = [
+    ["comm_visa_dkb", "pdf_comm_visa_dkb"],
+    ["comm_bonus_dkb", "pdf_comm_bonus_dkb"],
+    ["comm_visa_other", "pdf_comm_visa_other"],
+    ["comm_elcart_dkb", "pdf_comm_elcart_dkb"],
+    ["comm_elcart_other", "pdf_comm_elcart_other"],
+    ["comm_mc_dkb", "pdf_comm_mc_dkb"],
+    ["comm_mc_other", "pdf_comm_mc_other"],
+  ];
+
+  commMap.forEach(([srcId, destId]) => {
+    const src = document.getElementById(srcId);
+    const dest = document.getElementById(destId);
+    if (!dest) return;
+    const v = src ? (src.value || "").trim() : "";
+    dest.textContent = v ? v.replace(".", ",") : "";
+  });
+
+  // Скидка
+  const discount10 = document.getElementById("discount_10");
+  const pdfDiscount10 = document.getElementById("pdf_discount_10");
+  if (pdfDiscount10) {
+    const v = discount10 ? (discount10.value || "").trim() : "";
+    pdfDiscount10.textContent = v ? v.replace(".", ",") : "";
+  }
+
+  // Дата заявки → pdf_date (если заполняешь поле applicationDate)
+  const appDateInput = document.querySelector('input[name="applicationDate"]');
+  const pdfDate = document.getElementById("pdf_date");
+  if (pdfDate && appDateInput && appDateInput.value) {
+    const d = new Date(appDateInput.value);
+    if (!isNaN(d.getTime())) {
+      const day = String(d.getDate()).padStart(2, "0");
+      const months = [
+        "января","февраля","марта","апреля","мая","июня",
+        "июля","августа","сентября","октября","ноября","декабря"
+      ];
+      const monthName = months[d.getMonth()];
+      const year = d.getFullYear();
+      pdfDate.textContent = `«${day}» ${monthName} ${year} г.`;
+    }
+  }
+
+  // Подпись
+  const sigData = getPdfFieldValue("signatureData");
+  const pdfSigImg = document.getElementById("pdf_signature");
+  if (pdfSigImg && sigData) {
+    pdfSigImg.src = sigData;
+  }
+}
+// Обработчик кнопки "Сохранить PDF"
+function initPdfExportForPrint() {
+  const btn = document.getElementById("savePdf");
+  if (!btn) return;
+
+  btn.addEventListener("click", async () => {
+    // блокируем сохранение, если есть незаполненные обязательные поля
+    if (!validatePdfRequiredFields()) {
+      return;
+    }
+
+    const payload = collectPdfFormData();
+    await sendPdfJsonToSLK(payload);
+
+    // 👉 здесь функция уже точно определена
+    fillPdfTemplateForPrint();
+
+    const pdfElement = document.getElementById("pdfDocument");
+    if (!pdfElement) {
+      console.error("pdfDocument не найден");
+      return;
+    }
+
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      alert("Разрешите всплывающие окна для печати PDF");
+      return;
+    }
+
+    printWindow.document.open();
+    printWindow.document.write(`
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <title>Demir POS Form</title>
+</head>
+<body></body>
+</html>`);
+    printWindow.document.close();
+
+    const clone = pdfElement.cloneNode(true);
+    clone.style.display = "block";
+    clone.style.margin = "20px auto";
+    clone.style.width = "800px";
+
+    printWindow.document.body.appendChild(clone);
+
+    setTimeout(() => {
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    }, 100);
+  });
+}
 // Подпись на canvas
 function initSignaturePadForPdf() {
   const canvas = document.getElementById("signaturePad");
