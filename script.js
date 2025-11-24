@@ -712,29 +712,67 @@ function formatNominatimAddress(data) {
 // Красивое форматирование адреса из ответа Nominatim
 function formatNominatimAddress(data) {
   if (!data || !data.address) {
-    return (data && data.display_name) ? data.display_name : "";
+    return data?.display_name || "";
   }
 
   const a = data.address;
   const parts = [];
 
-  const city = a.city || a.town || a.village;
-  if (city) parts.push("г. " + city);
+  // ---------- ГОРОД ----------
+  let city = a.city || a.town || a.village || "";
 
+  if (city) {
+    city = city
+      .replace(/^(г\.|город|гор\.|г|city)\s*/i, "") // убираем любое начало
+      .replace(/\s*(город|г\.)$/i, "") // убираем хвост
+      .trim();
+
+    // если Nominatim отдаёт "город Бишкек"
+    city = city.replace(/^город\s+/i, "").trim();
+
+    if (city.toLowerCase() === "бишкек" || city.toLowerCase() === "город бишкек") {
+      city = "Бишкек";
+    }
+
+    parts.push("г. " + city);
+  }
+
+  // ---------- РАЙОН ----------
   if (a.city_district) parts.push(a.city_district);
+
+  // ---------- Ж/м ----------
   if (a.suburb) parts.push(a.suburb);
 
-  const streetParts = [];
-  if (a.road) streetParts.push("ул. " + a.road);
-  if (a.house_number) streetParts.push(a.house_number);
-  if (streetParts.length) parts.push(streetParts.join(", "));
+  // ---------- УЛИЦА ----------
+  let street = a.road || "";
+  let house = a.house_number || "";
 
+  if (street) {
+    street = street
+      .replace(/^(ул\.?|улица|str\.?)\s*/i, "")       // убираем начало
+      .replace(/\s+(улица|street)$/i, "")            // убираем конец
+      .trim();
+
+    // частый баг Nominatim: Фрунзе Михаила → Михаила Фрунзе
+    street = street.replace(
+      /^([А-ЯЁ][а-яё]+)\s+([А-ЯЁ][а-яё]+)$/u,
+      "$2 $1"
+    );
+
+    // убираем удвоенные имена: «Фрунзе Михаила улица»
+    street = street.replace(/\s+улица$/i, "");
+
+    parts.push("ул. " + street + (house ? ", " + house : ""));
+  }
+
+  // ---------- ИНДЕКС ----------
   if (a.postcode) parts.push(a.postcode);
+
+  // ---------- СТРАНА ----------
   if (a.country) parts.push(a.country);
 
   return parts.join(", ");
 }
-
 function initMap(mapId, addressInputId, latInputId, lonInputId) {
   const mapDiv = document.getElementById(mapId);
   if (!mapDiv || typeof L === "undefined") return;
