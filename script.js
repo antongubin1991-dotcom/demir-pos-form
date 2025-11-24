@@ -540,12 +540,35 @@ function updateDistrictFromAddress(addressText) {
 /* ============================================================
    DOMContentLoaded INITIALIZATION
 ============================================================ */
+/* ============================================================
+   DOMContentLoaded INITIALIZATION
+============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
   // Ответственный филиал
   initResponsibleBranchesSelect();
-document.addEventListener("DOMContentLoaded", () => {
+
+  // Переключатель языка (кнопка + меню)
   const btn = document.getElementById("langBtn");
   const menu = document.getElementById("langMenu");
+
+  function applyTranslations(lang) {
+    document.querySelectorAll("[data-key]").forEach((el) => {
+      if (["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName)) return;
+      if (el.classList.contains("no-translate")) return;
+
+      const key = el.getAttribute("data-key");
+      const tr = window.translations?.[lang]?.[key];
+      if (tr) el.textContent = tr;
+    });
+
+    document.querySelectorAll("[data-placeholder]").forEach((el) => {
+      const key = el.getAttribute("data-placeholder");
+      const tr = window.translations?.[lang]?.[key];
+      if (tr) el.placeholder = tr;
+    });
+
+    localStorage.setItem("lang", lang);
+  }
 
   if (btn && menu) {
     btn.addEventListener("click", () => {
@@ -562,11 +585,23 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    // стартовое значение
+    // стартовое значение языка
     const savedLang = localStorage.getItem("lang") || "ru";
     btn.textContent = savedLang.toUpperCase() + " ▼";
     applyTranslations(savedLang);
   }
+
+  // здесь ниже должны идти остальные init:
+  // initBusinessSelects()
+  // initActivitySelects()
+  // initDistrictSelect()
+  // initPosModelSelect()
+  // initAutoDistrictDetect()
+  // initMap(...)
+  // initCbsIntegration()
+  // initSignaturePadForPdf()
+  // initPdfExportForPrint()
+  // initClearForm()
 });
   /* ---------- BUSINESS SELECTS ---------- */
   const bo = document.getElementById("businessObjectType");
