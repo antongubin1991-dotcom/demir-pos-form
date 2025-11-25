@@ -1329,7 +1329,23 @@ function validatePdfRequiredFields() {
       el.classList.add("field-error");
     }
   });
+     // === 🔥 ДОБАВЛЯЕМ ЭТОТ БЛОК ТУТ ===
+  const cb = validateRequiredCheckboxGroups();
+  if (!cb.ok) {
+    missing.push(...cb.missing);
+  }
+  // =================================
 
+  if (missing.length > 0) {
+    alert(
+      "Пожалуйста, заполните обязательные поля:\n\n- " +
+      missing.join("\n- ")
+    );
+    return false;
+  }
+
+  return true;
+}
   // --- (B) Проверка обязательной группы: Тип заявки ---
   const typeGroup = [
     document.getElementById("req_new"),
