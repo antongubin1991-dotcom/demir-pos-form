@@ -1318,6 +1318,7 @@ function validatePdfRequiredFields() {
 
   const missing = [];
 
+  // --- (A) Проверка обычных полей ---
   Object.keys(pdfRequiredFieldLabels).forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -1329,6 +1330,33 @@ function validatePdfRequiredFields() {
     }
   });
 
+  // --- (B) Проверка обязательной группы: Тип заявки ---
+  const typeGroup = [
+    document.getElementById("req_new"),
+    document.getElementById("req_replace"),
+    document.getElementById("req_change"),
+    document.getElementById("req_qr")
+  ];
+
+  const typeSelected = typeGroup.some(ch => ch && ch.checked);
+  if (!typeSelected) {
+    missing.push("Тип заявки (нужно выбрать хотя бы один пункт)");
+    typeGroup.forEach(ch => ch?.classList.add("field-error"));
+  }
+
+  // --- (C) Проверка обязательной группы: POS-терминал ---
+  const posGroup = [
+    document.getElementById("pos_with_kkm"),
+    document.getElementById("pos_without_kkm")
+  ];
+
+  const posSelected = posGroup.some(ch => ch && ch.checked);
+  if (!posSelected) {
+    missing.push("POS-терминал (С ККМ или Без ККМ — обязательно)");
+    posGroup.forEach(ch => ch?.classList.add("field-error"));
+  }
+
+  // --- (D) Если есть ошибки — выводим предупреждение ---
   if (missing.length > 0) {
     alert(
       "Пожалуйста, заполните обязательные поля:\n\n- " +
