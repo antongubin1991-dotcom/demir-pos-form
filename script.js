@@ -551,30 +551,60 @@ function initGpsLocation() {
     btn.disabled = true;
 
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
         const lat = pos.coords.latitude.toFixed(6);
         const lon = pos.coords.longitude.toFixed(6);
 
-        // Заполняем поля
+        // Заполняем LAT/LON
         document.getElementById("tradeLat").value = lat;
         document.getElementById("tradeLon").value = lon;
 
-        // Обновляем карту
+        // Обновляем карту, если есть функция
         if (typeof setMapPosition === "function") {
           setMapPosition("tradeMap", lat, lon);
+        }
+
+        // 🔥 Получаем адрес через Nominatim
+        let address = "";
+        try {
+          const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=ru`;
+          const resp = await fetch(url, {
+            headers: {
+              "User-Agent": "DemirPOSForm/1.0"
+            }
+          });
+          const data = await resp.json();
+
+          address = data.display_name || "";
+        } catch (e) {
+          console.warn("Ошибка геокодирования:", e);
+        }
+
+        // Вставляем адрес
+        if (address) {
+          document.getElementById("tradeAddress").value = address;
+
+          // Если у тебя есть автоопределение района
+          if (typeof updateDistrictFromAddress === "function") {
+            updateDistrictFromAddress(address);
+          }
+        } else {
+          alert("Координаты получены, но адрес определить не удалось.");
         }
 
         btn.textContent = "Определить по GPS";
         btn.disabled = false;
       },
+
       (err) => {
-        alert("Не удалось определить местоположение: " + err.message);
+        alert("Ошибка определения GPS: " + err.message);
         btn.textContent = "Определить по GPS";
         btn.disabled = false;
       },
+
       {
-        enableHighAccuracy: true,  // максимальная точность
-        timeout: 10000,
+        enableHighAccuracy: true,
+        timeout: 15000,
         maximumAge: 0
       }
     );
