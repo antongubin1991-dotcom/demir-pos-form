@@ -1342,24 +1342,6 @@ function validateRequiredCheckboxGroups() {
     missing: missingGroups
   };
 }
-  // --- POS-терминал ---
-  const posGroup = [
-    document.getElementById("pos_with_kkm"),
-    document.getElementById("pos_without_kkm")
-  ];
-
-  const posSelected = posGroup.some(ch => ch && ch.checked);
-  if (!posSelected) {
-    missing.push("POS-терминал (С ККМ или Без ККМ)");
-    posGroup.forEach(ch => ch?.classList.add("field-error"));
-  }
-
-  return {
-    ok: missing.length === 0,
-    missing
-  };
-}
-
 /**
  * Основная функция проверки перед печатью/отправкой
  */
