@@ -1165,13 +1165,25 @@ function initSignaturePadForPdf() {
     e.preventDefault();
     stopDraw();
   });
-
   if (clearBtn) {
     clearBtn.addEventListener("click", () => {
+      const dpr = window.devicePixelRatio || 1;
+
+      // сбрасываем трансформацию, чистим весь холст
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // возвращаем масштаб
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      // чистим hidden input
       if (hiddenInput) hiddenInput.value = "";
+
+      // чистим картинку для PDF
       const pdfImg = document.getElementById("pdf_signature");
-      if (pdfImg) pdfImg.removeAttribute("src");
+      if (pdfImg) {
+        pdfImg.removeAttribute("src");
+        pdfImg.src = "";
+      }
     });
   }
 }
