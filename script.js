@@ -1317,22 +1317,31 @@ function clearPdfValidationErrors() {
  * Проверка обязательных чекбокс-групп
  */
 function validateRequiredCheckboxGroups() {
-  const missing = [];
+  const missingGroups = [];
 
   // --- Тип заявки ---
-  const typeGroup = [
-    document.getElementById("req_new"),
-    document.getElementById("req_replace"),
-    document.getElementById("req_change"),
-    document.getElementById("req_qr")
-  ];
+  const typeGroup = document.querySelectorAll('input[name="requestType"]');
+  const typeSelected = Array.from(typeGroup).some(ch => ch.checked);
 
-  const typeSelected = typeGroup.some(ch => ch && ch.checked);
   if (!typeSelected) {
-    missing.push("Тип заявки");
-    typeGroup.forEach(ch => ch?.classList.add("field-error"));
+    missingGroups.push("Тип заявки (нужно выбрать хотя бы один вариант)");
+    typeGroup.forEach(ch => ch.classList.add("field-error"));
   }
 
+  // --- POS-терминал ---
+  const posGroup = document.querySelectorAll('input[name="terminalType"]');
+  const posSelected = Array.from(posGroup).some(ch => ch.checked);
+
+  if (!posSelected) {
+    missingGroups.push("Тип POS-терминала (С ККМ или Без ККМ)");
+    posGroup.forEach(ch => ch.classList.add("field-error"));
+  }
+
+  return {
+    ok: missingGroups.length === 0,
+    missing: missingGroups
+  };
+}
   // --- POS-терминал ---
   const posGroup = [
     document.getElementById("pos_with_kkm"),
