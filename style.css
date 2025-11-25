@@ -390,88 +390,40 @@ textarea.field-input {
   color: var(--text-muted);
 }
 /* ============================================================
-   PRINT LAYOUT — ПЕЧАТАЕМ ТОЛЬКО PDF-ДОКУМЕНТ
+   PRINT LAYOUT — печатаем только pdfDocument
 ============================================================ */
-/* По умолчанию скрываем шаблон PDF */
 #pdfDocument {
   display: none;
 }
 
-/* Режим печати */
 @media print {
   body {
     margin: 0;
+    padding: 0;
   }
 
-  /* Скрыть всё… */
+  /* скрываем всё */
   body * {
-    visibility: hidden;
+    visibility: hidden !important;
   }
 
-  /* …кроме pdfDocument */
+  /* показываем только PDF */
   #pdfDocument, #pdfDocument * {
-    visibility: visible;
+    visibility: visible !important;
   }
 
-  /* Показать pdfDocument на весь лист */
   #pdfDocument {
     display: block !important;
     position: absolute;
     left: 0;
     top: 0;
-    width: 100%;
+
+    /* НЕ ДЕЛАЕМ width:100%! */
+    width: 800px;         /* как в твоем шаблоне */
+    margin: 0 auto;       /* по центру листа */
+    padding: 0;
+    zoom: 0.85;           /* гарантирует влезание в А4 */
   }
-}
-.signature-box {
-  margin-top: 8px;
-  padding: 8px;
-  border: 1px solid #e5e7eb;   /* рамка */
-  border-radius: 8px;
-  background: #ffffff;
-}
-
-#signaturePad {
-  width: 100%;
-  height: 200px;
-  display: block;
-  border: 1px dashed #9ca3af;  /* внутренняя пунктирная рамка */
-  border-radius: 6px;
-  background: #fff;
-  cursor: crosshair;
-}
-.lang-switch {
-  position: relative;
-}
-
-.lang-btn {
-  background: rgba(255,255,255,0.85);
-  border: none;
-  padding: 6px 14px;
-  border-radius: 18px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.lang-menu {
-  position: absolute;
-  right: 0;
-  top: 36px;
-  background: white;
-  border-radius: 8px;
-  padding: 4px 0;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  z-index: 50;
-}
-
-.lang-menu div {
-  padding: 8px 14px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.lang-menu div:hover {
-  background: #f0f0f0;
 }
 
 .hidden { display: none; }
