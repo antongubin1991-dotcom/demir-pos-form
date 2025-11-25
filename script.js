@@ -1308,45 +1308,18 @@ const pdfRequiredFieldLabels = {
 };
 
 function clearPdfValidationErrors() {
-  document.querySelectorAll(".field-error").forEach((el) => {
-    el.classList.remove("field-error");
-  });
+  document.querySelectorAll(".field-error").forEach(el =>
+    el.classList.remove("field-error")
+  );
 }
 
-function validatePdfRequiredFields() {
-  clearPdfValidationErrors();
-
+/**
+ * Проверка обязательных чекбокс-групп
+ */
+function validateRequiredCheckboxGroups() {
   const missing = [];
 
-  // --- (A) Проверка обычных полей ---
-  Object.keys(pdfRequiredFieldLabels).forEach((id) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-
-    const value = (el.value || el.textContent || "").trim();
-    if (!value) {
-      missing.push(pdfRequiredFieldLabels[id]);
-      el.classList.add("field-error");
-    }
-  });
-     // === 🔥 ДОБАВЛЯЕМ ЭТОТ БЛОК ТУТ ===
-  const cb = validateRequiredCheckboxGroups();
-  if (!cb.ok) {
-    missing.push(...cb.missing);
-  }
-  // =================================
-
-  if (missing.length > 0) {
-    alert(
-      "Пожалуйста, заполните обязательные поля:\n\n- " +
-      missing.join("\n- ")
-    );
-    return false;
-  }
-
-  return true;
-}
-  // --- (B) Проверка обязательной группы: Тип заявки ---
+  // --- Тип заявки ---
   const typeGroup = [
     document.getElementById("req_new"),
     document.getElementById("req_replace"),
@@ -1356,11 +1329,11 @@ function validatePdfRequiredFields() {
 
   const typeSelected = typeGroup.some(ch => ch && ch.checked);
   if (!typeSelected) {
-    missing.push("Тип заявки (нужно выбрать хотя бы один пункт)");
+    missing.push("Тип заявки");
     typeGroup.forEach(ch => ch?.classList.add("field-error"));
   }
 
-  // --- (C) Проверка обязательной группы: POS-терминал ---
+  // --- POS-терминал ---
   const posGroup = [
     document.getElementById("pos_with_kkm"),
     document.getElementById("pos_without_kkm")
@@ -1368,16 +1341,45 @@ function validatePdfRequiredFields() {
 
   const posSelected = posGroup.some(ch => ch && ch.checked);
   if (!posSelected) {
-    missing.push("POS-терминал (С ККМ или Без ККМ — обязательно)");
+    missing.push("POS-терминал (С ККМ или Без ККМ)");
     posGroup.forEach(ch => ch?.classList.add("field-error"));
   }
 
-  // --- (D) Если есть ошибки — выводим предупреждение ---
+  return {
+    ok: missing.length === 0,
+    missing
+  };
+}
+
+/**
+ * Основная функция проверки перед печатью/отправкой
+ */
+function validatePdfRequiredFields() {
+  clearPdfValidationErrors();
+
+  const missing = [];
+
+  // --- Проверяем обычные текстовые поля ---
+  Object.keys(pdfRequiredFieldLabels).forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    const value = (el.value || el.textContent || "").trim();
+    if (!value) {
+      missing.push(pdfRequiredFieldLabels[id]);
+      el.classList.add("field-error");
+    }
+  });
+
+  // --- Проверяем чекбоксы ---
+  const cb = validateRequiredCheckboxGroups();
+  if (!cb.ok) {
+    missing.push(...cb.missing);
+  }
+
+  // Если что-то не заполнено → выводим список
   if (missing.length > 0) {
-    alert(
-      "Пожалуйста, заполните обязательные поля:\n\n- " +
-      missing.join("\n- ")
-    );
+    alert("Пожалуйста, заполните обязательные поля:\n\n- " + missing.join("\n- "));
     return false;
   }
 
