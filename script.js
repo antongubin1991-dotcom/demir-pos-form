@@ -537,6 +537,49 @@ function updateDistrictFromAddress(addressText) {
     localStorage.setItem("ugnsCode", match.code);
   }
 }
+function initGpsLocation() {
+  const btn = document.getElementById("geoLocate");
+  if (!btn) return;
+
+  btn.addEventListener("click", () => {
+    if (!navigator.geolocation) {
+      alert("Ваш браузер не поддерживает GPS.");
+      return;
+    }
+
+    btn.textContent = "Определение...";
+    btn.disabled = true;
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude.toFixed(6);
+        const lon = pos.coords.longitude.toFixed(6);
+
+        // Заполняем поля
+        document.getElementById("tradeLat").value = lat;
+        document.getElementById("tradeLon").value = lon;
+
+        // Обновляем карту
+        if (typeof setMapPosition === "function") {
+          setMapPosition("tradeMap", lat, lon);
+        }
+
+        btn.textContent = "Определить по GPS";
+        btn.disabled = false;
+      },
+      (err) => {
+        alert("Не удалось определить местоположение: " + err.message);
+        btn.textContent = "Определить по GPS";
+        btn.disabled = false;
+      },
+      {
+        enableHighAccuracy: true,  // максимальная точность
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  });
+}
 /* ============================================================
    DOMContentLoaded INITIALIZATION (Инициализация при загрузке)
 ============================================================ */
@@ -690,8 +733,11 @@ document.addEventListener("DOMContentLoaded", () => {
   if (typeof initSignaturePadForPdf === 'function') {
     initSignaturePadForPdf();
   }
-
-  // 🔹 11. Инициализация кнопки "Сохранить PDF"
+   // 🔹 11. Автозаполнение координат по GPS
+if (typeof initGpsLocation === 'function') {
+  initGpsLocation();
+}
+  // 🔹 12. Инициализация кнопки "Сохранить PDF"
   if (typeof initPdfExportForPrint === 'function') {
     initPdfExportForPrint();
   }
