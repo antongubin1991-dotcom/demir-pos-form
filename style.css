@@ -368,7 +368,27 @@ textarea.field-input {
   transform: translateY(0);
   box-shadow: 0 4px 12px var(--primary-soft);
 }
+/* ============================================================
+   SIGNATURE
+============================================================ */
 
+.signature-box {
+  margin-top: 8px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-section);
+  height: 140px;          /* фиксируем высоту области подписи */
+  padding: 4px;
+  overflow: hidden;
+}
+
+#signaturePad {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;      /* чтобы на телефоне не скроллилось */
+  cursor: crosshair;
+}
 /* ============================================================
    MISC
 ============================================================ */
