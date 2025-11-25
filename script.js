@@ -610,6 +610,24 @@ function initGpsLocation() {
     );
   });
 }
+function scrollToFirstError() {
+  const first = document.querySelector(".field-error");
+  if (!first) return;
+
+  first.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
+
+  // слегка подсветим миганием
+  first.style.transition = "background 0.3s";
+  first.style.backgroundColor = "#ffdddd";
+
+  setTimeout(() => {
+    first.style.backgroundColor = "";
+  }, 800);
+}
+
 /* ============================================================
    DOMContentLoaded INITIALIZATION (Инициализация при загрузке)
 ============================================================ */
@@ -1371,6 +1389,7 @@ function validatePdfRequiredFields() {
   // Если что-то не заполнено → выводим список
   if (missing.length > 0) {
     alert("Пожалуйста, заполните обязательные поля:\n\n- " + missing.join("\n- "));
+    scrollToFirstError();       // 🔥 АВТОПРОКРУТКА
     return false;
   }
 
