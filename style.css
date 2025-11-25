@@ -266,8 +266,8 @@ textarea.field-input {
   min-height: 80px;
 }
 .field-error {
-  border-color: #e11d48 !important; /* ярко-красный */
-  background-color: #fee2e2;        /* светло-красный фон */
+  border: 2px solid #e22 !important;
+  background: #ffecec !important;
 }
 
 /* ============================================================
