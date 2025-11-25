@@ -1062,7 +1062,6 @@ function initPdfExportForPrint() {
     }, 100);
   });
 }
-// Подпись на canvas
 function initSignaturePadForPdf() {
   const canvas = document.getElementById("signaturePad");
   const clearBtn = document.getElementById("signatureClear");
@@ -1079,9 +1078,13 @@ function initSignaturePadForPdf() {
     const rect = canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
 
+    // задаём физический размер
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
+
+    // масштабируем контекст
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, rect.width, rect.height);
   }
 
   resizeCanvas();
@@ -1127,12 +1130,18 @@ function initSignaturePadForPdf() {
   function stopDraw() {
     if (!drawing) return;
     drawing = false;
+
     const dataURL = canvas.toDataURL("image/png");
+
     if (hiddenInput) hiddenInput.value = dataURL;
+
     const pdfImg = document.getElementById("pdf_signature");
-    if (pdfImg) pdfImg.src = dataURL;
+    if (pdfImg) {
+      pdfImg.src = dataURL;
+    }
   }
 
+  // мышь
   canvas.addEventListener("mousedown", (e) => {
     e.preventDefault();
     const { x, y } = getPos(e);
@@ -1149,6 +1158,7 @@ function initSignaturePadForPdf() {
     stopDraw();
   });
 
+  // тач
   canvas.addEventListener("touchstart", (e) => {
     e.preventDefault();
     const { x, y } = getPos(e);
@@ -1165,15 +1175,19 @@ function initSignaturePadForPdf() {
     e.preventDefault();
     stopDraw();
   });
+
+  // ОЧИСТКА
   if (clearBtn) {
     clearBtn.addEventListener("click", () => {
       const dpr = window.devicePixelRatio || 1;
 
-      // сбрасываем трансформацию, чистим весь холст
+      // сбрасываем трансформацию, чистим полностью
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      // возвращаем масштаб
+
+      // возвращаем масштаб и чистое состояние
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.beginPath();
 
       // чистим hidden input
       if (hiddenInput) hiddenInput.value = "";
@@ -1184,10 +1198,14 @@ function initSignaturePadForPdf() {
         pdfImg.removeAttribute("src");
         pdfImg.src = "";
       }
+
+      // на всякий случай
+      drawing = false;
+      lastX = 0;
+      lastY = 0;
     });
   }
 }
-
 // ============================================================
 // ВАЛИДАЦИЯ ОБЯЗАТЕЛЬНЫХ ПОЛЕЙ ДЛЯ PDF
 // ============================================================
