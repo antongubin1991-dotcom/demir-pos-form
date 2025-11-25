@@ -676,14 +676,24 @@ document.addEventListener("DOMContentLoaded", () => {
     clearBtn.addEventListener("click", () => {
       if (confirm("Очистить все поля формы?")) {
         if (typeof clearFormFields === 'function') {
-            clearFormFields();
+          clearFormFields();
         } else {
-            // Если функции нет, делаем простую очистку
-            localStorage.clear();
-            location.reload();
+          // Если функции нет, делаем простую очистку
+          localStorage.clear();
+          location.reload();
         }
       }
     });
+  }
+
+  // 🔹 10. Инициализация подписи
+  if (typeof initSignaturePadForPdf === 'function') {
+    initSignaturePadForPdf();
+  }
+
+  // 🔹 11. Инициализация кнопки "Сохранить PDF"
+  if (typeof initPdfExportForPrint === 'function') {
+    initPdfExportForPrint();
   }
 });
 /* ============================================================
