@@ -538,117 +538,9 @@ function updateDistrictFromAddress(addressText) {
   }
 }
 /* ============================================================
-   DOMContentLoaded INITIALIZATION
+   HELPER FUNCTIONS (Вспомогательные функции)
 ============================================================ */
-document.addEventListener("DOMContentLoaded", () => {
-  // Ответственный филиал
-  initResponsibleBranchesSelect();
-document.addEventListener("DOMContentLoaded", () => {
-  const btn = document.getElementById("langBtn");
-  const menu = document.getElementById("langMenu");
 
-  if (btn && menu) {
-    btn.addEventListener("click", () => {
-      menu.classList.toggle("hidden");
-    });
-
-    menu.querySelectorAll("div").forEach(item => {
-      item.addEventListener("click", () => {
-        const lang = item.dataset.lang;
-        localStorage.setItem("lang", lang);
-        btn.textContent = lang.toUpperCase() + " ▼";
-        applyTranslations(lang);
-        menu.classList.add("hidden");
-      });
-    });
-
-    // стартовое значение
-    const savedLang = localStorage.getItem("lang") || "ru";
-    btn.textContent = savedLang.toUpperCase() + " ▼";
-    applyTranslations(savedLang);
-  }
-});
-  /* ---------- BUSINESS SELECTS ---------- */
-  const bo = document.getElementById("businessObjectType");
-  const at = document.getElementById("activityType");
-
-  if (bo) {
-    businessObjects.forEach((v) => {
-      const opt = document.createElement("option");
-      opt.value = v;
-      opt.textContent = v;
-      bo.appendChild(opt);
-    });
-
-    const savedBO = localStorage.getItem("businessObjectType");
-    if (savedBO) bo.value = savedBO;
-  }
-
-  if (at) {
-    activityTypes.forEach((v) => {
-      const opt = document.createElement("option");
-      opt.value = v;
-      opt.textContent = v;
-      at.appendChild(opt);
-    });
-
-    const savedAT = localStorage.getItem("activityType");
-    if (savedAT) at.value = savedAT;
-  }
-
-  /* ---------- DISTRICTS / UGNS (заполнение списка) ---------- */
-  const districtSelect = document.getElementById("district");
-  const ugnsInput = document.getElementById("ugnsCode");
-
-  if (districtSelect && ugnsInput) {
-    districtsData.forEach((d) => {
-      const opt = document.createElement("option");
-      opt.value = d.code;
-      opt.textContent = d.name;
-      districtSelect.appendChild(opt);
-    });
-
-    const savedDistrict = localStorage.getItem("district");
-    const savedUgns = localStorage.getItem("ugnsCode");
-
-    if (savedDistrict) {
-      districtSelect.value = savedDistrict;
-      ugnsInput.value = savedUgns || savedDistrict;
-    }
-
-    districtSelect.addEventListener("change", () => {
-      const code = districtSelect.value;
-      ugnsInput.value = code;
-      localStorage.setItem("district", code);
-      localStorage.setItem("ugnsCode", code);
-    });
-  }
-
-  /* ---------- POS MODEL ---------- */
-  const posModel = document.getElementById("posModel");
-  if (posModel) {
-    const savedPos = localStorage.getItem("posModel");
-    if (savedPos) posModel.value = savedPos;
-
-    posModel.addEventListener("change", () => {
-      localStorage.setItem("posModel", posModel.value);
-    });
-  }
-
-  /* ---------- TRADE ADDRESS → АВТО РАЙОН/УГНС ---------- */
-  const tradeAddress = document.getElementById("tradeAddress");
-  if (tradeAddress) {
-    tradeAddress.addEventListener("blur", () => {
-      updateDistrictFromAddress(tradeAddress.value);
-    });
-    tradeAddress.addEventListener("change", () => {
-      updateDistrictFromAddress(tradeAddress.value);
-    });
-
-    if (tradeAddress.value) {
-      updateDistrictFromAddress(tradeAddress.value);
-    }
-  }
 // Красивое форматирование адреса из ответа Nominatim
 function formatNominatimAddress(data) {
   if (!data || !data.address) {
@@ -714,17 +606,152 @@ function formatNominatimAddress(data) {
 
   return parts.join(", ");
 }
-  /* ---------- LEAFLET MAPS ---------- */
-  initMap("legalMap", "legalAddress", "legalLat", "legalLon");
-  initMap("tradeMap", "tradeAddress", "tradeLat", "tradeLon");
-// 🔹 ИНИЦИАЛИЗАЦИЯ CBS
-  initCbsIntegration();
-// 🔹 КНОПКА ОЧИСТКИ ФОРМЫ
+
+/* ============================================================
+   DOMContentLoaded INITIALIZATION (Инициализация при загрузке)
+============================================================ */
+document.addEventListener("DOMContentLoaded", () => {
+  
+  // 1. Ответственный филиал
+  if (typeof initResponsibleBranchesSelect === 'function') {
+      initResponsibleBranchesSelect();
+  }
+
+  // 2. Языковое меню (Language Menu)
+  const btn = document.getElementById("langBtn");
+  const menu = document.getElementById("langMenu");
+
+  if (btn && menu) {
+    btn.addEventListener("click", () => {
+      menu.classList.toggle("hidden");
+    });
+
+    menu.querySelectorAll("div").forEach(item => {
+      item.addEventListener("click", () => {
+        const lang = item.dataset.lang;
+        localStorage.setItem("lang", lang);
+        btn.textContent = lang.toUpperCase() + " ▼";
+        if (typeof applyTranslations === 'function') {
+            applyTranslations(lang);
+        }
+        menu.classList.add("hidden");
+      });
+    });
+
+    // стартовое значение
+    const savedLang = localStorage.getItem("lang") || "ru";
+    btn.textContent = savedLang.toUpperCase() + " ▼";
+    if (typeof applyTranslations === 'function') {
+        applyTranslations(savedLang);
+    }
+  }
+
+  // 3. BUSINESS SELECTS (Типы бизнеса)
+  const bo = document.getElementById("businessObjectType");
+  const at = document.getElementById("activityType");
+
+  if (bo && typeof businessObjects !== 'undefined') {
+    businessObjects.forEach((v) => {
+      const opt = document.createElement("option");
+      opt.value = v;
+      opt.textContent = v;
+      bo.appendChild(opt);
+    });
+
+    const savedBO = localStorage.getItem("businessObjectType");
+    if (savedBO) bo.value = savedBO;
+  }
+
+  if (at && typeof activityTypes !== 'undefined') {
+    activityTypes.forEach((v) => {
+      const opt = document.createElement("option");
+      opt.value = v;
+      opt.textContent = v;
+      at.appendChild(opt);
+    });
+
+    const savedAT = localStorage.getItem("activityType");
+    if (savedAT) at.value = savedAT;
+  }
+
+  // 4. DISTRICTS / UGNS (Районы и УГНС)
+  const districtSelect = document.getElementById("district");
+  const ugnsInput = document.getElementById("ugnsCode");
+
+  if (districtSelect && ugnsInput && typeof districtsData !== 'undefined') {
+    districtsData.forEach((d) => {
+      const opt = document.createElement("option");
+      opt.value = d.code;
+      opt.textContent = d.name;
+      districtSelect.appendChild(opt);
+    });
+
+    const savedDistrict = localStorage.getItem("district");
+    const savedUgns = localStorage.getItem("ugnsCode");
+
+    if (savedDistrict) {
+      districtSelect.value = savedDistrict;
+      ugnsInput.value = savedUgns || savedDistrict;
+    }
+
+    districtSelect.addEventListener("change", () => {
+      const code = districtSelect.value;
+      ugnsInput.value = code;
+      localStorage.setItem("district", code);
+      localStorage.setItem("ugnsCode", code);
+    });
+  }
+
+  // 5. POS MODEL
+  const posModel = document.getElementById("posModel");
+  if (posModel) {
+    const savedPos = localStorage.getItem("posModel");
+    if (savedPos) posModel.value = savedPos;
+
+    posModel.addEventListener("change", () => {
+      localStorage.setItem("posModel", posModel.value);
+    });
+  }
+
+  // 6. TRADE ADDRESS -> AUTO DISTRICT (Адрес -> Район)
+  const tradeAddress = document.getElementById("tradeAddress");
+  if (tradeAddress) {
+    const handleAddressUpdate = () => {
+        if (typeof updateDistrictFromAddress === 'function') {
+            updateDistrictFromAddress(tradeAddress.value);
+        }
+    };
+
+    tradeAddress.addEventListener("blur", handleAddressUpdate);
+    tradeAddress.addEventListener("change", handleAddressUpdate);
+
+    if (tradeAddress.value) {
+      handleAddressUpdate();
+    }
+  }
+  // 7. LEAFLET MAPS (Карты)
+  if (typeof initMap === 'function') {
+      initMap("legalMap", "legalAddress", "legalLat", "legalLon");
+      initMap("tradeMap", "tradeAddress", "tradeLat", "tradeLon");
+  }
+
+  // 8. CBS INTEGRATION (Интеграция с базой)
+  if (typeof initCbsIntegration === 'function') {
+      initCbsIntegration();
+  }
+
+  // 9. КНОПКА ОЧИСТКИ ФОРМЫ
   const clearBtn = document.getElementById("clearForm");
   if (clearBtn) {
     clearBtn.addEventListener("click", () => {
       if (confirm("Очистить все поля формы?")) {
-        clearFormFields();
+        if (typeof clearFormFields === 'function') {
+            clearFormFields();
+        } else {
+            // Если функции нет, делаем простую очистку
+            localStorage.clear();
+            location.reload();
+        }
       }
     });
   }
