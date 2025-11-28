@@ -1230,7 +1230,37 @@ function initPdfExportForPrint() {
   await sendToSLK(slkPayload);
 
   // ← PDF заполняется своим шаблоном (оставляем как есть)
-  fillPdfTemplateForPrint();
+  function initPdfExportForPrint() {
+  const btn = document.getElementById("savePdf");
+  if (!btn) return;
+
+  btn.addEventListener("click", async () => {
+    // Проверка обязательных полей
+    if (!validatePdfRequiredFields()) {
+      return;
+    }
+
+    // --- 🔥 Отправка в SLK правильного JSON ---
+    if (typeof collectFormData === "function" && typeof sendToSLK === "function") {
+
+      const slkPayload = collectFormData();
+
+      console.log("SLK JSON →", JSON.stringify(slkPayload, null, 2));
+
+      try {
+        await sendToSLK(slkPayload);
+      } catch (e) {
+        console.error("Ошибка отправки SLK JSON:", e);
+      }
+
+    } else {
+      console.error("collectFormData() или sendToSLK() отсутствуют!");
+    }
+
+    // --- 🔥 Заполняем PDF ---
+    fillPdfTemplateForPrint();
+
+    // --- 🔥 Печать ---
     const pdfElement = document.getElementById("pdfDocument");
     if (!pdfElement) {
       console.error("pdfDocument не найден");
@@ -1239,20 +1269,16 @@ function initPdfExportForPrint() {
 
     const printWindow = window.open("", "_blank");
     if (!printWindow) {
-      alert("Разрешите всплывающие окна для печати PDF");
+      alert("Разрешите всплывающие окна");
       return;
     }
 
-    printWindow.document.open();
     printWindow.document.write(`
-<!doctype html>
-<html lang="ru">
-<head>
-  <meta charset="utf-8" />
-  <title>Demir POS Form</title>
-</head>
-<body></body>
-</html>`);
+      <html>
+      <head><meta charset="utf-8"><title>Demir POS Form</title></head>
+      <body></body>
+      </html>
+    `);
     printWindow.document.close();
 
     const clone = pdfElement.cloneNode(true);
@@ -1263,10 +1289,9 @@ function initPdfExportForPrint() {
     printWindow.document.body.appendChild(clone);
 
     setTimeout(() => {
-      printWindow.focus();
       printWindow.print();
       printWindow.close();
-    }, 100);
+    }, 200);
   });
 }
 function initSignaturePadForPdf() {
