@@ -20,7 +20,7 @@ if (themeToggle) {
 /* ============================================================
    SLK ENDPOINT (URL ДЛЯ ОТПРАВКИ JSON)
 ============================================================ */
-const SLK_ENDPOINT = "";  // например: "https://slk.goodoo.kg/api/demir-pos-form"
+const SLK_ENDPOINT = ""; // например: "https://slk.goodoo.kg/api/demir-pos-form"
 
 /* ============================================================
    SLK JSON HELPERS
@@ -29,11 +29,12 @@ function getFieldValue(id) {
   const el = document.getElementById(id);
   return el ? (el.value || "").trim() : "";
 }
+
 function collectFormDataForSLK() {
   return {
     user: {
       username: getFieldValue("lkLogin"),     // Логин lk.salyk.kg
-      password: getFieldValue("lkPassword")   // Пароль lk.salyk.kg
+      password: getFieldValue("lkPassword")  // Пароль lk.salyk.kg
     },
 
     taxpayer: {
@@ -52,27 +53,29 @@ function collectFormDataForSLK() {
       contractNumber: getFieldValue("contractNumber"),       // Договор №
       contractDate: getFieldValue("contractDate"),           // Дата договора
 
-      businessObjectType: businessObjectTypeCodes[getFieldValue("businessObjectType")] || 0,
-      businessActivityType: activityTypeCodes[getFieldValue("activityType")] || 0,
+      businessObjectType:
+        businessObjectTypeCodes[getFieldValue("businessObjectType")] || 0,
+      businessActivityType:
+        activityTypeCodes[getFieldValue("activityType")] || 0,
 
       taxAuthority: getFieldValue("ugnsCode") || 999,        // УГНС
 
-      vatPayer: false,  // если нужно — сделаем чекбокс
+      vatPayer: false,                                       // TODO: вынести в чекбокс
 
       placeName: getFieldValue("tradeAddress"),              // Полный адрес ТТ
-      placeType: getFieldValue("businessObjectType"),        // Тип места (пока как есть)
+      placeType: getFieldValue("businessObjectType"),        // Тип места (как в селекте)
 
       addressPostalCode: "720000",                           // Индекс (фиксированный)
-      addressArea: getFieldValue("district"),                // Адм. единица
+      addressArea: getFieldValue("district"),                // Адм. единица (код)
       addressCity: "Бишкек",                                 // Можно определять автоматически
-      addressStreet: getFieldValue("tradeAddress"),          // Улица (можно парсить)
-      addressBuilding: "",                                   // Можем автоматически выделить номер дома
+      addressStreet: getFieldValue("tradeAddress"),          // TODO: парсить улицу
+      addressBuilding: "",                                   // TODO: выделять дом
 
       addressLatitude: getFieldValue("tradeLat"),
       addressLongitude: getFieldValue("tradeLon"),
 
-      taxationTypes: [0],        // по умолчанию (можно сделать checkbox)
-      paymentObjects: [0],       // по умолчанию
+      taxationTypes: [0],                                    // по умолчанию
+      paymentObjects: [0],                                   // по умолчанию
 
       Doc1: "",
       Doc2: "",
@@ -81,7 +84,7 @@ function collectFormDataForSLK() {
     }
   };
 }
-/* Отправка данных в SLK (или лог в консоль, если эндпоинт не задан) */
+
 async function sendToSLK(payload) {
   try {
     if (!SLK_ENDPOINT) {
@@ -91,9 +94,7 @@ async function sendToSLK(payload) {
 
     const response = await fetch(SLK_ENDPOINT, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
 
@@ -109,12 +110,13 @@ async function sendToSLK(payload) {
     alert("Сетевая ошибка при отправке в SLK. Подробности смотри в консоли.");
   }
 }
+
 /* ============================================================
    CBS ENDPOINT (поиск по ИНН для действующих клиентов)
 ============================================================ */
 const CBS_ENDPOINT = ""; 
 // например: "/api/cbs/client-by-inn"
-// ожидаем, что backend вернёт JSON вида:
+// ожидаем JSON:
 // {
 //   "companyName": "...",
 //   "companyBin": "...",
@@ -125,6 +127,7 @@ const CBS_ENDPOINT = "";
 //   "legalAddress": "...",
 //   "tradeAddress": "..."
 // }
+
 function fillFormFromCbs(data) {
   if (!data) return;
 
@@ -165,9 +168,8 @@ function fillFormFromCbs(data) {
     const el = document.getElementById("tradeAddress");
     if (el && !el.value) el.value = data.tradeAddress;
   }
-
-  // если ещё что-то понадобится из CBS — допишем сюда
 }
+
 async function fetchCbsByInn(inn) {
   if (!CBS_ENDPOINT) {
     console.log("CBS_ENDPOINT не настроен, пропускаем запрос к CBS. ИНН:", inn);
@@ -200,6 +202,7 @@ async function fetchCbsByInn(inn) {
     return null;
   }
 }
+
 function initCbsIntegration() {
   const statusSelect = document.getElementById("clientStatus");
   const innInput = document.getElementById("companyBin");
@@ -211,26 +214,23 @@ function initCbsIntegration() {
     const inn = (innInput.value || "").trim();
 
     if (status !== "existing") return;
-    if (inn.length < 8) return; // минимальная длина, можно 14, если строго ИНН
+    if (inn.length < 8) return; // при необходимости сделать 14
 
     const data = await fetchCbsByInn(inn);
-    if (data) {
-      fillFormFromCbs(data);
-    }
+    if (data) fillFormFromCbs(data);
   }
 
-  // При смене статуса на "действующий" — если ИНН уже введён, сразу тянем CBS
   statusSelect.addEventListener("change", () => {
     if (statusSelect.value === "existing") {
       tryFetchIfExisting();
     }
   });
 
-  // При потере фокуса / изменении ИНН — если статус "действующий", тянем CBS
   innInput.addEventListener("blur", () => {
     tryFetchIfExisting();
   });
 }
+
 /* ============================================================
    BUSINESS OBJECT TYPES
 ============================================================ */
@@ -280,6 +280,7 @@ const businessObjects = [
   "Спортивный зал",
   "Прочее"
 ];
+
 const businessObjectTypeCodes = {
   "Автомобильная заправочная станция (АЗС)": 1,
   "Автомобильная газонаполнительная компрессорная станция (АГНКС)": 2,
@@ -368,6 +369,7 @@ const activityTypes = [
   "Услуги по сдаче в аренду имущества",
   "Прочие услуги"
 ];
+
 const activityTypeCodes = {
   "Розничная торговля широким ассортиментом товаров": 1,
   "Розничная торговля ГСМ": 2,
@@ -406,6 +408,7 @@ const activityTypeCodes = {
   "Услуги по сдаче в аренду имущества": 35,
   "Прочие услуги": 36
 };
+
 /* ============================================================
    RESPONSIBLE BRANCHES
 ============================================================ */
@@ -445,9 +448,6 @@ const responsibleBranches = [
   "Ф-л «ДКИБ-Южный»"
 ];
 
-/* ============================================================
-   INIT RESPONSIBLE BRANCH DROPDOWN
-============================================================ */
 function initResponsibleBranchesSelect() {
   const select = document.getElementById("responsibleBranches");
   if (!select) return;
@@ -531,33 +531,32 @@ const districtsData = [
 ];
 
 /* ============================================================
-   LANGUAGE SWITCH
+   LANGUAGE SWITCH (общая функция + селект + меню)
 ============================================================ */
 const langSelect = document.getElementById("langSelect");
+
+function applyTranslations(lang) {
+  document.querySelectorAll("[data-key]").forEach((el) => {
+    if (["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName)) return;
+    if (el.classList.contains("no-translate")) return;
+
+    const key = el.getAttribute("data-key");
+    const tr = window.translations?.[lang]?.[key];
+    if (tr) el.textContent = tr;
+  });
+
+  document.querySelectorAll("[data-placeholder]").forEach((el) => {
+    const key = el.getAttribute("data-placeholder");
+    const tr = window.translations?.[lang]?.[key];
+    if (tr) el.placeholder = tr;
+  });
+
+  localStorage.setItem("lang", lang);
+}
 
 if (langSelect) {
   const savedLang = localStorage.getItem("lang") || "ru";
   langSelect.value = savedLang;
-
-  function applyTranslations(lang) {
-    document.querySelectorAll("[data-key]").forEach((el) => {
-      if (["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName)) return;
-      if (el.classList.contains("no-translate")) return;
-
-      const key = el.getAttribute("data-key");
-      const tr = window.translations?.[lang]?.[key];
-      if (tr) el.textContent = tr;
-    });
-
-    document.querySelectorAll("[data-placeholder]").forEach((el) => {
-      const key = el.getAttribute("data-placeholder");
-      const tr = window.translations?.[lang]?.[key];
-      if (tr) el.placeholder = tr;
-    });
-
-    localStorage.setItem("lang", lang);
-  }
-
   applyTranslations(savedLang);
 
   langSelect.addEventListener("change", () => {
@@ -620,6 +619,10 @@ function updateDistrictFromAddress(addressText) {
     localStorage.setItem("ugnsCode", match.code);
   }
 }
+
+/* ============================================================
+   GPS → LAT/LON → АДРЕС
+============================================================ */
 function initGpsLocation() {
   const btn = document.getElementById("geoLocate");
   if (!btn) return;
@@ -638,16 +641,16 @@ function initGpsLocation() {
         const lat = pos.coords.latitude.toFixed(6);
         const lon = pos.coords.longitude.toFixed(6);
 
-        // Заполняем LAT/LON
-        document.getElementById("tradeLat").value = lat;
-        document.getElementById("tradeLon").value = lon;
+        const latEl = document.getElementById("tradeLat");
+        const lonEl = document.getElementById("tradeLon");
 
-        // Обновляем карту, если есть функция
+        if (latEl) latEl.value = lat;
+        if (lonEl) lonEl.value = lon;
+
         if (typeof setMapPosition === "function") {
           setMapPosition("tradeMap", lat, lon);
         }
 
-        // 🔥 Получаем адрес через Nominatim
         let address = "";
         try {
           const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=ru`;
@@ -657,17 +660,15 @@ function initGpsLocation() {
             }
           });
           const data = await resp.json();
-
           address = data.display_name || "";
         } catch (e) {
           console.warn("Ошибка геокодирования:", e);
         }
 
-        // Вставляем адрес
         if (address) {
-          document.getElementById("tradeAddress").value = address;
+          const addrEl = document.getElementById("tradeAddress");
+          if (addrEl) addrEl.value = address;
 
-          // Если у тебя есть автоопределение района
           if (typeof updateDistrictFromAddress === "function") {
             updateDistrictFromAddress(address);
           }
@@ -693,6 +694,10 @@ function initGpsLocation() {
     );
   });
 }
+
+/* ============================================================
+   ПРОКРУТКА К ПЕРВОЙ ОШИБКЕ
+============================================================ */
 function scrollToFirstError() {
   const first = document.querySelector(".field-error");
   if (!first) return;
@@ -702,7 +707,6 @@ function scrollToFirstError() {
     block: "center"
   });
 
-  // слегка подсветим миганием
   first.style.transition = "background 0.3s";
   first.style.backgroundColor = "#ffdddd";
 
@@ -712,16 +716,15 @@ function scrollToFirstError() {
 }
 
 /* ============================================================
-   DOMContentLoaded INITIALIZATION (Инициализация при загрузке)
+   DOMContentLoaded INITIALIZATION
 ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
-  
   // 1. Ответственный филиал
-  if (typeof initResponsibleBranchesSelect === 'function') {
-      initResponsibleBranchesSelect();
+  if (typeof initResponsibleBranchesSelect === "function") {
+    initResponsibleBranchesSelect();
   }
 
-  // 2. Языковое меню (Language Menu)
+  // 2. Языковое меню (кнопка в шапке)
   const btn = document.getElementById("langBtn");
   const menu = document.getElementById("langMenu");
 
@@ -730,31 +733,26 @@ document.addEventListener("DOMContentLoaded", () => {
       menu.classList.toggle("hidden");
     });
 
-    menu.querySelectorAll("div").forEach(item => {
+    menu.querySelectorAll("div").forEach((item) => {
       item.addEventListener("click", () => {
         const lang = item.dataset.lang;
         localStorage.setItem("lang", lang);
         btn.textContent = lang.toUpperCase() + " ▼";
-        if (typeof applyTranslations === 'function') {
-            applyTranslations(lang);
-        }
+        applyTranslations(lang);
         menu.classList.add("hidden");
       });
     });
 
-    // стартовое значение
     const savedLang = localStorage.getItem("lang") || "ru";
     btn.textContent = savedLang.toUpperCase() + " ▼";
-    if (typeof applyTranslations === 'function') {
-        applyTranslations(savedLang);
-    }
+    applyTranslations(savedLang);
   }
 
   // 3. BUSINESS SELECTS (Типы бизнеса)
   const bo = document.getElementById("businessObjectType");
   const at = document.getElementById("activityType");
 
-  if (bo && typeof businessObjects !== 'undefined') {
+  if (bo && typeof businessObjects !== "undefined") {
     businessObjects.forEach((v) => {
       const opt = document.createElement("option");
       opt.value = v;
@@ -766,7 +764,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (savedBO) bo.value = savedBO;
   }
 
-  if (at && typeof activityTypes !== 'undefined') {
+  if (at && typeof activityTypes !== "undefined") {
     activityTypes.forEach((v) => {
       const opt = document.createElement("option");
       opt.value = v;
@@ -778,11 +776,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (savedAT) at.value = savedAT;
   }
 
-  // 4. DISTRICTS / UGNS (Районы и УГНС)
+  // 4. DISTRICTS / UGNS
   const districtSelect = document.getElementById("district");
   const ugnsInput = document.getElementById("ugnsCode");
 
-  if (districtSelect && ugnsInput && typeof districtsData !== 'undefined') {
+  if (districtSelect && ugnsInput && typeof districtsData !== "undefined") {
     districtsData.forEach((d) => {
       const opt = document.createElement("option");
       opt.value = d.code;
@@ -817,13 +815,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 6. TRADE ADDRESS -> AUTO DISTRICT (Адрес -> Район)
+  // 6. TRADE ADDRESS -> AUTO DISTRICT
   const tradeAddress = document.getElementById("tradeAddress");
   if (tradeAddress) {
     const handleAddressUpdate = () => {
-        if (typeof updateDistrictFromAddress === 'function') {
-            updateDistrictFromAddress(tradeAddress.value);
-        }
+      if (typeof updateDistrictFromAddress === "function") {
+        updateDistrictFromAddress(tradeAddress.value);
+      }
     };
 
     tradeAddress.addEventListener("blur", handleAddressUpdate);
@@ -833,15 +831,16 @@ document.addEventListener("DOMContentLoaded", () => {
       handleAddressUpdate();
     }
   }
-  // 7. LEAFLET MAPS (Карты)
-  if (typeof initMap === 'function') {
-      initMap("legalMap", "legalAddress", "legalLat", "legalLon");
-      initMap("tradeMap", "tradeAddress", "tradeLat", "tradeLon");
+
+  // 7. LEAFLET MAPS
+  if (typeof initMap === "function") {
+    initMap("legalMap", "legalAddress", "legalLat", "legalLon");
+    initMap("tradeMap", "tradeAddress", "tradeLat", "tradeLon");
   }
 
-  // 8. CBS INTEGRATION (Интеграция с базой)
-  if (typeof initCbsIntegration === 'function') {
-      initCbsIntegration();
+  // 8. CBS INTEGRATION
+  if (typeof initCbsIntegration === "function") {
+    initCbsIntegration();
   }
 
   // 9. КНОПКА ОЧИСТКИ ФОРМЫ
@@ -849,10 +848,9 @@ document.addEventListener("DOMContentLoaded", () => {
   if (clearBtn) {
     clearBtn.addEventListener("click", () => {
       if (confirm("Очистить все поля формы?")) {
-        if (typeof clearFormFields === 'function') {
+        if (typeof clearFormFields === "function") {
           clearFormFields();
         } else {
-          // Если функции нет, делаем простую очистку
           localStorage.clear();
           location.reload();
         }
@@ -860,24 +858,25 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 🔹 10. Инициализация подписи
-  if (typeof initSignaturePadForPdf === 'function') {
+  // 10. Подпись
+  if (typeof initSignaturePadForPdf === "function") {
     initSignaturePadForPdf();
   }
-   // 🔹 11. Автозаполнение координат по GPS
-if (typeof initGpsLocation === 'function') {
-  initGpsLocation();
-}
-  // 🔹 12. Инициализация кнопки "Сохранить PDF"
-  if (typeof initPdfExportForPrint === 'function') {
+
+  // 11. GPS
+  if (typeof initGpsLocation === "function") {
+    initGpsLocation();
+  }
+
+  // 12. PDF
+  if (typeof initPdfExportForPrint === "function") {
     initPdfExportForPrint();
   }
 });
+
 /* ============================================================
    LEAFLET MAP + REVERSE GEOCODING
 ============================================================ */
-
-// Красивое форматирование адреса из ответа Nominatim
 function formatNominatimAddress(data) {
   if (!data || !data.address) {
     return data?.display_name || "";
@@ -886,9 +885,8 @@ function formatNominatimAddress(data) {
   const a = data.address;
   const parts = [];
 
-  // ---------- ГОРОД ----------
+  // Город
   let city = a.city || a.town || a.village || "";
-
   if (city) {
     city = city
       .replace(/^(г\.|город|гор\.|г|city)\s*/i, "")
@@ -897,22 +895,25 @@ function formatNominatimAddress(data) {
 
     city = city.replace(/^город\s+/i, "").trim();
 
-    if (city.toLowerCase() === "бишкек" || city.toLowerCase() === "город бишкек") {
+    if (
+      city.toLowerCase() === "бишкек" ||
+      city.toLowerCase() === "город бишкек"
+    ) {
       city = "Бишкек";
     }
 
     parts.push("г. " + city);
   }
 
-  // ---------- РАЙОН ----------
+  // Район
   if (a.city_district) parts.push(a.city_district);
 
-  // ---------- Ж/м ----------
+  // Ж/м
   if (a.suburb) parts.push(a.suburb);
 
-  // ---------- УЛИЦА ----------
+  // Улица + дом
   let street = a.road || "";
-  let house = a.house_number || "";
+  const house = a.house_number || "";
 
   if (street) {
     street = street
@@ -936,9 +937,6 @@ function formatNominatimAddress(data) {
   return parts.join(", ");
 }
 
-/* ============================================================
-   ADDRESS PARSER (город, улица, дом из одного поля)
-============================================================ */
 function parseAddressFull(address) {
   const result = {
     city: "",
@@ -948,19 +946,16 @@ function parseAddressFull(address) {
 
   if (!address) return result;
 
-  // Город
   const cityMatch = address.match(/г\.\s*([^,]+)/i);
   if (cityMatch) {
     result.city = cityMatch[1].trim();
   }
 
-  // Улица
   const streetMatch = address.match(/ул\.\s*([^,]+)/i);
   if (streetMatch) {
     result.street = streetMatch[1].trim();
   }
 
-  // Дом (после запятой, например: ", 12" или ", 12А")
   const buildingMatch = address.match(/,\s*(\d+[A-Za-zА-Яа-я]?)/);
   if (buildingMatch) {
     result.building = buildingMatch[1].trim();
@@ -969,9 +964,6 @@ function parseAddressFull(address) {
   return result;
 }
 
-/* ============================================================
-   ИНИЦИАЛИЗАЦИЯ КАРТЫ
-============================================================ */
 function initMap(mapId, addressInputId, latInputId, lonInputId) {
   const mapDiv = document.getElementById(mapId);
   if (!mapDiv || typeof L === "undefined") return;
@@ -1041,89 +1033,70 @@ function initMap(mapId, addressInputId, latInputId, lonInputId) {
     updateFields(e.latlng.lat, e.latlng.lng, true);
   });
 }
-// ============================================================
-// PDF + подпись — независимый блок (не ломает старый код)
-// ============================================================
 
-const SLK_ENDPOINT_PDF = ""; // при желании укажешь отдельный endpoint
+/* ============================================================
+   PDF + ПОДПИСЬ
+============================================================ */
+const SLK_ENDPOINT_PDF = ""; // если понадобится отдельный endpoint
 
 function getPdfFieldValue(id) {
   const el = document.getElementById(id);
   return el ? (el.value || el.textContent || "").trim() : "";
 }
 
-// Сбор данных (если нужно отдельным JSON для логирования)
+/* Сбор данных для логирования/архива (опционально) */
 function collectPdfFormData() {
   return {
     company: {
-      name:        getPdfFieldValue("companyName"),
-      bin:         getPdfFieldValue("companyBin"),
-      head:        getPdfFieldValue("companyHead"),
-      manager:     getPdfFieldValue("manager"),
+      name: getPdfFieldValue("companyName"),
+      bin: getPdfFieldValue("companyBin"),
+      head: getPdfFieldValue("companyHead"),
+      manager: getPdfFieldValue("manager"),
       description: getPdfFieldValue("description"),
-      lkLogin:     getPdfFieldValue("lkLogin"),
-      lkPassword:  getPdfFieldValue("lkPassword"),
-      clientStatus:getPdfFieldValue("clientStatus"),
+      lkLogin: getPdfFieldValue("lkLogin"),
+      lkPassword: getPdfFieldValue("lkPassword"),
+      clientStatus: getPdfFieldValue("clientStatus")
     },
     contacts: {
       phone: getPdfFieldValue("phone"),
-      email: getPdfFieldValue("email"),
+      email: getPdfFieldValue("email")
     },
     pos: {
       model: getPdfFieldValue("posModel"),
       commissions: {
-        comm_visa_dkb:     getPdfFieldValue("comm_visa_dkb"),
-        comm_bonus_dkb:    getPdfFieldValue("comm_bonus_dkb"),
-        comm_visa_other:   getPdfFieldValue("comm_visa_other"),
-        comm_elcart_dkb:   getPdfFieldValue("comm_elcart_dkb"),
+        comm_visa_dkb: getPdfFieldValue("comm_visa_dkb"),
+        comm_bonus_dkb: getPdfFieldValue("comm_bonus_dkb"),
+        comm_visa_other: getPdfFieldValue("comm_visa_other"),
+        comm_elcart_dkb: getPdfFieldValue("comm_elcart_dkb"),
         comm_elcart_other: getPdfFieldValue("comm_elcart_other"),
-        comm_mc_dkb:       getPdfFieldValue("comm_mc_dkb"),
-        comm_mc_other:     getPdfFieldValue("comm_mc_other"),
+        comm_mc_dkb: getPdfFieldValue("comm_mc_dkb"),
+        comm_mc_other: getPdfFieldValue("comm_mc_other")
       },
-      discount_10: getPdfFieldValue("discount_10"),
+      discount_10: getPdfFieldValue("discount_10")
     },
     region: {
-      district:     getPdfFieldValue("district"),
-      ugnsCode:     getPdfFieldValue("ugnsCode"),
+      district: getPdfFieldValue("district"),
+      ugnsCode: getPdfFieldValue("ugnsCode"),
       legalAddress: getPdfFieldValue("legalAddress"),
-      legalLat:     getPdfFieldValue("legalLat"),
-      legalLon:     getPdfFieldValue("legalLon"),
+      legalLat: getPdfFieldValue("legalLat"),
+      legalLon: getPdfFieldValue("legalLon"),
       tradeAddress: getPdfFieldValue("tradeAddress"),
-      tradeLat:     getPdfFieldValue("tradeLat"),
-      tradeLon:     getPdfFieldValue("tradeLon"),
+      tradeLat: getPdfFieldValue("tradeLat"),
+      tradeLon: getPdfFieldValue("tradeLon")
     },
     business: {
-      objectType:   getPdfFieldValue("businessObjectType"),
-      activityType: getPdfFieldValue("activityType"),
+      objectType: getPdfFieldValue("businessObjectType"),
+      activityType: getPdfFieldValue("activityType")
     },
     signature: getPdfFieldValue("signatureData"),
     meta: {
       createdAt: new Date().toISOString(),
-      userAgent: navigator.userAgent,
-    },
+      userAgent: navigator.userAgent
+    }
   };
 }
 
-async function sendPdfJsonToSLK(payload) {
-  if (!SLK_ENDPOINT_PDF) {
-    console.log("PDF JSON (SLK_ENDPOINT_PDF не настроен):", payload);
-    return;
-  }
-
-  try {
-    const res = await fetch(SLK_ENDPOINT_PDF, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) {
-      console.error("Ошибка отправки PDF JSON:", res.status, await res.text());
-    }
-  } catch (e) {
-    console.error("Сетевая ошибка отправки PDF JSON:", e);
-  }
-}
-// Заполнение скрытого шаблона PDF
+/* Заполнение скрытого шаблона PDF */
 function fillPdfTemplateForPrint() {
   const pairs = [
     ["companyName", "pdf_companyName"],
@@ -1137,9 +1110,9 @@ function fillPdfTemplateForPrint() {
     ["businessObjectType", "pdf_businessObjectType"],
     ["activityType", "pdf_activityType"],
     ["posModel", "pdf_posModel"],
-    ["lkLogin", "pdf_lkLogin"],       // логин lk.salyk.kg
-    ["lkPassword", "pdf_lkPassword"], // пароль lk.salyk.kg
-    ["description", "pdf_description"],
+    ["lkLogin", "pdf_lkLogin"],
+    ["lkPassword", "pdf_lkPassword"],
+    ["description", "pdf_description"]
   ];
 
   pairs.forEach(([srcId, destId]) => {
@@ -1170,7 +1143,7 @@ function fillPdfTemplateForPrint() {
     ["comm_elcart_dkb", "pdf_comm_elcart_dkb"],
     ["comm_elcart_other", "pdf_comm_elcart_other"],
     ["comm_mc_dkb", "pdf_comm_mc_dkb"],
-    ["comm_mc_other", "pdf_comm_mc_other"],
+    ["comm_mc_other", "pdf_comm_mc_other"]
   ];
 
   commMap.forEach(([srcId, destId]) => {
@@ -1189,7 +1162,7 @@ function fillPdfTemplateForPrint() {
     pdfDiscount10.textContent = v ? v.replace(".", ",") : "";
   }
 
-  // Дата заявки → pdf_date (если заполняешь поле applicationDate)
+  // Дата заявки → pdf_date
   const appDateInput = document.querySelector('input[name="applicationDate"]');
   const pdfDate = document.getElementById("pdf_date");
   if (pdfDate && appDateInput && appDateInput.value) {
@@ -1197,8 +1170,8 @@ function fillPdfTemplateForPrint() {
     if (!isNaN(d.getTime())) {
       const day = String(d.getDate()).padStart(2, "0");
       const months = [
-        "января","февраля","марта","апреля","мая","июня",
-        "июля","августа","сентября","октября","ноября","декабря"
+        "января", "февраля", "марта", "апреля", "мая", "июня",
+        "июля", "августа", "сентября", "октября", "ноября", "декабря"
       ];
       const monthName = months[d.getMonth()];
       const year = d.getFullYear();
@@ -1213,87 +1186,76 @@ function fillPdfTemplateForPrint() {
     pdfSigImg.src = sigData;
   }
 }
-// Обработчик кнопки "Сохранить PDF"
+
+/* Обработчик кнопки "Сохранить PDF" */
 function initPdfExportForPrint() {
   const btn = document.getElementById("savePdf");
   if (!btn) return;
 
   btn.addEventListener("click", async () => {
-  if (!validatePdfRequiredFields()) {
-    return;
-  }
+    // 1. Проверка обязательных полей
+    if (!validatePdfRequiredFields()) return;
 
-  // ← правильный JSON для SLK
-  const slkPayload = collectFormData();
-
-  console.log("SLK JSON →", JSON.stringify(slkPayload, null, 2)); // тестовый вывод
-  await sendToSLK(slkPayload);
-
-  // ← PDF заполняется своим шаблоном (оставляем как есть)
-  function initPdfExportForPrint() {
-  const btn = document.getElementById("savePdf");
-  if (!btn) return;
-
-  btn.addEventListener("click", async () => {
-    // Проверка обязательных полей
-    if (!validatePdfRequiredFields()) {
+    // 2. Сбор SLK JSON
+    if (typeof collectFormDataForSLK !== "function") {
+      console.error("collectFormDataForSLK() отсутствует!");
+      alert("Ошибка: collectFormDataForSLK() не найдена");
       return;
     }
 
-    // --- 🔥 Отправка в SLK правильного JSON ---
-    if (typeof collectFormData === "function" && typeof sendToSLK === "function") {
+    const slkPayload = collectFormDataForSLK();
+    console.log("SLK JSON →", JSON.stringify(slkPayload, null, 2));
 
-      const slkPayload = collectFormData();
-
-      console.log("SLK JSON →", JSON.stringify(slkPayload, null, 2));
-
-      try {
-        await sendToSLK(slkPayload);
-      } catch (e) {
-        console.error("Ошибка отправки SLK JSON:", e);
-      }
-
-    } else {
-      console.error("collectFormData() или sendToSLK() отсутствуют!");
+    // 3. Отправка в SLK
+    try {
+      await sendToSLK(slkPayload);
+    } catch (err) {
+      console.error("Ошибка отправки в SLK:", err);
     }
 
-    // --- 🔥 Заполняем PDF ---
+    // (опционально) Логируем состав PDF
+    const pdfData = collectPdfFormData();
+    console.log("PDF JSON (локально):", pdfData);
+
+    // 4. Заполнение PDF шаблона
     fillPdfTemplateForPrint();
 
-    // --- 🔥 Печать ---
+    // 5. Печать
     const pdfElement = document.getElementById("pdfDocument");
     if (!pdfElement) {
-      console.error("pdfDocument не найден");
+      alert("PDF шаблон не найден!");
       return;
     }
 
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) {
-      alert("Разрешите всплывающие окна");
+    const win = window.open("", "_blank");
+    if (!win) {
+      alert("Разрешите всплывающие окна для печати PDF.");
       return;
     }
 
-    printWindow.document.write(`
+    win.document.write(`
       <html>
-      <head><meta charset="utf-8"><title>Demir POS Form</title></head>
-      <body></body>
+        <head><meta charset="utf-8"><title>Demir POS Form</title></head>
+        <body></body>
       </html>
     `);
-    printWindow.document.close();
+    win.document.close();
 
     const clone = pdfElement.cloneNode(true);
     clone.style.display = "block";
-    clone.style.margin = "20px auto";
     clone.style.width = "800px";
+    clone.style.margin = "20px auto";
 
-    printWindow.document.body.appendChild(clone);
+    win.document.body.appendChild(clone);
 
     setTimeout(() => {
-      printWindow.print();
-      printWindow.close();
+      win.print();
+      win.close();
     }, 200);
   });
 }
+
+/* Подпись на canvas */
 function initSignaturePadForPdf() {
   const canvas = document.getElementById("signaturePad");
   const clearBtn = document.getElementById("signatureClear");
@@ -1310,11 +1272,9 @@ function initSignaturePadForPdf() {
     const rect = canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
 
-    // задаём физический размер
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
 
-    // масштабируем контекст
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, rect.width, rect.height);
   }
@@ -1324,7 +1284,8 @@ function initSignaturePadForPdf() {
 
   function getPos(e) {
     const rect = canvas.getBoundingClientRect();
-    let clientX, clientY;
+    let clientX;
+    let clientY;
 
     if (e.touches && e.touches.length > 0) {
       clientX = e.touches[0].clientX;
@@ -1336,7 +1297,7 @@ function initSignaturePadForPdf() {
 
     return {
       x: clientX - rect.left,
-      y: clientY - rect.top,
+      y: clientY - rect.top
     };
   }
 
@@ -1364,7 +1325,6 @@ function initSignaturePadForPdf() {
     drawing = false;
 
     const dataURL = canvas.toDataURL("image/png");
-
     if (hiddenInput) hiddenInput.value = dataURL;
 
     const pdfImg = document.getElementById("pdf_signature");
@@ -1408,40 +1368,35 @@ function initSignaturePadForPdf() {
     stopDraw();
   });
 
-  // ОЧИСТКА
+  // очистка
   if (clearBtn) {
     clearBtn.addEventListener("click", () => {
       const dpr = window.devicePixelRatio || 1;
 
-      // сбрасываем трансформацию, чистим полностью
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // возвращаем масштаб и чистое состояние
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.beginPath();
 
-      // чистим hidden input
       if (hiddenInput) hiddenInput.value = "";
 
-      // чистим картинку для PDF
       const pdfImg = document.getElementById("pdf_signature");
       if (pdfImg) {
         pdfImg.removeAttribute("src");
         pdfImg.src = "";
       }
 
-      // на всякий случай
       drawing = false;
       lastX = 0;
       lastY = 0;
     });
   }
 }
-// ============================================================
-// ВАЛИДАЦИЯ ОБЯЗАТЕЛЬНЫХ ПОЛЕЙ ДЛЯ PDF
-// ============================================================
 
+/* ============================================================
+   ВАЛИДАЦИЯ ОБЯЗАТЕЛЬНЫХ ПОЛЕЙ ДЛЯ PDF
+============================================================ */
 const pdfRequiredFieldLabels = {
   companyName: "Наименование юридического лица / ИП",
   companyBin: "ИНН/БИН",
@@ -1464,33 +1419,28 @@ const pdfRequiredFieldLabels = {
 };
 
 function clearPdfValidationErrors() {
-  document.querySelectorAll(".field-error").forEach(el =>
-    el.classList.remove("field-error")
-  );
+  document
+    .querySelectorAll(".field-error")
+    .forEach((el) => el.classList.remove("field-error"));
 }
 
-/**
- * Проверка обязательных чекбокс-групп
- */
 function validateRequiredCheckboxGroups() {
   const missingGroups = [];
 
-  // --- Тип заявки ---
+  // Тип заявки
   const typeGroup = document.querySelectorAll('input[name="requestType"]');
-  const typeSelected = Array.from(typeGroup).some(ch => ch.checked);
-
+  const typeSelected = Array.from(typeGroup).some((ch) => ch.checked);
   if (!typeSelected) {
     missingGroups.push("Тип заявки (нужно выбрать хотя бы один вариант)");
-    typeGroup.forEach(ch => ch.classList.add("field-error"));
+    typeGroup.forEach((ch) => ch.classList.add("field-error"));
   }
 
-  // --- POS-терминал ---
+  // Тип POS-терминала
   const posGroup = document.querySelectorAll('input[name="terminalType"]');
-  const posSelected = Array.from(posGroup).some(ch => ch.checked);
-
+  const posSelected = Array.from(posGroup).some((ch) => ch.checked);
   if (!posSelected) {
     missingGroups.push("Тип POS-терминала (С ККМ или Без ККМ)");
-    posGroup.forEach(ch => ch.classList.add("field-error"));
+    posGroup.forEach((ch) => ch.classList.add("field-error"));
   }
 
   return {
@@ -1498,16 +1448,13 @@ function validateRequiredCheckboxGroups() {
     missing: missingGroups
   };
 }
-/**
- * Основная функция проверки перед печатью/отправкой
- */
+
 function validatePdfRequiredFields() {
   clearPdfValidationErrors();
 
   const missing = [];
 
-  // --- Проверяем обычные текстовые поля ---
-  Object.keys(pdfRequiredFieldLabels).forEach(id => {
+  Object.keys(pdfRequiredFieldLabels).forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
 
@@ -1518,29 +1465,29 @@ function validatePdfRequiredFields() {
     }
   });
 
-  // --- Проверяем чекбоксы ---
   const cb = validateRequiredCheckboxGroups();
   if (!cb.ok) {
     missing.push(...cb.missing);
   }
 
-  // Если что-то не заполнено → выводим список
   if (missing.length > 0) {
-    alert("Пожалуйста, заполните обязательные поля:\n\n- " + missing.join("\n- "));
-    scrollToFirstError();       // 🔥 АВТОПРОКРУТКА
+    alert(
+      "Пожалуйста, заполните обязательные поля:\n\n- " +
+        missing.join("\n- ")
+    );
+    scrollToFirstError();
     return false;
   }
 
   return true;
 }
-// ============================================================
-// ОЧИСТКА ФОРМЫ
-// ============================================================
+
+/* ============================================================
+   ОЧИСТКА ФОРМЫ
+============================================================ */
 function clearFormFields() {
-  // убираем подсветку ошибок
   clearPdfValidationErrors();
 
-  // чистим все поля, которые сохраняем в localStorage
   autoSaveFields.forEach((id) => {
     localStorage.removeItem(id);
     const el = document.getElementById(id);
@@ -1555,12 +1502,10 @@ function clearFormFields() {
     }
   });
 
-  // чекбоксы типов заявок / карт и т.п.
   document
     .querySelectorAll(".card input[type='checkbox'], .card input[type='radio']")
     .forEach((el) => (el.checked = false));
 
-  // поля, которых нет в autoSaveFields, но их тоже полезно сбросить
   [
     "contractNumber",
     "contractDate",
@@ -1574,14 +1519,13 @@ function clearFormFields() {
     if (el) el.value = "";
   });
 
-  // ответственное отделение
   const resp = document.getElementById("responsibleBranches");
   if (resp) resp.selectedIndex = 0;
 
-  // подпись
   const canvas = document.getElementById("signaturePad");
   const hiddenInput = document.getElementById("signatureData");
   const pdfImg = document.getElementById("pdf_signature");
+
   if (canvas && canvas.getContext) {
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1589,9 +1533,10 @@ function clearFormFields() {
   if (hiddenInput) hiddenInput.value = "";
   if (pdfImg) pdfImg.removeAttribute("src");
 }
-// ============================================================
-// SIMPLE SPELLCHECK MOCK
-// ============================================================
+
+/* ============================================================
+   SIMPLE SPELLCHECK MOCK
+============================================================ */
 const spellPanel = document.getElementById("spellcheckPanel");
 
 function fakeSpellCheck() {
