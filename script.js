@@ -891,11 +891,10 @@ function formatNominatimAddress(data) {
 
   if (city) {
     city = city
-      .replace(/^(г\.|город|гор\.|г|city)\s*/i, "") // убираем любое начало
-      .replace(/\s*(город|г\.)$/i, "") // убираем хвост
+      .replace(/^(г\.|город|гор\.|г|city)\s*/i, "")
+      .replace(/\s*(город|г\.)$/i, "")
       .trim();
 
-    // если Nominatim отдаёт "город Бишкек"
     city = city.replace(/^город\s+/i, "").trim();
 
     if (city.toLowerCase() === "бишкек" || city.toLowerCase() === "город бишкек") {
@@ -917,30 +916,62 @@ function formatNominatimAddress(data) {
 
   if (street) {
     street = street
-      .replace(/^(ул\.?|улица|str\.?)\s*/i, "")       // убираем начало
-      .replace(/\s+(улица|street)$/i, "")            // убираем конец
+      .replace(/^(ул\.?|улица|str\.?)\s*/i, "")
+      .replace(/\s+(улица|street)$/i, "")
       .trim();
 
-    // частый баг Nominatim: Фрунзе Михаила → Михаила Фрунзе
     street = street.replace(
       /^([А-ЯЁ][а-яё]+)\s+([А-ЯЁ][а-яё]+)$/u,
       "$2 $1"
     );
 
-    // убираем удвоенные имена: «Фрунзе Михаила улица»
     street = street.replace(/\s+улица$/i, "");
 
     parts.push("ул. " + street + (house ? ", " + house : ""));
   }
 
-  // ---------- ИНДЕКС ----------
   if (a.postcode) parts.push(a.postcode);
-
-  // ---------- СТРАНА ----------
   if (a.country) parts.push(a.country);
 
   return parts.join(", ");
 }
+
+/* ============================================================
+   ADDRESS PARSER (город, улица, дом из одного поля)
+============================================================ */
+function parseAddressFull(address) {
+  const result = {
+    city: "",
+    street: "",
+    building: ""
+  };
+
+  if (!address) return result;
+
+  // Город
+  const cityMatch = address.match(/г\.\s*([^,]+)/i);
+  if (cityMatch) {
+    result.city = cityMatch[1].trim();
+  }
+
+  // Улица
+  const streetMatch = address.match(/ул\.\s*([^,]+)/i);
+  if (streetMatch) {
+    result.street = streetMatch[1].trim();
+  }
+
+  // Дом (после запятой, например: ", 12" или ", 12А")
+  const buildingMatch = address.match(/,\s*(\d+[A-Za-zА-Яа-я]?)/);
+  if (buildingMatch) {
+    result.building = buildingMatch[1].trim();
+  }
+
+  return result;
+}
+
+/* ============================================================
+   ИНИЦИАЛИЗАЦИЯ КАРТЫ
+============================================================ */
 function initMap(mapId, addressInputId, latInputId, lonInputId) {
   const mapDiv = document.getElementById(mapId);
   if (!mapDiv || typeof L === "undefined") return;
@@ -998,7 +1029,6 @@ function initMap(mapId, addressInputId, latInputId, lonInputId) {
     }
   }
 
-  // начальное состояние
   updateFields(savedLat, savedLon, true);
 
   marker.on("dragend", (e) => {
@@ -1011,7 +1041,6 @@ function initMap(mapId, addressInputId, latInputId, lonInputId) {
     updateFields(e.latlng.lat, e.latlng.lng, true);
   });
 }
-
 // ============================================================
 // PDF + подпись — независимый блок (не ломает старый код)
 // ============================================================
