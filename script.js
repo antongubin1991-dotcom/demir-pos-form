@@ -20,7 +20,7 @@ if (themeToggle) {
 /* ============================================================
    SLK ENDPOINT (URL ДЛЯ ОТПРАВКИ JSON)
 ============================================================ */
-const SLK_ENDPOINT = "https://lk.goodoo.kg/BackSLK/hs/RegDataАС/Get/";  // например: "https://slk.goodoo.kg/api/demir-pos-form"
+const SLK_ENDPOINT = "";  // например: "https://slk.goodoo.kg/api/demir-pos-form"
 
 /* ============================================================
    SLK JSON HELPERS
