@@ -29,58 +29,58 @@ function getFieldValue(id) {
   const el = document.getElementById(id);
   return el ? (el.value || "").trim() : "";
 }
-
-function collectFormData() {
+function collectFormDataForSLK() {
   return {
-    company: {
-      name:        getFieldValue("companyName"),
-      bin:         getFieldValue("companyBin"),
-      head:        getFieldValue("companyHead"),
-      manager:     getFieldValue("manager"),
-      description: getFieldValue("description"),
-      lkLogin:     getFieldValue("lkLogin"),     // ← НОВОЕ
-      lkPassword:  getFieldValue("lkPassword"),
+    user: {
+      username: getFieldValue("lkLogin"),     // Логин lk.salyk.kg
+      password: getFieldValue("lkPassword")   // Пароль lk.salyk.kg
     },
-    contacts: {
-      phone: getFieldValue("phone"),
-      email: getFieldValue("email")
+
+    taxpayer: {
+      name: getFieldValue("companyName"),                    // Название субъекта
+      identificationNumber: getFieldValue("companyBin"),     // ИНН
+      legalAddress: getFieldValue("legalAddress"),           // Юридический адрес
+      directorFullName: getFieldValue("companyHead"),        // Руководитель
+      directorPhoneNumber: getFieldValue("phone"),           // Телефон руководителя
+      email: getFieldValue("email")                          // Email
     },
-    pos: {
-      model: getFieldValue("posModel"),
-      commissions: {
-        visa_dkb:      getFieldValue("comm_visa_dkb"),
-        bonus_dkb:     getFieldValue("comm_bonus_dkb"),
-        visa_other:    getFieldValue("comm_visa_other"),
-        elcart_dkb:    getFieldValue("comm_elcart_dkb"),
-        elcart_other:  getFieldValue("comm_elcart_other"),
-        mc_dkb:        getFieldValue("comm_mc_dkb"),
-        mc_other:      getFieldValue("comm_mc_other")
-      },
-      discount_10: getFieldValue("discount_10")
-    },
-    region: {
-      district:      getFieldValue("district"),
-      ugnsCode:      getFieldValue("ugnsCode"),
-      legalAddress:  getFieldValue("legalAddress"),
-      legalLat:      getFieldValue("legalLat"),
-      legalLon:      getFieldValue("legalLon"),
-      tradeAddress:  getFieldValue("tradeAddress"),
-      tradeLat:      getFieldValue("tradeLat"),
-      tradeLon:      getFieldValue("tradeLon")
-    },
-    business: {
-    businessObjectType: businessObjectTypeCodes[getFieldValue("businessObjectType")],
-    activityType: activityTypeCodes[getFieldValue("activityType")],
-    },
-    meta: {
-      createdAt: new Date().toISOString(),
-      userAgent: navigator.userAgent
-    },
-    // чтобы при желании можно было слать подпись в SLK
-    signature: getFieldValue("signatureData")
+
+    partnerCode: getFieldValue("responsibleBranches"),       // Место расчётов (филиал)
+
+    fiscalDevice: {
+      model: getFieldValue("posModel"),                      // Модель POS
+      contractNumber: getFieldValue("contractNumber"),       // Договор №
+      contractDate: getFieldValue("contractDate"),           // Дата договора
+
+      businessObjectType: businessObjectTypeCodes[getFieldValue("businessObjectType")] || 0,
+      businessActivityType: activityTypeCodes[getFieldValue("activityType")] || 0,
+
+      taxAuthority: getFieldValue("ugnsCode") || 999,        // УГНС
+
+      vatPayer: false,  // если нужно — сделаем чекбокс
+
+      placeName: getFieldValue("tradeAddress"),              // Полный адрес ТТ
+      placeType: getFieldValue("businessObjectType"),        // Тип места (пока как есть)
+
+      addressPostalCode: "720000",                           // Индекс (фиксированный)
+      addressArea: getFieldValue("district"),                // Адм. единица
+      addressCity: "Бишкек",                                 // Можно определять автоматически
+      addressStreet: getFieldValue("tradeAddress"),          // Улица (можно парсить)
+      addressBuilding: "",                                   // Можем автоматически выделить номер дома
+
+      addressLatitude: getFieldValue("tradeLat"),
+      addressLongitude: getFieldValue("tradeLon"),
+
+      taxationTypes: [0],        // по умолчанию (можно сделать checkbox)
+      paymentObjects: [0],       // по умолчанию
+
+      Doc1: "",
+      Doc2: "",
+      Doc3: "",
+      Doc4: ""
+    }
   };
 }
-
 /* Отправка данных в SLK (или лог в консоль, если эндпоинт не задан) */
 async function sendToSLK(payload) {
   try {
