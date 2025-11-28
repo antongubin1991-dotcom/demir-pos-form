@@ -1219,17 +1219,18 @@ function initPdfExportForPrint() {
   if (!btn) return;
 
   btn.addEventListener("click", async () => {
-    // блокируем сохранение, если есть незаполненные обязательные поля
-    if (!validatePdfRequiredFields()) {
-      return;
-    }
+  if (!validatePdfRequiredFields()) {
+    return;
+  }
 
-    const payload = collectPdfFormData();
-    await sendPdfJsonToSLK(payload);
+  // ← правильный JSON для SLK
+  const slkPayload = collectFormData();
 
-    // 👉 здесь функция уже точно определена
-    fillPdfTemplateForPrint();
+  console.log("SLK JSON →", JSON.stringify(slkPayload, null, 2)); // тестовый вывод
+  await sendToSLK(slkPayload);
 
+  // ← PDF заполняется своим шаблоном (оставляем как есть)
+  fillPdfTemplateForPrint();
     const pdfElement = document.getElementById("pdfDocument");
     if (!pdfElement) {
       console.error("pdfDocument не найден");
