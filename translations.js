@@ -77,9 +77,20 @@ window.translations = {
    - РНМ ККМ
    - ФН
 
+   Налоговые ставки не заполняются вручную: пункт 10 в заявлении ККМ
+   автоматически берётся из выбранного статуса по регистрации НДС.
+
    Логин и пароль от lk.salyk.kg остаются в форме и в заявлении ККМ.
 ============================================================ */
 window.addEventListener("DOMContentLoaded", () => {
+  const vatLabels = {
+    vat: "Плательщик НДС",
+    singleTax: "Единый налог",
+    simplified: "Упрощённая система",
+    patent: "Патент",
+    none: "Без регистрации НДС"
+  };
+
   const removeFieldByInputId = (id) => {
     const input = document.getElementById(id);
     const wrapper = input?.closest(".field");
@@ -87,6 +98,30 @@ window.addEventListener("DOMContentLoaded", () => {
   };
 
   ["kkmSerialNumber", "kkmVersion", "kkmModel", "kkmRnm", "kkmFn"].forEach(removeFieldByInputId);
+
+  const taxRatesInput = document.getElementById("taxRates");
+  const taxRatesWrapper = taxRatesInput?.closest(".field");
+  if (taxRatesWrapper) taxRatesWrapper.remove();
+
+  let hiddenTaxRates = document.getElementById("taxRates");
+  if (!hiddenTaxRates) {
+    hiddenTaxRates = document.createElement("input");
+    hiddenTaxRates.type = "hidden";
+    hiddenTaxRates.id = "taxRates";
+    document.body.appendChild(hiddenTaxRates);
+  }
+
+  const syncTaxRatesFromVatStatus = () => {
+    const vatStatus = document.getElementById("vatStatus")?.value || "";
+    hiddenTaxRates.value = vatLabels[vatStatus] || "";
+  };
+
+  const vatStatusSelect = document.getElementById("vatStatus");
+  if (vatStatusSelect) {
+    vatStatusSelect.addEventListener("change", syncTaxRatesFromVatStatus);
+    vatStatusSelect.addEventListener("input", syncTaxRatesFromVatStatus);
+  }
+  syncTaxRatesFromVatStatus();
 
   [
     "kkm_serialAndVersion",
@@ -112,7 +147,7 @@ window.addEventListener("DOMContentLoaded", () => {
     if (labelCell) labelCell.textContent = label;
   });
 
-  ["kkmSerialNumber", "kkmVersion", "kkmModel", "kkmRnm", "kkmFn"].forEach((id) => {
+  ["kkmSerialNumber", "kkmVersion", "kkmModel", "kkmRnm", "kkmFn", "taxRates"].forEach((id) => {
     localStorage.removeItem(id);
   });
 
@@ -122,6 +157,8 @@ window.addEventListener("DOMContentLoaded", () => {
     const originalValidatePdfRequiredFields = window.validatePdfRequiredFields;
 
     window.validatePdfRequiredFields = function validatePdfRequiredFieldsWithoutRequiredComment() {
+      syncTaxRatesFromVatStatus();
+
       const description = document.getElementById("description");
       const originalDescriptionValue = description ? description.value : "";
 
@@ -140,5 +177,23 @@ window.addEventListener("DOMContentLoaded", () => {
     };
   };
 
-  setTimeout(patchValidation, 0);
+  const patchKkmTemplateFill = () => {
+    if (typeof window.fillKkmTemplateForPrint !== "function") return;
+
+    const originalFillKkmTemplateForPrint = window.fillKkmTemplateForPrint;
+
+    window.fillKkmTemplateForPrint = function fillKkmTemplateForPrintWithVatTaxRates() {
+      syncTaxRatesFromVatStatus();
+      originalFillKkmTemplateForPrint();
+      const taxRatesCell = document.getElementById("kkm_taxRates");
+      if (taxRatesCell) {
+        taxRatesCell.textContent = hiddenTaxRates.value;
+      }
+    };
+  };
+
+  setTimeout(() => {
+    patchValidation();
+    patchKkmTemplateFill();
+  }, 0);
 });
