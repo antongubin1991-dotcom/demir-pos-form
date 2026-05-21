@@ -11,7 +11,7 @@ window.translations = {
 
     sec_request: "Тип заявки и договор",
     sec_cards: "Типы карточек",
-    sec_bank: "Банк реквизиттери",
+    sec_bank: "Банковские реквизиты",
     sec_comment: "Комментарий",
 
     lbl_business_object: "Тип объекта предпринимательства",
@@ -187,8 +187,8 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     const isPosDocument = templateId === "pdfDocument";
-    const scale = isPosDocument ? 0.66 : 0.78;
-    const width = isPosDocument ? 820 : 800;
+    const scale = isPosDocument ? 0.58 : 0.78;
+    const width = isPosDocument ? 800 : 800;
 
     const win = window.open("", "_blank");
     if (!win) {
@@ -203,7 +203,7 @@ window.addEventListener("DOMContentLoaded", () => {
           <meta charset="utf-8">
           <title>${title}</title>
           <style>
-            @page { size: A4 portrait; margin: 4mm; }
+            @page { size: A4 portrait; margin: 3mm; }
             html, body {
               margin: 0;
               padding: 0;
@@ -213,7 +213,8 @@ window.addEventListener("DOMContentLoaded", () => {
             }
             .print-scale {
               width: ${width}px;
-              transform: scale(${scale});
+              zoom: ${scale};
+              transform: none !important;
               transform-origin: top left;
             }
             table { page-break-inside: avoid; }
@@ -229,23 +230,33 @@ window.addEventListener("DOMContentLoaded", () => {
     const clone = tpl.cloneNode(true);
     clone.style.display = "block";
     clone.style.margin = "0";
-    clone.style.padding = isPosDocument ? "10px" : "14px";
+    clone.style.padding = isPosDocument ? "4px" : "14px";
     clone.style.minHeight = "auto";
-    clone.style.lineHeight = isPosDocument ? "1.12" : "1.25";
+    clone.style.height = "auto";
+    clone.style.lineHeight = isPosDocument ? "1.04" : "1.25";
+    clone.style.fontSize = isPosDocument ? "10pt" : "12pt";
+    clone.style.zoom = String(scale);
+    clone.style.transform = "none";
     clone.classList.add("print-scale");
 
     if (isPosDocument) {
       clone.querySelectorAll("h3").forEach((el) => {
-        el.style.margin = "6px 0 3px 0";
+        el.style.margin = "3px 0 2px 0";
+        el.style.fontSize = "10.5pt";
       });
       clone.querySelectorAll("table").forEach((el) => {
-        el.style.marginBottom = "6px";
+        el.style.marginBottom = "3px";
+        el.style.fontSize = "9.5pt";
       });
       clone.querySelectorAll("td, th").forEach((el) => {
-        el.style.padding = el.style.padding || "2px";
+        el.style.padding = "1px 2px";
       });
       clone.querySelectorAll("p").forEach((el) => {
-        el.style.margin = "4px 0 6px 0";
+        el.style.margin = "2px 0 3px 0";
+      });
+      clone.querySelectorAll("div").forEach((el) => {
+        if (el.style.marginBottom) el.style.marginBottom = "3px";
+        if (el.style.marginTop) el.style.marginTop = "3px";
       });
     }
 
