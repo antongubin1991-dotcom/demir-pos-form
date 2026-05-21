@@ -11,7 +11,7 @@ window.translations = {
 
     sec_request: "Тип заявки и договор",
     sec_cards: "Типы карточек",
-    sec_bank: "Банковские реквизиты",
+    sec_bank: "Банк реквизиттери",
     sec_comment: "Комментарий",
 
     lbl_business_object: "Тип объекта предпринимательства",
@@ -68,24 +68,6 @@ window.translations = {
 
 /* ============================================================
    PRIMARY APPLICATION MODE
-   На первичном этапе маркетологи не заполняют технические поля ККМ,
-   которые появляются только после подготовки/регистрации аппарата.
-
-   Убираем из интерфейса и печатного заявления:
-   - заводской № ККМ / № версии ККМ
-   - модель ККМ
-   - РНМ ККМ
-   - ФН
-
-   Налоговые ставки не заполняются вручную: пункт 10 в заявлении ККМ
-   автоматически берётся из выбранного статуса по регистрации НДС.
-
-   Временная бизнес-логика печати:
-   - всегда печатается банковская заявка на регистрацию пункта обслуживания;
-   - затем всегда печатается отдельное заявление о регистрации ККМ;
-   - без диалога подтверждения и без зависимости от выбора С ККМ / Без ККМ.
-
-   Логин и пароль от lk.salyk.kg остаются в форме и в заявлении ККМ.
 ============================================================ */
 window.addEventListener("DOMContentLoaded", () => {
   const vatLabels = {
@@ -197,6 +179,57 @@ window.addEventListener("DOMContentLoaded", () => {
     };
   };
 
+  const openScaledPrintWindow = (templateId, title) => {
+    const tpl = document.getElementById(templateId);
+    if (!tpl) {
+      alert("Шаблон " + templateId + " не найден!");
+      return null;
+    }
+
+    const win = window.open("", "_blank");
+    if (!win) {
+      alert("Разрешите всплывающие окна для печати.");
+      return null;
+    }
+
+    win.document.write(`
+      <!doctype html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>${title}</title>
+          <style>
+            @page { size: A4 portrait; margin: 7mm; }
+            html, body {
+              margin: 0;
+              padding: 0;
+              background: #fff;
+              color: #000;
+              font-family: 'Times New Roman', serif;
+            }
+            .print-scale {
+              width: 800px;
+              transform: scale(0.78);
+              transform-origin: top left;
+            }
+            table { page-break-inside: avoid; }
+            tr { page-break-inside: avoid; }
+          </style>
+        </head>
+        <body></body>
+      </html>
+    `);
+    win.document.close();
+
+    const clone = tpl.cloneNode(true);
+    clone.style.display = "block";
+    clone.style.margin = "0";
+    clone.classList.add("print-scale");
+    win.document.body.appendChild(clone);
+
+    return win;
+  };
+
   const patchPrintButton = () => {
     const oldBtn = document.getElementById("savePdf");
     if (!oldBtn) return;
@@ -219,29 +252,25 @@ window.addEventListener("DOMContentLoaded", () => {
       if (typeof window.fillPdfTemplateForPrint === "function") {
         window.fillPdfTemplateForPrint();
       }
+      if (typeof window.fillKkmTemplateForPrint === "function") {
+        window.fillKkmTemplateForPrint();
+      }
 
-      const posWin = typeof window.openPrintWindow === "function"
-        ? window.openPrintWindow("pdfDocument", "printing-pos")
-        : null;
+      const posWin = openScaledPrintWindow("pdfDocument", "Заявка на регистрацию пункта обслуживания");
+      const kkmWin = openScaledPrintWindow("kkmDocument", "Заявление о регистрации ККМ");
       if (!posWin) return;
 
       setTimeout(() => {
+        posWin.focus();
         posWin.print();
         posWin.close();
 
-        if (typeof window.fillKkmTemplateForPrint === "function") {
-          window.fillKkmTemplateForPrint();
-        }
-
-        const kkmWin = typeof window.openPrintWindow === "function"
-          ? window.openPrintWindow("kkmDocument", "printing-kkm")
-          : null;
         if (!kkmWin) return;
-
         setTimeout(() => {
+          kkmWin.focus();
           kkmWin.print();
           kkmWin.close();
-        }, 400);
+        }, 700);
       }, 400);
     });
   };
