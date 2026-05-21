@@ -186,6 +186,10 @@ window.addEventListener("DOMContentLoaded", () => {
       return null;
     }
 
+    const isPosDocument = templateId === "pdfDocument";
+    const scale = isPosDocument ? 0.66 : 0.78;
+    const width = isPosDocument ? 820 : 800;
+
     const win = window.open("", "_blank");
     if (!win) {
       alert("Разрешите всплывающие окна для печати.");
@@ -199,7 +203,7 @@ window.addEventListener("DOMContentLoaded", () => {
           <meta charset="utf-8">
           <title>${title}</title>
           <style>
-            @page { size: A4 portrait; margin: 7mm; }
+            @page { size: A4 portrait; margin: 4mm; }
             html, body {
               margin: 0;
               padding: 0;
@@ -208,12 +212,13 @@ window.addEventListener("DOMContentLoaded", () => {
               font-family: 'Times New Roman', serif;
             }
             .print-scale {
-              width: 800px;
-              transform: scale(0.78);
+              width: ${width}px;
+              transform: scale(${scale});
               transform-origin: top left;
             }
             table { page-break-inside: avoid; }
             tr { page-break-inside: avoid; }
+            .pdf-signature-block { margin-bottom: 0 !important; }
           </style>
         </head>
         <body></body>
@@ -224,7 +229,26 @@ window.addEventListener("DOMContentLoaded", () => {
     const clone = tpl.cloneNode(true);
     clone.style.display = "block";
     clone.style.margin = "0";
+    clone.style.padding = isPosDocument ? "10px" : "14px";
+    clone.style.minHeight = "auto";
+    clone.style.lineHeight = isPosDocument ? "1.12" : "1.25";
     clone.classList.add("print-scale");
+
+    if (isPosDocument) {
+      clone.querySelectorAll("h3").forEach((el) => {
+        el.style.margin = "6px 0 3px 0";
+      });
+      clone.querySelectorAll("table").forEach((el) => {
+        el.style.marginBottom = "6px";
+      });
+      clone.querySelectorAll("td, th").forEach((el) => {
+        el.style.padding = el.style.padding || "2px";
+      });
+      clone.querySelectorAll("p").forEach((el) => {
+        el.style.margin = "4px 0 6px 0";
+      });
+    }
+
     win.document.body.appendChild(clone);
 
     return win;
