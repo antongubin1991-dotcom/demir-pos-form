@@ -65,3 +65,51 @@ window.translations = {
     description: "Comment"
   }
 };
+
+/* ============================================================
+   KKM FORM CLEANUP
+   - Модель ККМ больше не используется.
+   - Заводской № / версия / РНМ / ФН остаются в форме, но не являются обязательными.
+   - Комментарий не является обязательным при печати.
+============================================================ */
+window.addEventListener("DOMContentLoaded", () => {
+  const removeKkmModel = () => {
+    const kkmModelInput = document.getElementById("kkmModel");
+    const kkmModelField = kkmModelInput?.closest(".field");
+    if (kkmModelField) kkmModelField.remove();
+
+    const kkmModelPdfCell = document.getElementById("kkm_kkmModel");
+    const kkmModelPdfRow = kkmModelPdfCell?.closest("tr");
+    if (kkmModelPdfRow) kkmModelPdfRow.remove();
+
+    localStorage.removeItem("kkmModel");
+  };
+
+  removeKkmModel();
+
+  const patchValidation = () => {
+    if (typeof window.validatePdfRequiredFields !== "function") return;
+
+    const originalValidatePdfRequiredFields = window.validatePdfRequiredFields;
+
+    window.validatePdfRequiredFields = function validatePdfRequiredFieldsWithoutRequiredComment() {
+      const description = document.getElementById("description");
+      const originalDescriptionValue = description ? description.value : "";
+
+      if (description && !description.value.trim()) {
+        description.value = "Комментарий не указан";
+      }
+
+      const isValid = originalValidatePdfRequiredFields();
+
+      if (description) {
+        description.value = originalDescriptionValue;
+        description.classList.remove("field-error");
+      }
+
+      return isValid;
+    };
+  };
+
+  setTimeout(patchValidation, 0);
+});
