@@ -67,25 +67,54 @@ window.translations = {
 };
 
 /* ============================================================
-   KKM FORM CLEANUP
-   - Модель ККМ больше не используется.
-   - Заводской № / версия / РНМ / ФН остаются в форме, но не являются обязательными.
-   - Комментарий не является обязательным при печати.
+   PRIMARY APPLICATION MODE
+   На первичном этапе маркетологи не заполняют технические поля ККМ,
+   которые появляются только после подготовки/регистрации аппарата.
+
+   Убираем из интерфейса и печатного заявления:
+   - заводской № ККМ / № версии ККМ
+   - модель ККМ
+   - РНМ ККМ
+   - ФН
+
+   Логин и пароль от lk.salyk.kg остаются в форме и в заявлении ККМ.
 ============================================================ */
 window.addEventListener("DOMContentLoaded", () => {
-  const removeKkmModel = () => {
-    const kkmModelInput = document.getElementById("kkmModel");
-    const kkmModelField = kkmModelInput?.closest(".field");
-    if (kkmModelField) kkmModelField.remove();
-
-    const kkmModelPdfCell = document.getElementById("kkm_kkmModel");
-    const kkmModelPdfRow = kkmModelPdfCell?.closest("tr");
-    if (kkmModelPdfRow) kkmModelPdfRow.remove();
-
-    localStorage.removeItem("kkmModel");
+  const removeFieldByInputId = (id) => {
+    const input = document.getElementById(id);
+    const wrapper = input?.closest(".field");
+    if (wrapper) wrapper.remove();
   };
 
-  removeKkmModel();
+  ["kkmSerialNumber", "kkmVersion", "kkmModel", "kkmRnm", "kkmFn"].forEach(removeFieldByInputId);
+
+  [
+    "kkm_serialAndVersion",
+    "kkm_kkmModel",
+    "kkm_rnm",
+    "kkm_fn"
+  ].forEach((id) => {
+    const cell = document.getElementById(id);
+    const row = cell?.closest("tr");
+    if (row) row.remove();
+  });
+
+  const renumber = [
+    ["kkm_reason", "15) Причина перерегистрации и снятия"],
+    ["kkm_email", "16) Электронная почта"],
+    ["kkm_postalAndCoords", "17) Почтовый индекс, широта и долгота"],
+    ["kkm_lkCreds", "18) Логин и пароль от lk.salyk.kg"]
+  ];
+
+  renumber.forEach(([cellId, label]) => {
+    const row = document.getElementById(cellId)?.closest("tr");
+    const labelCell = row?.querySelector("td:first-child");
+    if (labelCell) labelCell.textContent = label;
+  });
+
+  ["kkmSerialNumber", "kkmVersion", "kkmModel", "kkmRnm", "kkmFn"].forEach((id) => {
+    localStorage.removeItem(id);
+  });
 
   const patchValidation = () => {
     if (typeof window.validatePdfRequiredFields !== "function") return;
