@@ -84,6 +84,23 @@ window.addEventListener("DOMContentLoaded", () => {
     if (wrapper) wrapper.remove();
   };
 
+  const removePosSensitiveBlocks = (root = document) => {
+    const loginCell = root.querySelector("#pdf_lkLogin");
+    const loginFlex = loginCell?.parentElement?.parentElement;
+    const loginTitle = loginFlex?.previousElementSibling;
+    if (loginTitle && loginTitle.textContent.includes("Логин/пароль")) {
+      loginTitle.remove();
+    }
+    if (loginFlex) loginFlex.remove();
+
+    const commentBlock = root.querySelector("#pdf_description");
+    const commentTitle = commentBlock?.previousElementSibling;
+    if (commentTitle && commentTitle.textContent.includes("Комментарий")) {
+      commentTitle.remove();
+    }
+    if (commentBlock) commentBlock.remove();
+  };
+
   ["kkmSerialNumber", "kkmVersion", "kkmModel", "kkmRnm", "kkmFn"].forEach(removeFieldByInputId);
 
   const taxRatesInput = document.getElementById("taxRates");
@@ -137,6 +154,8 @@ window.addEventListener("DOMContentLoaded", () => {
   ["kkmSerialNumber", "kkmVersion", "kkmModel", "kkmRnm", "kkmFn", "taxRates"].forEach((id) => {
     localStorage.removeItem(id);
   });
+
+  removePosSensitiveBlocks(document);
 
   const patchValidation = () => {
     if (typeof window.validatePdfRequiredFields !== "function") return;
@@ -228,6 +247,7 @@ window.addEventListener("DOMContentLoaded", () => {
     win.document.close();
 
     const clone = tpl.cloneNode(true);
+    if (isPosDocument) removePosSensitiveBlocks(clone);
     clone.style.display = "block";
     clone.style.margin = "0";
     clone.style.padding = isPosDocument ? "4px" : "14px";
