@@ -131,7 +131,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const companyName = getFormValue("companyName") || "_____________________";
 
     header.innerHTML = `
-      <table style="width:100%; border-collapse:collapse; font-size:10.5pt; line-height:1.08;">
+      <table style="width:100%; border-collapse:collapse; font-size:10pt; line-height:1.02;">
         <tr>
           <td style="width:50%; vertical-align:top;">Новый терминал(ы) ${mark(isChecked("requestType", "new"))}</td>
           <td style="width:50%; vertical-align:top;">Приложение № 1</td>
@@ -152,14 +152,14 @@ window.addEventListener("DOMContentLoaded", () => {
         <tr><td>POS терминал без ККМ ${mark(isChecked("terminalType", "withoutKKM"))}</td><td></td></tr>
       </table>
     `;
-    header.style.marginBottom = "4px";
-    header.style.fontSize = "10.5pt";
+    header.style.marginBottom = "2px";
+    header.style.fontSize = "10pt";
 
     const title = header.nextElementSibling;
     if (title) {
       title.innerHTML = `Заявка на регистрацию пункта обслуживания c/n ${applicationNumber}`;
-      title.style.margin = "6px 0 3px 0";
-      title.style.fontSize = "13pt";
+      title.style.margin = "3px 0 2px 0";
+      title.style.fontSize = "12.5pt";
       title.style.textAlign = "center";
       title.style.fontWeight = "bold";
     }
@@ -167,8 +167,8 @@ window.addEventListener("DOMContentLoaded", () => {
     const dateLine = title?.nextElementSibling;
     if (dateLine) {
       dateLine.innerHTML = `<span id="pdf_date">${appDate.full}</span>&nbsp;&nbsp;&nbsp; г. Бишкек`;
-      dateLine.style.marginBottom = "5px";
-      dateLine.style.fontSize = "10.5pt";
+      dateLine.style.marginBottom = "3px";
+      dateLine.style.fontSize = "10pt";
     }
   };
 
@@ -277,7 +277,7 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     const isPosDocument = templateId === "pdfDocument";
-    const scale = isPosDocument ? 0.82 : 0.78;
+    const scale = isPosDocument ? 0.90 : 0.78;
     const width = 800;
 
     const win = window.open("", "_blank");
@@ -293,7 +293,7 @@ window.addEventListener("DOMContentLoaded", () => {
           <meta charset="utf-8">
           <title>${title}</title>
           <style>
-            @page { size: A4 portrait; margin: 4mm; }
+            @page { size: A4 portrait; margin: 3mm; }
             html, body {
               margin: 0;
               padding: 0;
@@ -324,33 +324,33 @@ window.addEventListener("DOMContentLoaded", () => {
     }
     clone.style.display = "block";
     clone.style.margin = "0";
-    clone.style.padding = isPosDocument ? "8px" : "14px";
+    clone.style.padding = isPosDocument ? "4px" : "14px";
     clone.style.minHeight = "auto";
     clone.style.height = "auto";
-    clone.style.lineHeight = isPosDocument ? "1.1" : "1.25";
-    clone.style.fontSize = isPosDocument ? "11pt" : "12pt";
+    clone.style.lineHeight = isPosDocument ? "1.02" : "1.25";
+    clone.style.fontSize = isPosDocument ? "10.5pt" : "12pt";
     clone.style.zoom = String(scale);
     clone.style.transform = "none";
     clone.classList.add("print-scale");
 
     if (isPosDocument) {
       clone.querySelectorAll("h3").forEach((el) => {
-        el.style.margin = "4px 0 2px 0";
-        el.style.fontSize = "11pt";
-      });
-      clone.querySelectorAll("table").forEach((el) => {
-        el.style.marginBottom = "4px";
+        el.style.margin = "2px 0 1px 0";
         el.style.fontSize = "10.5pt";
       });
+      clone.querySelectorAll("table").forEach((el) => {
+        el.style.marginBottom = "2px";
+        el.style.fontSize = "10pt";
+      });
       clone.querySelectorAll("td, th").forEach((el) => {
-        el.style.padding = "2px 3px";
+        el.style.padding = "1px 2px";
       });
       clone.querySelectorAll("p").forEach((el) => {
-        el.style.margin = "3px 0 4px 0";
+        el.style.margin = "2px 0 2px 0";
       });
       clone.querySelectorAll("div").forEach((el) => {
-        if (el.style.marginBottom) el.style.marginBottom = "4px";
-        if (el.style.marginTop) el.style.marginTop = "4px";
+        if (el.style.marginBottom) el.style.marginBottom = "2px";
+        if (el.style.marginTop) el.style.marginTop = "2px";
       });
     }
 
