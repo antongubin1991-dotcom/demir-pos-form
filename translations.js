@@ -101,6 +101,77 @@ window.addEventListener("DOMContentLoaded", () => {
     if (commentBlock) commentBlock.remove();
   };
 
+  const getFormValue = (idOrName) => {
+    const el = document.getElementById(idOrName) || document.querySelector(`[name="${idOrName}"]`);
+    return el ? (el.value || el.textContent || "").trim() : "";
+  };
+
+  const formatDateParts = (value) => {
+    if (!value) return { day: "____", month: "____________", year: "____", full: "«___» _____________ 20__ г." };
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return { day: "____", month: "____________", year: "____", full: "«___» _____________ 20__ г." };
+    const months = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = months[d.getMonth()];
+    const year = String(d.getFullYear());
+    return { day, month, year, full: `«${day}» ${month} ${year} г.` };
+  };
+
+  const isChecked = (name, value) => Boolean(document.querySelector(`input[name="${name}"][value="${value}"]:checked`));
+  const mark = (checked) => checked ? "✓" : "________________________";
+
+  const patchPosHeader = (root) => {
+    const header = root.firstElementChild;
+    if (!header) return;
+
+    const contractDate = formatDateParts(getFormValue("contractDate"));
+    const appDate = formatDateParts(getFormValue("applicationDate"));
+    const contractNumber = getFormValue("contractNumber") || "_____________";
+    const applicationNumber = getFormValue("applicationNumber") || "______________";
+    const companyName = getFormValue("companyName") || "_____________________";
+
+    header.innerHTML = `
+      <table style="width:100%; border-collapse:collapse; font-size:10.5pt; line-height:1.08;">
+        <tr>
+          <td style="width:50%; vertical-align:top;">Новый терминал(ы) ${mark(isChecked("requestType", "new"))}</td>
+          <td style="width:50%; vertical-align:top;">Приложение № 1</td>
+        </tr>
+        <tr>
+          <td>Замена POS-терминала(ов) (поломка или сервис) ${mark(isChecked("requestType", "replace"))}</td>
+          <td>к Договору № ${contractNumber} от «${contractDate.day}» ${contractDate.month} ${contractDate.year} г.</td>
+        </tr>
+        <tr>
+          <td>Смена данных (адрес, тел. и т.д.) ${mark(isChecked("requestType", "updateData"))}</td>
+          <td>о сотрудничестве в обслуживании платежных карточек</td>
+        </tr>
+        <tr>
+          <td>QR / QR Landing ${mark(isChecked("requestType", "qr"))}</td>
+          <td>с Предприятием торговли/сервиса ${companyName}</td>
+        </tr>
+        <tr><td>POS терминал с ККМ ${mark(isChecked("terminalType", "withKKM"))}</td><td></td></tr>
+        <tr><td>POS терминал без ККМ ${mark(isChecked("terminalType", "withoutKKM"))}</td><td></td></tr>
+      </table>
+    `;
+    header.style.marginBottom = "4px";
+    header.style.fontSize = "10.5pt";
+
+    const title = header.nextElementSibling;
+    if (title) {
+      title.innerHTML = `Заявка на регистрацию пункта обслуживания c/n ${applicationNumber}`;
+      title.style.margin = "6px 0 3px 0";
+      title.style.fontSize = "13pt";
+      title.style.textAlign = "center";
+      title.style.fontWeight = "bold";
+    }
+
+    const dateLine = title?.nextElementSibling;
+    if (dateLine) {
+      dateLine.innerHTML = `<span id="pdf_date">${appDate.full}</span>&nbsp;&nbsp;&nbsp; г. Бишкек`;
+      dateLine.style.marginBottom = "5px";
+      dateLine.style.fontSize = "10.5pt";
+    }
+  };
+
   ["kkmSerialNumber", "kkmVersion", "kkmModel", "kkmRnm", "kkmFn"].forEach(removeFieldByInputId);
 
   const taxRatesInput = document.getElementById("taxRates");
@@ -206,8 +277,8 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     const isPosDocument = templateId === "pdfDocument";
-    const scale = isPosDocument ? 0.58 : 0.78;
-    const width = isPosDocument ? 800 : 800;
+    const scale = isPosDocument ? 0.82 : 0.78;
+    const width = 800;
 
     const win = window.open("", "_blank");
     if (!win) {
@@ -222,7 +293,7 @@ window.addEventListener("DOMContentLoaded", () => {
           <meta charset="utf-8">
           <title>${title}</title>
           <style>
-            @page { size: A4 portrait; margin: 3mm; }
+            @page { size: A4 portrait; margin: 4mm; }
             html, body {
               margin: 0;
               padding: 0;
@@ -247,36 +318,39 @@ window.addEventListener("DOMContentLoaded", () => {
     win.document.close();
 
     const clone = tpl.cloneNode(true);
-    if (isPosDocument) removePosSensitiveBlocks(clone);
+    if (isPosDocument) {
+      patchPosHeader(clone);
+      removePosSensitiveBlocks(clone);
+    }
     clone.style.display = "block";
     clone.style.margin = "0";
-    clone.style.padding = isPosDocument ? "4px" : "14px";
+    clone.style.padding = isPosDocument ? "8px" : "14px";
     clone.style.minHeight = "auto";
     clone.style.height = "auto";
-    clone.style.lineHeight = isPosDocument ? "1.04" : "1.25";
-    clone.style.fontSize = isPosDocument ? "10pt" : "12pt";
+    clone.style.lineHeight = isPosDocument ? "1.1" : "1.25";
+    clone.style.fontSize = isPosDocument ? "11pt" : "12pt";
     clone.style.zoom = String(scale);
     clone.style.transform = "none";
     clone.classList.add("print-scale");
 
     if (isPosDocument) {
       clone.querySelectorAll("h3").forEach((el) => {
-        el.style.margin = "3px 0 2px 0";
-        el.style.fontSize = "10.5pt";
+        el.style.margin = "4px 0 2px 0";
+        el.style.fontSize = "11pt";
       });
       clone.querySelectorAll("table").forEach((el) => {
-        el.style.marginBottom = "3px";
-        el.style.fontSize = "9.5pt";
+        el.style.marginBottom = "4px";
+        el.style.fontSize = "10.5pt";
       });
       clone.querySelectorAll("td, th").forEach((el) => {
-        el.style.padding = "1px 2px";
+        el.style.padding = "2px 3px";
       });
       clone.querySelectorAll("p").forEach((el) => {
-        el.style.margin = "2px 0 3px 0";
+        el.style.margin = "3px 0 4px 0";
       });
       clone.querySelectorAll("div").forEach((el) => {
-        if (el.style.marginBottom) el.style.marginBottom = "3px";
-        if (el.style.marginTop) el.style.marginTop = "3px";
+        if (el.style.marginBottom) el.style.marginBottom = "4px";
+        if (el.style.marginTop) el.style.marginTop = "4px";
       });
     }
 
