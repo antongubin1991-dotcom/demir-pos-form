@@ -80,6 +80,11 @@ window.translations = {
    Налоговые ставки не заполняются вручную: пункт 10 в заявлении ККМ
    автоматически берётся из выбранного статуса по регистрации НДС.
 
+   Временная бизнес-логика печати:
+   - всегда печатается банковская заявка на регистрацию пункта обслуживания;
+   - затем всегда печатается отдельное заявление о регистрации ККМ;
+   - без диалога подтверждения и без зависимости от выбора С ККМ / Без ККМ.
+
    Логин и пароль от lk.salyk.kg остаются в форме и в заявлении ККМ.
 ============================================================ */
 window.addEventListener("DOMContentLoaded", () => {
@@ -192,8 +197,58 @@ window.addEventListener("DOMContentLoaded", () => {
     };
   };
 
+  const patchPrintButton = () => {
+    const oldBtn = document.getElementById("savePdf");
+    if (!oldBtn) return;
+
+    const newBtn = oldBtn.cloneNode(true);
+    oldBtn.parentNode.replaceChild(newBtn, oldBtn);
+
+    newBtn.addEventListener("click", async () => {
+      if (typeof window.validatePdfRequiredFields === "function" && !window.validatePdfRequiredFields()) return;
+
+      try {
+        if (typeof window.collectFormDataForSLK === "function") {
+          const slkPayload = window.collectFormDataForSLK();
+          console.log("SLK JSON (отправка отключена):", JSON.stringify(slkPayload, null, 2));
+        }
+      } catch (e) {
+        console.warn("Не удалось собрать SLK JSON:", e);
+      }
+
+      if (typeof window.fillPdfTemplateForPrint === "function") {
+        window.fillPdfTemplateForPrint();
+      }
+
+      const posWin = typeof window.openPrintWindow === "function"
+        ? window.openPrintWindow("pdfDocument", "printing-pos")
+        : null;
+      if (!posWin) return;
+
+      setTimeout(() => {
+        posWin.print();
+        posWin.close();
+
+        if (typeof window.fillKkmTemplateForPrint === "function") {
+          window.fillKkmTemplateForPrint();
+        }
+
+        const kkmWin = typeof window.openPrintWindow === "function"
+          ? window.openPrintWindow("kkmDocument", "printing-kkm")
+          : null;
+        if (!kkmWin) return;
+
+        setTimeout(() => {
+          kkmWin.print();
+          kkmWin.close();
+        }, 400);
+      }, 400);
+    });
+  };
+
   setTimeout(() => {
     patchValidation();
     patchKkmTemplateFill();
+    patchPrintButton();
   }, 0);
 });
