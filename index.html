@@ -12,9 +12,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-  <!-- html2pdf для PDF (сейчас не используется, можно убрать при желании) -->
   <script defer src="translations.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script defer src="script.js"></script>
 </head>
 <body class="light">
@@ -85,16 +83,19 @@
                 <label class="chip"><input type="checkbox" name="requestType" value="qr" /> QR / QR Landing</label>
               </div>
             </fieldset>
+
+            <!-- ИЗМЕНЕНО: чекбоксы → radio (взаимоисключающий выбор) -->
             <fieldset class="field">
               <legend class="field-label">POS-терминал</legend>
               <div class="chips">
-                <label class="chip"><input type="checkbox" name="terminalType" value="withKKM" /> С ККМ</label>
-                <label class="chip"><input type="checkbox" name="terminalType" value="withoutKKM" /> Без ККМ</label>
+                <label class="chip"><input type="radio" name="terminalType" value="withKKM" /> С ККМ</label>
+                <label class="chip"><input type="radio" name="terminalType" value="withoutKKM" /> Без ККМ</label>
               </div>
             </fieldset>
           </div>
-        </section>
-                  <div class="grid two">
+
+          <!-- Статус клиента (перенесён внутрь секции) -->
+          <div class="grid two">
             <label class="field">
               <span class="field-label">Статус клиента</span>
               <select id="clientStatus" class="field-input">
@@ -104,6 +105,7 @@
               </select>
             </label>
           </div>
+        </section>
 
         <!-- 1. КОМПАНИЯ -->
         <section class="section">
@@ -132,6 +134,28 @@
               <input id="companyHeadInn" class="field-input" type="text" maxlength="14">
             </label>
           </div>
+
+          <!-- ============ ККМ-ПОЛЯ (появятся при "С ККМ") ============ -->
+          <div class="grid two kkm-only">
+            <label class="field">
+              <span class="field-label">Наименование объекта (для ККМ)</span>
+              <input id="objectName" class="field-input" type="text"
+                     placeholder="напр. Магазин &laquo;Вектор&raquo;">
+            </label>
+
+            <label class="field">
+              <span class="field-label">Статус по регистрации НДС</span>
+              <select id="vatStatus" class="field-input">
+                <option value="">— выбрать —</option>
+                <option value="vat">Плательщик НДС</option>
+                <option value="singleTax">Единый налог</option>
+                <option value="simplified">Упрощённая система</option>
+                <option value="patent">Патент</option>
+                <option value="none">Без регистрации НДС</option>
+              </select>
+            </label>
+          </div>
+          <!-- ============ /ККМ-ПОЛЯ ============ -->
         </section>
 
         <!-- 2. КОНТАКТЫ -->
@@ -188,37 +212,96 @@
           <h2 class="section-title" data-key="sec_pos">POS-терминал и условия</h2>
 
           <!-- Модель POS -->
-          <label class="field">
-            <span class="field-label">Модель POS / тип решения</span>
-            <select id="posModel" class="field-input">
-              <option value="">— выбрать —</option>
-              <option value="Beko">BEKO</option>
-              <option value="SoftPOS">SoftPOS</option>
-              <option value="Ingenico">Ingenico</option>
-              <option value="aishino">Aishino A90</option>
-              <option value="Kozen">Kozen</option>
-            </select>
+          <div class="grid two">
+            <label class="field">
+              <span class="field-label">Модель POS / тип решения</span>
+              <select id="posModel" class="field-input">
+                <option value="">— выбрать —</option>
+                <option value="Beko">BEKO</option>
+                <option value="SoftPOS">SoftPOS</option>
+                <option value="Ingenico">Ingenico</option>
+                <option value="Aisino">Aisino A90</option>
+                <option value="Kozen">Kozen</option>
+              </select>
+            </label>
+
+            <!-- ККМ-поле: модель ККМ автозаполняется -->
+            <label class="field kkm-only">
+              <span class="field-label">Модель ККМ (авто по POS)</span>
+              <input id="kkmModel" class="field-input" type="text" readonly
+                     placeholder="заполнится при выборе POS">
+            </label>
+          </div>
+
+          <!-- ============ ККМ-ПОЛЯ ============ -->
+          <div class="grid two kkm-only">
+            <label class="field">
+              <span class="field-label">Заводской номер ККМ</span>
+              <input id="kkmSerialNumber" class="field-input" type="text"
+                     placeholder="заполняется ЦТО">
+            </label>
+
+            <label class="field">
+              <span class="field-label">Номер версии ККМ</span>
+              <input id="kkmVersion" class="field-input" type="text">
+            </label>
+          </div>
+
+          <div class="grid two kkm-only">
+            <label class="field">
+              <span class="field-label">РНМ ККМ</span>
+              <input id="kkmRnm" class="field-input" type="text"
+                     placeholder="присваивает налоговая">
+            </label>
+
+            <label class="field">
+              <span class="field-label">ФН (фискальный накопитель)</span>
+              <input id="kkmFn" class="field-input" type="text">
+            </label>
+          </div>
+
+          <div class="grid two kkm-only">
+            <label class="field">
+              <span class="field-label">Предмет расчёта</span>
+              <select id="paymentSubject" class="field-input">
+                <option value="">— выбрать —</option>
+                <option value="goods">Товар</option>
+                <option value="service">Услуга</option>
+                <option value="work">Работа</option>
+                <option value="mixed">Товар + услуга</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span class="field-label">Налоговые ставки</span>
+              <input id="taxRates" class="field-input" type="text"
+                     placeholder="напр. НДС 12%, НСП 2%, 0,5%">
+            </label>
+          </div>
+
+          <label class="field kkm-only">
+            <span class="field-label">Причина перерегистрации / снятия (если применимо)</span>
+            <textarea id="kkmReason" class="field-input" rows="2"></textarea>
           </label>
+          <!-- ============ /ККМ-ПОЛЯ ============ -->
 
           <hr class="divider">
 
-          <!-- ==========================
-               БЛОК 6 — Банковские реквизиты
-          ============================== -->
-          <section class="section">
-            <h2 class="section-title" data-key="sec_bank">Банковские реквизиты</h2>
+          <!-- Банковские реквизиты — теперь не вложенная секция, а группа полей -->
+          <h3 class="section-title" data-key="sec_bank">Банковские реквизиты</h3>
 
-            <div class="grid two">
-              <label class="field">
-                <span class="field-label">Номер счета в ДКИБ</span>
-                <input name="accountNumber" type="text" class="field-input" />
-              </label>
-              <label class="field">
-                <span class="field-label">Ответственный филиал ДКИБ</span>
-                <select id="responsibleBranches" class="field-input"></select>
-              </label>
-            </div>
-          </section>
+          <div class="grid two">
+            <label class="field">
+              <span class="field-label">Номер счета в ДКИБ</span>
+              <input name="accountNumber" type="text" class="field-input" />
+            </label>
+            <label class="field">
+              <span class="field-label">Ответственный филиал ДКИБ</span>
+              <select id="responsibleBranches" class="field-input"></select>
+            </label>
+          </div>
+
+          <hr class="divider">
 
           <!-- Комиссии -->
           <h3 class="section-title">Комиссии</h3>
@@ -356,11 +439,13 @@
             <input id="tradeAddress" class="field-input" data-placeholder="trade_address">
           </label>
 
+          <!-- КНОПКА GPS — перенесена ближе к адресу -->
+          <div style="margin: 8px 0; text-align:right;">
+            <button id="geoLocate" type="button" class="btn secondary">Определить по GPS</button>
+          </div>
+
           <div id="tradeMap" class="map-box no-translate"></div>
-            <!-- КНОПКА GPS -->
-        <div style="margin-top:10px; text-align:right;">
-          <button id="geoLocate" class="btn secondary">Определить по GPS</button>
-        </div>
+
           <div class="grid two">
             <label class="field">
               <span class="field-label">Широта</span>
@@ -369,6 +454,15 @@
             <label class="field">
               <span class="field-label">Долгота</span>
               <input id="tradeLon" class="field-input" placeholder="Lon">
+            </label>
+          </div>
+
+          <!-- ККМ-поле: почтовый индекс -->
+          <div class="grid two kkm-only">
+            <label class="field">
+              <span class="field-label">Почтовый индекс</span>
+              <input id="postalCode" class="field-input" type="text" maxlength="6"
+                     placeholder="напр. 720000">
             </label>
           </div>
         </section>
@@ -382,14 +476,13 @@
           <div class="signature-box">
             <canvas id="signaturePad"></canvas>
           </div>
-        
+
           <div class="signature-actions">
             <button type="button" id="signatureClear" class="btn secondary">
               Очистить подпись
             </button>
           </div>
 
-          <!-- base64 подпись для JSON / SLK -->
           <input type="hidden" id="signatureData" name="signatureData" />
         </section>
 
@@ -397,7 +490,6 @@
         <section class="section">
           <h2 class="section-title" data-key="sec_comment">Комментарий</h2>
 
-          <!-- Логин/пароль от lk.salyk.kg (в одной строке) -->
           <div class="grid two">
             <label class="field">
               <span class="field-label">Логин от lk.salyk.kg (e-mail)</span>
@@ -410,47 +502,35 @@
             </label>
           </div>
 
-          <!-- Комментарий -->
           <label class="field">
             <span class="field-label" data-key="description">Комментарий</span>
             <textarea id="description" class="field-input" rows="3"></textarea>
           </label>
         </section>
-        
+
        <!-- КНОПКИ ДЕЙСТВИЙ -->
-<section class="section">
-  <div class="actions-row">
-    <button id="savePdf" class="btn">Сохранить PDF</button>
-    <button id="clearForm" type="button" class="btn secondary">
-      Очистить форму
-    </button>
-  </div>
-</section>
+        <section class="section">
+          <div class="actions-row">
+            <button id="savePdf" type="button" class="btn">Печать</button>
+            <button id="clearForm" type="button" class="btn secondary">
+              Очистить форму
+            </button>
+          </div>
+        </section>
       </div> <!-- .card -->
     </main> <!-- .app-main -->
 
     <!-- ============================================================
-         ОФИЦИАЛЬНЫЙ PDF-ДОКУМЕНТ (СКРЫТЫЙ)
+         ОФИЦИАЛЬНЫЙ PDF-ДОКУМЕНТ POS (СКРЫТЫЙ) — БЕЗ ИЗМЕНЕНИЙ
     ============================================================ -->
     <div id="pdfDocument"
-         style="
-           display:none;
-           font-family:'Times New Roman',serif;
-           font-size:12pt;
-           line-height:1.3;
-           padding:20px;
-           background:#ffffff;
-           color:#000000;
-           width:800px;
-           min-height:1100px;
-         ">
+         style="display:none; font-family:'Times New Roman',serif; font-size:12pt;
+                line-height:1.3; padding:20px; background:#ffffff; color:#000000;
+                width:800px; min-height:1100px;">
 
-      <!-- ВЕРХНИЙ БЛОК: ВИД ЗАЯВКИ -->
       <div style="margin-bottom:16px; font-size:11pt;">
         <div>Новый терминал(ы) ________________________ Приложение № 1</div>
-        <div>
-          Замена POS-терминала(ов) (поломка или сервис) ________________________
-        </div>
+        <div>Замена POS-терминала(ов) (поломка или сервис) ________________________</div>
         <div style="padding-left:16px;">
           к Договору № __________________ от «____» ______________ 20____ г.
         </div>
@@ -460,7 +540,6 @@
         <div>POS терминал без ККМ ____________________________________________</div>
       </div>
 
-      <!-- ЗАГОЛОВОК ЗАЯВКИ + ДАТА / ГОРОД -->
       <div style="text-align:center; font-weight:bold; font-size:14pt; margin-bottom:8px;">
         Заявка на регистрацию пункта обслуживания c/n __________________
       </div>
@@ -469,152 +548,73 @@
         <span id="pdf_date">«____» __________ 20____ г.</span>&nbsp;&nbsp;&nbsp; г. Бишкек
       </div>
 
-      <!-- ТЕКСТ-ПРОСЬБА -->
       <p style="text-indent:20px; margin:0 0 16px 0; font-size:11pt;">
         Просим Вас зарегистрировать пункт обслуживания в Процессинговом центре и обеспечить расходными
         материалами в количестве согласно данной заявке.
       </p>
 
-      <!-- ТИПЫ КАРТОЧЕК (просто строкой, как в оригинале) -->
       <p style="margin:8px 0 16px 0; font-size:11pt;">
         Типы карточек:&nbsp;&nbsp; Visa &nbsp;&nbsp; MasterCard &nbsp;&nbsp; Элкарт &nbsp;&nbsp; МИР
         &nbsp;&nbsp; (нужное выделить)
       </p>
 
-      <!-- БЛОК КОМПАНИИ -->
       <h3 style="margin:12px 0 6px 0; font-size:12pt;">Данные торговой точки</h3>
       <table style="width:100%; border-collapse:collapse; margin-bottom:12px; font-size:11pt;">
-        <tr>
-          <td style="width:260px; font-weight:bold;">Наименование торговой точки:</td>
-          <td id="pdf_companyName" style="border-bottom:1px solid #000;"></td>
-        </tr>
-        <tr>
-          <td style="font-weight:bold;">ИНН/БИН:</td>
-          <td id="pdf_companyBin" style="border-bottom:1px solid #000;"></td>
-        </tr>
-        <tr>
-          <td style="font-weight:bold;">Руководитель:</td>
-          <td id="pdf_companyHead" style="border-bottom:1px solid #000;"></td>
-        </tr>
-        <tr>
-          <td style="font-weight:bold;">Сотрудник, привлекший клиента:</td>
-          <td id="pdf_manager" style="border-bottom:1px solid #000;"></td>
-        </tr>
-        <tr>
-          <td style="font-weight:bold;">Контактный телефон:</td>
-          <td id="pdf_phone" style="border-bottom:1px solid #000;"></td>
-        </tr>
-        <tr>
-          <td style="font-weight:bold;">E-mail:</td>
-          <td id="pdf_email" style="border-bottom:1px solid #000;"></td>
-        </tr>
+        <tr><td style="width:260px; font-weight:bold;">Наименование торговой точки:</td><td id="pdf_companyName" style="border-bottom:1px solid #000;"></td></tr>
+        <tr><td style="font-weight:bold;">ИНН/БИН:</td><td id="pdf_companyBin" style="border-bottom:1px solid #000;"></td></tr>
+        <tr><td style="font-weight:bold;">Руководитель:</td><td id="pdf_companyHead" style="border-bottom:1px solid #000;"></td></tr>
+        <tr><td style="font-weight:bold;">Сотрудник, привлекший клиента:</td><td id="pdf_manager" style="border-bottom:1px solid #000;"></td></tr>
+        <tr><td style="font-weight:bold;">Контактный телефон:</td><td id="pdf_phone" style="border-bottom:1px solid #000;"></td></tr>
+        <tr><td style="font-weight:bold;">E-mail:</td><td id="pdf_email" style="border-bottom:1px solid #000;"></td></tr>
       </table>
 
-      <!-- АДРЕСА -->
       <h3 style="margin:10px 0 6px 0; font-size:12pt;">Адреса</h3>
       <table style="width:100%; border-collapse:collapse; margin-bottom:12px; font-size:11pt;">
-        <tr>
-          <td style="width:220px; font-weight:bold;">Юридический адрес:</td>
-          <td id="pdf_legalAddress" style="border-bottom:1px solid #000;"></td>
-        </tr>
-        <tr>
-          <td style="font-weight:bold;">Адрес торговой точки:</td>
-          <td id="pdf_tradeAddress" style="border-bottom:1px solid #000;"></td>
-        </tr>
-        <tr>
-          <td style="font-weight:bold;">Район / УГНС:</td>
-          <td id="pdf_district_ugns" style="border-bottom:1px solid #000;"></td>
-        </tr>
+        <tr><td style="width:220px; font-weight:bold;">Юридический адрес:</td><td id="pdf_legalAddress" style="border-bottom:1px solid #000;"></td></tr>
+        <tr><td style="font-weight:bold;">Адрес торговой точки:</td><td id="pdf_tradeAddress" style="border-bottom:1px solid #000;"></td></tr>
+        <tr><td style="font-weight:bold;">Район / УГНС:</td><td id="pdf_district_ugns" style="border-bottom:1px solid #000;"></td></tr>
       </table>
 
-      <!-- ВИД ДЕЯТЕЛЬНОСТИ -->
       <h3 style="margin:10px 0 6px 0; font-size:12pt;">Вид деятельности</h3>
       <table style="width:100%; border-collapse:collapse; margin-bottom:12px; font-size:11pt;">
-        <tr>
-          <td style="width:280px; font-weight:bold;">Тип объекта предпринимательства:</td>
-          <td id="pdf_businessObjectType" style="border-bottom:1px solid #000;"></td>
-        </tr>
-        <tr>
-          <td style="font-weight:bold;">Вид деятельности:</td>
-          <td id="pdf_activityType" style="border-bottom:1px solid #000;"></td>
-        </tr>
-        <tr>
-          <td style="font-weight:bold;">Модель POS-терминала:</td>
-          <td id="pdf_posModel" style="border-bottom:1px solid #000;"></td>
-        </tr>
+        <tr><td style="width:280px; font-weight:bold;">Тип объекта предпринимательства:</td><td id="pdf_businessObjectType" style="border-bottom:1px solid #000;"></td></tr>
+        <tr><td style="font-weight:bold;">Вид деятельности:</td><td id="pdf_activityType" style="border-bottom:1px solid #000;"></td></tr>
+        <tr><td style="font-weight:bold;">Модель POS-терминала:</td><td id="pdf_posModel" style="border-bottom:1px solid #000;"></td></tr>
       </table>
 
-      <!-- КОМИССИИ -->
       <h3 style="margin:12px 0 6px 0; font-size:12pt;">Комиссии</h3>
       <table style="width:100%; border-collapse:collapse; margin-bottom:16px; font-size:11pt;">
-        <tr>
-          <th style="border:1px solid #000; padding:6px; text-align:left;">Вид карты</th>
-          <th style="border:1px solid #000; padding:6px; text-align:center;">Комиссия, %</th>
-        </tr>
-        <tr>
-          <td style="border:1px solid #000; padding:6px;">Карты VISA, выпущенные ДКИБ</td>
-          <td id="pdf_comm_visa_dkb" style="border:1px solid #000; padding:6px; text-align:center;"></td>
-        </tr>
-        <tr>
-          <td style="border:1px solid #000; padding:6px;">Размер бонуса</td>
-          <td id="pdf_comm_bonus_dkb" style="border:1px solid #000; padding:6px; text-align:center;"></td>
-        </tr>
-        <tr>
-          <td style="border:1px solid #000; padding:6px;">Карты VISA, выпущенные другими банками</td>
-          <td id="pdf_comm_visa_other" style="border:1px solid #000; padding:6px; text-align:center;"></td>
-        </tr>
-        <tr>
-          <td style="border:1px solid #000; padding:6px;">Карты Элкарт, выпущенные ДКИБ</td>
-          <td id="pdf_comm_elcart_dkb" style="border:1px solid #000; padding:6px; text-align:center;"></td>
-        </tr>
-        <tr>
-          <td style="border:1px solid #000; padding:6px;">Карты Элкарт, выпущенные другими банками</td>
-          <td id="pdf_comm_elcart_other" style="border:1px solid #000; padding:6px; text-align:center;"></td>
-        </tr>
-        <tr>
-          <td style="border:1px solid #000; padding:6px;">Карты MasterCard, выпущенные ДКИБ</td>
-          <td id="pdf_comm_mc_dkb" style="border:1px solid #000; padding:6px; text-align:center;"></td>
-        </tr>
-        <tr>
-          <td style="border:1px solid #000; padding:6px;">Карты MasterCard, выпущенные другими банками</td>
-          <td id="pdf_comm_mc_other" style="border:1px solid #000; padding:6px; text-align:center;"></td>
-        </tr>
+        <tr><th style="border:1px solid #000; padding:6px; text-align:left;">Вид карты</th><th style="border:1px solid #000; padding:6px; text-align:center;">Комиссия, %</th></tr>
+        <tr><td style="border:1px solid #000; padding:6px;">Карты VISA, выпущенные ДКИБ</td><td id="pdf_comm_visa_dkb" style="border:1px solid #000; padding:6px; text-align:center;"></td></tr>
+        <tr><td style="border:1px solid #000; padding:6px;">Размер бонуса</td><td id="pdf_comm_bonus_dkb" style="border:1px solid #000; padding:6px; text-align:center;"></td></tr>
+        <tr><td style="border:1px solid #000; padding:6px;">Карты VISA, выпущенные другими банками</td><td id="pdf_comm_visa_other" style="border:1px solid #000; padding:6px; text-align:center;"></td></tr>
+        <tr><td style="border:1px solid #000; padding:6px;">Карты Элкарт, выпущенные ДКИБ</td><td id="pdf_comm_elcart_dkb" style="border:1px solid #000; padding:6px; text-align:center;"></td></tr>
+        <tr><td style="border:1px solid #000; padding:6px;">Карты Элкарт, выпущенные другими банками</td><td id="pdf_comm_elcart_other" style="border:1px solid #000; padding:6px; text-align:center;"></td></tr>
+        <tr><td style="border:1px solid #000; padding:6px;">Карты MasterCard, выпущенные ДКИБ</td><td id="pdf_comm_mc_dkb" style="border:1px solid #000; padding:6px; text-align:center;"></td></tr>
+        <tr><td style="border:1px solid #000; padding:6px;">Карты MasterCard, выпущенные другими банками</td><td id="pdf_comm_mc_other" style="border:1px solid #000; padding:6px; text-align:center;"></td></tr>
       </table>
 
-      <!-- СКИДКИ -->
       <h3 style="margin:12px 0 6px 0; font-size:12pt;">Скидки</h3>
       <table style="width:100%; border-collapse:collapse; margin-bottom:20px; font-size:11pt;">
-        <tr>
-          <th style="border:1px solid #000; padding:6px; text-align:left;">Описание</th>
-          <th style="border:1px solid #000; padding:6px; text-align:center;">%</th>
-        </tr>
-        <tr>
-          <td style="border:1px solid #000; padding:6px;">Скидка на 10 карт</td>
-          <td id="pdf_discount_10" style="border:1px solid #000; padding:6px; text-align:center;"></td>
-        </tr>
+        <tr><th style="border:1px solid #000; padding:6px; text-align:left;">Описание</th><th style="border:1px solid #000; padding:6px; text-align:center;">%</th></tr>
+        <tr><td style="border:1px solid #000; padding:6px;">Скидка на 10 карт</td><td id="pdf_discount_10" style="border:1px solid #000; padding:6px; text-align:center;"></td></tr>
       </table>
 
-      <!-- ЛОГИН/ПАРОЛЬ ОТ LK.SALYK.KG -->
       <h3 style="margin:12px 0 6px 0; font-size:12pt;">Логин/пароль от lk.salyk.kg</h3>
       <div style="display:flex; gap:16px; margin-bottom:12px;">
         <div style="flex:1;">
           <div style="font-size:10pt; margin-bottom:2px;">Логин (e-mail)</div>
-          <div id="pdf_lkLogin"
-               style="min-height:24px; border-bottom:1px solid #000;"></div>
+          <div id="pdf_lkLogin" style="min-height:24px; border-bottom:1px solid #000;"></div>
         </div>
         <div style="flex:1;">
           <div style="font-size:10pt; margin-bottom:2px;">Пароль</div>
-          <div id="pdf_lkPassword"
-               style="min-height:24px; border-bottom:1px solid #000;"></div>
+          <div id="pdf_lkPassword" style="min-height:24px; border-bottom:1px solid #000;"></div>
         </div>
       </div>
 
-      <!-- КОММЕНТАРИЙ -->
       <h3 style="margin:12px 0 6px 0; font-size:12pt;">Комментарий</h3>
-      <div id="pdf_description"
-           style="min-height:40px; border-bottom:1px solid #000; margin-bottom:24px;"></div>
+      <div id="pdf_description" style="min-height:40px; border-bottom:1px solid #000; margin-bottom:24px;"></div>
 
-      <!-- ПОДПИСЬ КЛИЕНТА -->
       <div class="pdf-signature-block">
         <div>Подпись клиента:</div>
         <div class="pdf-signature-line">
@@ -622,7 +622,6 @@
         </div>
       </div>
 
-      <!-- ПОДПИСИ РУКОВОДИТЕЛЯ И СОТРУДНИКА БАНКА -->
       <table style="width:100%; margin-top:20px; font-size:11pt;">
         <tr>
           <td style="width:50%; text-align:center;">
@@ -636,6 +635,145 @@
         </tr>
       </table>
     </div> <!-- #pdfDocument -->
+
+    <!-- ============================================================
+         ОФИЦИАЛЬНЫЙ PDF-ДОКУМЕНТ ККМ (СКРЫТЫЙ)
+         Приложение 1 к регламенту регистрации ККМ
+         Печатается дополнительно при выборе "С ККМ"
+    ============================================================ -->
+    <div id="kkmDocument"
+         style="display:none; font-family:'Times New Roman',serif; font-size:12pt;
+                line-height:1.3; padding:20px; background:#ffffff; color:#000000;
+                width:800px; min-height:1100px;">
+
+      <div style="text-align:right; margin-bottom:16px; font-size:11pt;">
+        Приложение 1<br/>
+        к регламенту регистрации, перерегистрации и<br/>
+        снятия с регистрации ККМ<br/>
+        Начальнику Центра технического обслуживания<br/>
+        контрольно-кассовых машин/Территориального<br/>
+        налогового органа<br/>
+        От <span id="kkm_companyHead" style="border-bottom:1px solid #000; display:inline-block; min-width:240px;"></span><br/>
+        <span style="font-size:10pt;">(руководитель или доверенное лицо)</span>
+      </div>
+
+      <div style="text-align:center; font-weight:bold; font-size:14pt; margin:24px 0 8px;">
+        ЗАЯВЛЕНИЕ
+      </div>
+      <div style="text-align:center; font-size:11pt; margin-bottom:16px;">
+        о регистрации/перерегистрации/снятии с учета контрольно-кассовой машины
+      </div>
+
+      <p style="text-indent:20px; margin:0 0 16px 0; font-size:11pt;">
+        Прошу зарегистрировать/перерегистрировать/снять с регистрации
+        контрольно-кассовую машину:
+      </p>
+
+      <table style="width:100%; border-collapse:collapse; font-size:11pt;">
+        <tr>
+          <td style="border:1px solid #000; padding:6px; width:280px;">1) Наименование субъекта</td>
+          <td id="kkm_companyName" style="border:1px solid #000; padding:6px;"></td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:6px;">2) ИНН субъекта</td>
+          <td id="kkm_companyBin" style="border:1px solid #000; padding:6px;"></td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:6px;">3) Юридический адрес субъекта</td>
+          <td id="kkm_legalAddress" style="border:1px solid #000; padding:6px;"></td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:6px;">4) Место налоговой регистрации</td>
+          <td id="kkm_taxAuthority" style="border:1px solid #000; padding:6px;"></td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:6px;">5) Контактный номер телефона субъекта</td>
+          <td id="kkm_phone" style="border:1px solid #000; padding:6px;"></td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:6px;">6) ПИН руководителя</td>
+          <td id="kkm_companyHeadInn" style="border:1px solid #000; padding:6px;"></td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:6px;">7) ФИО руководителя</td>
+          <td id="kkm_companyHead2" style="border:1px solid #000; padding:6px;"></td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:6px;">8) Адрес объекта предпринимательства</td>
+          <td id="kkm_tradeAddress" style="border:1px solid #000; padding:6px;"></td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:6px;">9) Статус по регистрации НДС</td>
+          <td id="kkm_vatStatus" style="border:1px solid #000; padding:6px;"></td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:6px;">10) Налоговые ставки (ставка НДС/НСП нал., безнал.)</td>
+          <td id="kkm_taxRates" style="border:1px solid #000; padding:6px;"></td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:6px;">11) Наименование объекта</td>
+          <td id="kkm_objectName" style="border:1px solid #000; padding:6px;"></td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:6px;">12) Объект предпринимательства</td>
+          <td id="kkm_businessObjectType" style="border:1px solid #000; padding:6px;"></td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:6px;">13) Предмет расчёта</td>
+          <td id="kkm_paymentSubject" style="border:1px solid #000; padding:6px;"></td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:6px;">14) Вид деятельности</td>
+          <td id="kkm_activityType" style="border:1px solid #000; padding:6px;"></td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:6px;">15) Заводской номер ККМ / номер версии ККМ</td>
+          <td id="kkm_serialAndVersion" style="border:1px solid #000; padding:6px;"></td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:6px;">16) Модель ККМ</td>
+          <td id="kkm_kkmModel" style="border:1px solid #000; padding:6px;"></td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:6px;">17) РНМ ККМ</td>
+          <td id="kkm_rnm" style="border:1px solid #000; padding:6px;"></td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:6px;">18) ФН</td>
+          <td id="kkm_fn" style="border:1px solid #000; padding:6px;"></td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:6px;">19) Причина перерегистрации и снятия</td>
+          <td id="kkm_reason" style="border:1px solid #000; padding:6px;"></td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:6px;">20) Электронная почта</td>
+          <td id="kkm_email" style="border:1px solid #000; padding:6px;"></td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:6px;">21) Почтовый индекс, широта и долгота</td>
+          <td id="kkm_postalAndCoords" style="border:1px solid #000; padding:6px;"></td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000; padding:6px;">22) Логин и пароль от lk.salyk.kg</td>
+          <td id="kkm_lkCreds" style="border:1px solid #000; padding:6px;"></td>
+        </tr>
+      </table>
+
+      <div style="margin-top:24px; font-size:11pt;">
+        Руководитель/доверенное лицо субъекта:
+        <span style="display:inline-block; margin-left:10px;">
+          <img id="kkm_signature" style="max-height:50px; vertical-align:middle;" />
+        </span>
+        <span id="kkm_headFio" style="border-bottom:1px solid #000; display:inline-block; min-width:200px; margin-left:20px;"></span>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:10pt; margin-top:4px;">
+        <span style="margin-left:240px;">(подпись)</span>
+        <span style="margin-right:60px;">(ФИО)</span>
+      </div>
+
+      <div style="margin-top:30px; font-size:11pt;">М.П.</div>
+    </div> <!-- #kkmDocument -->
 
   </div> <!-- .app -->
 </body>

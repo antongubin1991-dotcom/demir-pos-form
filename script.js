@@ -18,187 +18,129 @@ if (themeToggle) {
 }
 
 /* ============================================================
-   SLK ENDPOINT (URL ДЛЯ ОТПРАВКИ JSON)
+   POS MODELS DICTIONARY
+   TODO (банк): подтвердить коды моделей POS, реальные модели ККМ,
+   которые идут с каждым POS, и какие POS вообще поддерживают ККМ.
 ============================================================ */
-const SLK_ENDPOINT = ""; // например: "https://slk.goodoo.kg/api/demir-pos-form"
+const posModels = {
+  "Beko":     { code: 1, kkmModel: "BEKO 300",      supportsKKM: true  },
+  "SoftPOS":  { code: 2, kkmModel: "",              supportsKKM: false },
+  "Ingenico": { code: 3, kkmModel: "Ingenico iWE",  supportsKKM: true  },
+  "Aisino":   { code: 4, kkmModel: "Aisino A90",    supportsKKM: true  },
+  "Kozen":    { code: 5, kkmModel: "Kozen P12",     supportsKKM: true  }
+};
 
 /* ============================================================
-   SLK JSON HELPERS
+   SLK ENDPOINT
+   Пока не используется — отправка отключена (см. план Фазы 8)
 ============================================================ */
+const SLK_ENDPOINT = "";
+
 function getFieldValue(id) {
   const el = document.getElementById(id);
   return el ? (el.value || "").trim() : "";
 }
 
 function collectFormDataForSLK() {
+  // Заготовка для будущей интеграции с банковским сервером.
+  // Сейчас просто собирает данные — отправка не делается.
   return {
     user: {
-      username: getFieldValue("lkLogin"),     // Логин lk.salyk.kg
-      password: getFieldValue("lkPassword")  // Пароль lk.salyk.kg
+      username: getFieldValue("lkLogin"),
+      password: getFieldValue("lkPassword")
     },
-
     taxpayer: {
-      name: getFieldValue("companyName"),                    // Название субъекта
-      identificationNumber: getFieldValue("companyBin"),     // ИНН
-      legalAddress: getFieldValue("legalAddress"),           // Юридический адрес
-      directorFullName: getFieldValue("companyHead"),        // Руководитель
-      directorPhoneNumber: getFieldValue("phone"),           // Телефон руководителя
-      email: getFieldValue("email")                          // Email
+      name: getFieldValue("companyName"),
+      identificationNumber: getFieldValue("companyBin"),
+      legalAddress: getFieldValue("legalAddress"),
+      directorFullName: getFieldValue("companyHead"),
+      directorPhoneNumber: getFieldValue("phone"),
+      email: getFieldValue("email")
     },
-
-    partnerCode: getFieldValue("responsibleBranches"),       // Место расчётов (филиал)
-
+    partnerCode: getFieldValue("responsibleBranches"),
     fiscalDevice: {
-      model: getFieldValue("posModel"),                      // Модель POS
-      contractNumber: getFieldValue("contractNumber"),       // Договор №
-      contractDate: getFieldValue("contractDate"),           // Дата договора
-
+      model: getFieldValue("posModel"),
+      contractNumber: getFieldValue("contractNumber"),
+      contractDate: getFieldValue("contractDate"),
       businessObjectType:
         businessObjectTypeCodes[getFieldValue("businessObjectType")] || 0,
       businessActivityType:
         activityTypeCodes[getFieldValue("activityType")] || 0,
-
-      taxAuthority: getFieldValue("ugnsCode") || 999,        // УГНС
-
-      vatPayer: false,                                       // TODO: вынести в чекбокс
-
-      placeName: getFieldValue("tradeAddress"),              // Полный адрес ТТ
-      placeType: getFieldValue("businessObjectType"),        // Тип места (как в селекте)
-
-      addressPostalCode: "720000",                           // Индекс (фиксированный)
-      addressArea: getFieldValue("district"),                // Адм. единица (код)
-      addressCity: "Бишкек",                                 // Можно определять автоматически
-      addressStreet: getFieldValue("tradeAddress"),          // TODO: парсить улицу
-      addressBuilding: "",                                   // TODO: выделять дом
-
+      taxAuthority: getFieldValue("ugnsCode") || 999,
+      vatPayer: getFieldValue("vatStatus") === "vat",
+      placeName: getFieldValue("tradeAddress"),
+      placeType: getFieldValue("businessObjectType"),
+      addressPostalCode: getFieldValue("postalCode") || "720000",
+      addressArea: getFieldValue("district"),
+      addressCity: "Бишкек",
+      addressStreet: getFieldValue("tradeAddress"),
+      addressBuilding: "",
       addressLatitude: getFieldValue("tradeLat"),
       addressLongitude: getFieldValue("tradeLon"),
-
-      taxationTypes: [0],                                    // по умолчанию
-      paymentObjects: [0],                                   // по умолчанию
-
-      Doc1: "",
-      Doc2: "",
-      Doc3: "",
-      Doc4: ""
-    }
+      taxationTypes: [0],
+      paymentObjects: [0]
+    },
+    // Блок ККМ заполняется только если выбрана опция "С ККМ"
+    kkm: getFieldValue("terminalTypeRadio") === "withKKM" ? {
+      objectName: getFieldValue("objectName"),
+      vatStatus: getFieldValue("vatStatus"),
+      taxRates: getFieldValue("taxRates"),
+      paymentSubject: getFieldValue("paymentSubject"),
+      serialNumber: getFieldValue("kkmSerialNumber"),
+      version: getFieldValue("kkmVersion"),
+      model: getFieldValue("kkmModel"),
+      rnm: getFieldValue("kkmRnm"),
+      fn: getFieldValue("kkmFn"),
+      reason: getFieldValue("kkmReason")
+    } : null
   };
 }
 
-async function sendToSLK(payload) {
-  try {
-    if (!SLK_ENDPOINT) {
-      console.log("JSON для SLK (SLK_ENDPOINT не настроен):", payload);
-      return;
-    }
-
-    const response = await fetch(SLK_ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      const text = await response.text();
-      console.error("Ошибка отправки в SLK:", response.status, text);
-      alert("Ошибка отправки данных в SLK. Подробности смотри в консоли.");
-    } else {
-      console.log("Успешно отправлено в SLK");
-    }
-  } catch (err) {
-    console.error("Сетевая ошибка при отправке в SLK:", err);
-    alert("Сетевая ошибка при отправке в SLK. Подробности смотри в консоли.");
-  }
-}
-
 /* ============================================================
-   CBS ENDPOINT (поиск по ИНН для действующих клиентов)
+   CBS (поиск по ИНН)
 ============================================================ */
-const CBS_ENDPOINT = ""; 
-// например: "/api/cbs/client-by-inn"
-// ожидаем JSON:
-// {
-//   "companyName": "...",
-//   "companyBin": "...",
-//   "companyHead": "...",
-//   "companyHeadInn": "...",
-//   "email": "...",
-//   "phone": "...",
-//   "legalAddress": "...",
-//   "tradeAddress": "..."
-// }
+const CBS_ENDPOINT = "";
 
 function fillFormFromCbs(data) {
   if (!data) return;
-
-  // Компания
-  if (data.companyName) {
-    const el = document.getElementById("companyName");
-    if (el && !el.value) el.value = data.companyName;
-  }
-  if (data.companyBin) {
-    const el = document.getElementById("companyBin");
-    if (el && !el.value) el.value = data.companyBin;
-  }
-  if (data.companyHead) {
-    const el = document.getElementById("companyHead");
-    if (el && !el.value) el.value = data.companyHead;
-  }
-  if (data.companyHeadInn) {
-    const el = document.getElementById("companyHeadInn");
-    if (el && !el.value) el.value = data.companyHeadInn;
-  }
-
-  // Контакты
-  if (data.email) {
-    const el = document.getElementById("email");
-    if (el && !el.value) el.value = data.email;
-  }
-  if (data.phone) {
-    const el = document.getElementById("phone");
-    if (el && !el.value) el.value = data.phone;
-  }
-
-  // Адреса
-  if (data.legalAddress) {
-    const el = document.getElementById("legalAddress");
-    if (el && !el.value) el.value = data.legalAddress;
-  }
-  if (data.tradeAddress) {
-    const el = document.getElementById("tradeAddress");
-    if (el && !el.value) el.value = data.tradeAddress;
-  }
+  const mapping = {
+    companyName: "companyName",
+    companyBin: "companyBin",
+    companyHead: "companyHead",
+    companyHeadInn: "companyHeadInn",
+    email: "email",
+    phone: "phone",
+    legalAddress: "legalAddress",
+    tradeAddress: "tradeAddress"
+  };
+  Object.entries(mapping).forEach(([k, id]) => {
+    if (data[k]) {
+      const el = document.getElementById(id);
+      if (el && !el.value) el.value = data[k];
+    }
+  });
 }
 
 async function fetchCbsByInn(inn) {
   if (!CBS_ENDPOINT) {
-    console.log("CBS_ENDPOINT не настроен, пропускаем запрос к CBS. ИНН:", inn);
+    console.log("CBS_ENDPOINT не настроен, пропуск. ИНН:", inn);
     return null;
   }
-
   try {
     const res = await fetch(CBS_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ inn: inn.trim() })
     });
-
     if (!res.ok) {
-      console.error("Ошибка ответа CBS:", res.status, await res.text());
-      alert("Не удалось получить данные клиента из CBS. Проверьте ИНН или попробуйте позже.");
+      console.error("Ошибка ответа CBS:", res.status);
+      alert("Не удалось получить данные клиента из CBS.");
       return null;
     }
-
-    const data = await res.json();
-    if (!data) {
-      alert("По указанному ИНН данные клиента в CBS не найдены.");
-      return null;
-    }
-
-    return data;
+    return await res.json();
   } catch (e) {
-    console.error("Сетевая ошибка при запросе в CBS:", e);
-    alert("Ошибка подключения к CBS. Проверьте сеть или обратитесь в ИТ.");
+    console.error("Сетевая ошибка CBS:", e);
+    alert("Ошибка подключения к CBS.");
     return null;
   }
 }
@@ -206,29 +148,20 @@ async function fetchCbsByInn(inn) {
 function initCbsIntegration() {
   const statusSelect = document.getElementById("clientStatus");
   const innInput = document.getElementById("companyBin");
-
   if (!statusSelect || !innInput) return;
 
   async function tryFetchIfExisting() {
-    const status = statusSelect.value;
+    if (statusSelect.value !== "existing") return;
     const inn = (innInput.value || "").trim();
-
-    if (status !== "existing") return;
-    if (inn.length < 8) return; // при необходимости сделать 14
-
+    if (inn.length < 8) return;
     const data = await fetchCbsByInn(inn);
     if (data) fillFormFromCbs(data);
   }
 
   statusSelect.addEventListener("change", () => {
-    if (statusSelect.value === "existing") {
-      tryFetchIfExisting();
-    }
+    if (statusSelect.value === "existing") tryFetchIfExisting();
   });
-
-  innInput.addEventListener("blur", () => {
-    tryFetchIfExisting();
-  });
+  innInput.addEventListener("blur", tryFetchIfExisting);
 }
 
 /* ============================================================
@@ -281,52 +214,8 @@ const businessObjects = [
   "Прочее"
 ];
 
-const businessObjectTypeCodes = {
-  "Автомобильная заправочная станция (АЗС)": 1,
-  "Автомобильная газонаполнительная компрессорная станция (АГНКС)": 2,
-  "Автомобильная газозаправочная станция (АГЗС)": 3,
-  "Магазин (с торговой площадью более 200 кв.м.)": 4,
-  "Магазин (100–200 кв.м.)": 5,
-  "Магазин (50–100 кв.м.)": 6,
-  "Медицинская лаборатория": 7,
-  "Медицинский центр (более 150 кв.м.)": 8,
-  "Медицинский центр (до 150 кв.м.)": 9,
-  "Кафе/Ресторан/Чайхана (200+ мест)": 10,
-  "Кафе/Ресторан/Чайхана (100–200 мест)": 11,
-  "Кафе/Ресторан/Чайхана (до 100 мест)": 12,
-  "Сеть быстрого питания (фаст-фуд)": 13,
-  "Бутик/Магазин в ТЦ (200+ кв.м.)": 14,
-  "Бутик/Магазин в ТЦ (100–200 кв.м.)": 15,
-  "Бутик/Магазин в ТЦ (50–100 кв.м.)": 16,
-  "Бутик/Магазин в ТЦ (до 50 кв.м.)": 17,
-  "Ветеринарная клиника": 18,
-  "Ветеринарная аптека": 19,
-  "Аптека": 20,
-  "Аптечный пункт": 21,
-  "Платежный терминал": 22,
-  "Вендинговый аппарат": 23,
-  "Сауна": 24,
-  "Баня": 25,
-  "Бильярдный клуб": 26,
-  "Обменное бюро": 27,
-  "Дискотека/Ночной клуб": 28,
-  "Караоке": 29,
-  "Круглосуточная автостоянка": 30,
-  "Ломбард": 31,
-  "Парикмахерская/Салон красоты": 32,
-  "Стоматология": 33,
-  "Мойка автотранспортных средств": 34,
-  "Гостиница": 35,
-  "Дом отдыха / Частный коттедж": 36,
-  "СТО": 37,
-  "Вулканизация": 38,
-  "Нотариус/Адвокатская контора": 39,
-  "Образовательное учреждение": 40,
-  "Игровой клуб": 41,
-  "Химчистка": 42,
-  "Спортивный зал": 43,
-  "Прочее": 44
-};
+const businessObjectTypeCodes = {};
+businessObjects.forEach((name, i) => { businessObjectTypeCodes[name] = i + 1; });
 
 /* ============================================================
    ACTIVITY TYPES
@@ -370,89 +259,34 @@ const activityTypes = [
   "Прочие услуги"
 ];
 
-const activityTypeCodes = {
-  "Розничная торговля широким ассортиментом товаров": 1,
-  "Розничная торговля ГСМ": 2,
-  "Розничная торговля автомобильным газом": 3,
-  "Розничная торговля авиабилетами": 4,
-  "Розничная торговля ветеринарными препаратами": 5,
-  "Розничная торговля фармацевтическими товарами": 6,
-  "Розничная торговля медицинскими и ортопедическими товарами": 7,
-  "Розничная торговля продуктами питания": 8,
-  "Розничная торговля алкогольными напитками": 9,
-  "Розничная торговля табачными изделиями": 10,
-  "Розничная торговля электроникой и бытовой техникой": 11,
-  "Розничная торговля одеждой и обувью": 12,
-  "Розничная торговля строительными материалами": 13,
-  "Розничная торговля цветами и растениями": 14,
-  "Розничная торговля зоотоварами": 15,
-  "Розничная торговля ювелирными изделиями": 16,
-  "Розничная торговля запасными частями": 17,
-  "Розничная торговля прочими товарами": 18,
-  "Услуги медицинских лабораторий / центров": 19,
-  "Услуги общественного питания": 20,
-  "Услуги сетей быстрого питания (фаст-фуд)": 21,
-  "Услуги салонов красоты": 22,
-  "Услуги нотариусов / адвокатов": 23,
-  "Услуги автомоек": 24,
-  "Услуги гостиниц / домов отдыха / коттеджей": 25,
-  "Услуги СТО": 26,
-  "Услуги по доставке": 27,
-  "Услуги по обучению": 28,
-  "Услуги по уборке": 29,
-  "Услуги кинотеатров": 30,
-  "Услуги спортивных залов": 31,
-  "Услуги фотосалонов": 32,
-  "Услуги караоке / клубов": 33,
-  "Услуги интернет-клубов": 34,
-  "Услуги по сдаче в аренду имущества": 35,
-  "Прочие услуги": 36
-};
+const activityTypeCodes = {};
+activityTypes.forEach((name, i) => { activityTypeCodes[name] = i + 1; });
 
 /* ============================================================
    RESPONSIBLE BRANCHES
 ============================================================ */
 const responsibleBranches = [
-  "СК Авангард",
-  "СК Ала-Бука",
-  "СК Асанбай",
-  "СК Азия Молл",
-  "СК Бета-2",
-  "СК Бишкек-Парк",
-  "СК Глобус",
-  "СК Глобус-2",
-  "СК Глобус-3",
-  "СК Глобус-4",
-  "СК Гранд Комфорт",
-  "СК Джал",
-  "СК Дордой-Плаза",
-  "СК Эркиндик",
-  "СК Карвен",
-  "СК Имарат",
-  "СК Фрунзе-Ош",
-  "СК Чолпон-Ата",
-  "СК Чуй, 243",
-  "Ф-л «ДКИБ-Бейшеналиева»",
-  "Ф-л «ДКИБ-Главный»",
-  "Ф-л «ДКИБ-Жалал-Абад»",
-  "Ф-л «ДКИБ-Каракол»",
-  "Ф-л «ДКИБ-Кызыл-Кия»",
-  "Ф-л «ДКИБ-М.Горький»",
-  "Ф-л «ДКИБ-Манас»",
-  "Ф-л «ДКИБ-Нарын»",
-  "Ф-л «ДКИБ-Ош»",
-  "Ф-л «ДКИБ-Ош-Датка»",
-  "Ф-л «ДКИБ-Талас»",
-  "Ф-л «ДКИБ-Центр»",
-  "Ф-л «ДКИБ-ЦУМ»",
-  "Ф-л «ДКИБ-Южный»"
+  "СК Авангард", "СК Ала-Бука", "СК Асанбай", "СК Азия Молл", "СК Бета-2",
+  "СК Бишкек-Парк", "СК Глобус", "СК Глобус-2", "СК Глобус-3", "СК Глобус-4",
+  "СК Гранд Комфорт", "СК Джал", "СК Дордой-Плаза", "СК Эркиндик", "СК Карвен",
+  "СК Имарат", "СК Фрунзе-Ош", "СК Чолпон-Ата", "СК Чуй, 243",
+  "Ф-л «ДКИБ-Бейшеналиева»", "Ф-л «ДКИБ-Главный»", "Ф-л «ДКИБ-Жалал-Абад»",
+  "Ф-л «ДКИБ-Каракол»", "Ф-л «ДКИБ-Кызыл-Кия»", "Ф-л «ДКИБ-М.Горький»",
+  "Ф-л «ДКИБ-Манас»", "Ф-л «ДКИБ-Нарын»", "Ф-л «ДКИБ-Ош»", "Ф-л «ДКИБ-Ош-Датка»",
+  "Ф-л «ДКИБ-Талас»", "Ф-л «ДКИБ-Центр»", "Ф-л «ДКИБ-ЦУМ»", "Ф-л «ДКИБ-Южный»"
 ];
 
 function initResponsibleBranchesSelect() {
   const select = document.getElementById("responsibleBranches");
   if (!select) return;
-
   select.innerHTML = "";
+
+  // ИЗМЕНЕНО: добавлен placeholder "— выбрать филиал —", чтобы валидация не считала
+  // первый филиал по умолчанию заполненным
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "— выбрать филиал —";
+  select.appendChild(placeholder);
 
   responsibleBranches.forEach((branch) => {
     const opt = document.createElement("option");
@@ -470,7 +304,6 @@ const districtsData = [
   { code: "002", name: "Ленинский район" },
   { code: "003", name: "Свердловский район" },
   { code: "004", name: "Первомайский район" },
-
   { code: "034", name: "Ак-Талинский район" },
   { code: "035", name: "Ат-Башинский район" },
   { code: "036", name: "Кочкорский район" },
@@ -488,7 +321,6 @@ const districtsData = [
   { code: "049", name: "г. Таш-Кумыр" },
   { code: "050", name: "г. Майлы-Суу" },
   { code: "052", name: "г. Кара-Куль" },
-
   { code: "007", name: "Иссык-Атинский район" },
   { code: "008", name: "Жайылский район" },
   { code: "009", name: "Аламудунский район" },
@@ -507,7 +339,6 @@ const districtsData = [
   { code: "022", name: "Кара-Буринский район" },
   { code: "023", name: "Манасский район" },
   { code: "024", name: "г. Талас" },
-
   { code: "025", name: "г. Чуй-Токмок" },
   { code: "026", name: "г. Нарын" },
   { code: "027", name: "г. Баткен" },
@@ -517,21 +348,19 @@ const districtsData = [
   { code: "031", name: "г. Кызыл-Кия" },
   { code: "032", name: "г. Ош" },
   { code: "033", name: "г. Сулюкта" },
-
   { code: "055", name: "Алайский район" },
   { code: "056", name: "Чон-Алайский район" },
   { code: "057", name: "Араванский район" },
   { code: "058", name: "Баткенский район" },
   { code: "059", name: "Кара-Сууйский район" },
   { code: "060", name: "Лейлекский район" },
-
   { code: "997", name: "УККН Юг (крупные налогоплательщики, юг)" },
   { code: "998", name: "СЭЗ Бишкек" },
   { code: "999", name: "УККН (крупные налогоплательщики)" }
 ];
 
 /* ============================================================
-   LANGUAGE SWITCH (общая функция + селект + меню)
+   LANGUAGE SWITCH
 ============================================================ */
 const langSelect = document.getElementById("langSelect");
 
@@ -539,7 +368,6 @@ function applyTranslations(lang) {
   document.querySelectorAll("[data-key]").forEach((el) => {
     if (["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName)) return;
     if (el.classList.contains("no-translate")) return;
-
     const key = el.getAttribute("data-key");
     const tr = window.translations?.[lang]?.[key];
     if (tr) el.textContent = tr;
@@ -566,6 +394,7 @@ if (langSelect) {
 
 /* ============================================================
    AUTO-SAVE FIELDS
+   ВАЖНО: lkPassword УБРАН — пароль не должен жить в localStorage.
 ============================================================ */
 const autoSaveFields = [
   "companyName", "companyBin", "companyHead", "companyHeadInn", "manager",
@@ -579,38 +408,110 @@ const autoSaveFields = [
   "businessObjectType", "activityType",
   "legalAddress", "legalLat", "legalLon",
   "tradeAddress", "tradeLat", "tradeLon",
-  "lkLogin", "lkPassword",
+  "lkLogin",            // только логин, без пароля
   "description",
-  "clientStatus"
+  "clientStatus",
+  // ККМ-поля
+  "objectName", "vatStatus", "taxRates", "paymentSubject",
+  "kkmSerialNumber", "kkmVersion", "kkmModel", "kkmRnm", "kkmFn", "kkmReason",
+  "postalCode"
 ];
 
 autoSaveFields.forEach((id) => {
   const el = document.getElementById(id);
   if (!el) return;
-
   const saved = localStorage.getItem(id);
   if (saved !== null) el.value = saved;
-
   el.addEventListener("input", () => {
     localStorage.setItem(id, el.value);
   });
 });
 
 /* ============================================================
-   ОПРЕДЕЛЕНИЕ РАЙОНА/УГНС ПО АДРЕСУ ТОРГОВОЙ ТОЧКИ
+   KKM TOGGLE — Фаза 1, ядро
+   - "С ККМ"   → body.classList.add('kkm-active'),    показ .kkm-only
+   - "Без ККМ" → body.classList.remove('kkm-active'), скрытие .kkm-only
+   Значения полей в .kkm-only остаются в localStorage даже при переключении,
+   чтобы случайный клик не стёр введённые данные.
+============================================================ */
+function applyKkmState(value) {
+  if (value === "withKKM") {
+    body.classList.add("kkm-active");
+  } else {
+    body.classList.remove("kkm-active");
+  }
+}
+
+function initKkmToggle() {
+  const radios = document.querySelectorAll('input[name="terminalType"]');
+  if (!radios.length) return;
+
+  // Восстановление из localStorage
+  const saved = localStorage.getItem("terminalType");
+  if (saved) {
+    radios.forEach((r) => {
+      if (r.value === saved) r.checked = true;
+    });
+    applyKkmState(saved);
+  }
+
+  // Слушатели на radio
+  radios.forEach((r) => {
+    r.addEventListener("change", () => {
+      if (r.checked) {
+        localStorage.setItem("terminalType", r.value);
+        applyKkmState(r.value);
+      }
+    });
+  });
+}
+
+/* ============================================================
+   POS → KKM MODEL AUTO-FILL
+   При выборе модели POS автоматически проставляет модель ККМ
+   в read-only поле kkmModel.
+============================================================ */
+function initPosModelLinkage() {
+  const posSelect = document.getElementById("posModel");
+  const kkmModelInput = document.getElementById("kkmModel");
+  if (!posSelect) return;
+
+  function applyKkmModelFromPos() {
+    const pos = posSelect.value;
+    const info = posModels[pos];
+
+    if (!kkmModelInput) return;
+
+    if (info && info.supportsKKM) {
+      kkmModelInput.value = info.kkmModel || "";
+      kkmModelInput.placeholder = "";
+    } else if (info && !info.supportsKKM) {
+      kkmModelInput.value = "";
+      kkmModelInput.placeholder = "Эта модель POS не поддерживает ККМ";
+    } else {
+      kkmModelInput.value = "";
+      kkmModelInput.placeholder = "заполнится при выборе POS";
+    }
+
+    // Сохраняем
+    localStorage.setItem("kkmModel", kkmModelInput.value);
+  }
+
+  posSelect.addEventListener("change", applyKkmModelFromPos);
+  applyKkmModelFromPos();
+}
+
+/* ============================================================
+   DISTRICT BY ADDRESS
 ============================================================ */
 function updateDistrictFromAddress(addressText) {
   if (!addressText) return;
-
   const districtSelect = document.getElementById("district");
   const ugnsInput = document.getElementById("ugnsCode");
   if (!districtSelect || !ugnsInput) return;
 
   const text = addressText.toLowerCase();
-
-  const match = districtsData.find((d) =>
-    text.includes(d.name.toLowerCase())
-  );
+  const match = districtsData.find((d) => text.includes(d.name.toLowerCase()));
 
   if (match) {
     districtSelect.value = match.code;
@@ -621,7 +522,7 @@ function updateDistrictFromAddress(addressText) {
 }
 
 /* ============================================================
-   GPS → LAT/LON → АДРЕС
+   GPS
 ============================================================ */
 function initGpsLocation() {
   const btn = document.getElementById("geoLocate");
@@ -643,22 +544,14 @@ function initGpsLocation() {
 
         const latEl = document.getElementById("tradeLat");
         const lonEl = document.getElementById("tradeLon");
-
         if (latEl) latEl.value = lat;
         if (lonEl) lonEl.value = lon;
 
-        if (typeof setMapPosition === "function") {
-          setMapPosition("tradeMap", lat, lon);
-        }
-
         let address = "";
         try {
+          // ИЗМЕНЕНО: убран User-Agent — браузер всё равно его не отправляет
           const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=ru`;
-          const resp = await fetch(url, {
-            headers: {
-              "User-Agent": "DemirPOSForm/1.0"
-            }
-          });
+          const resp = await fetch(url);
           const data = await resp.json();
           address = data.display_name || "";
         } catch (e) {
@@ -668,10 +561,7 @@ function initGpsLocation() {
         if (address) {
           const addrEl = document.getElementById("tradeAddress");
           if (addrEl) addrEl.value = address;
-
-          if (typeof updateDistrictFromAddress === "function") {
-            updateDistrictFromAddress(address);
-          }
+          updateDistrictFromAddress(address);
         } else {
           alert("Координаты получены, но адрес определить не удалось.");
         }
@@ -679,108 +569,87 @@ function initGpsLocation() {
         btn.textContent = "Определить по GPS";
         btn.disabled = false;
       },
-
       (err) => {
         alert("Ошибка определения GPS: " + err.message);
         btn.textContent = "Определить по GPS";
         btn.disabled = false;
       },
-
-      {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 0
-      }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   });
 }
 
 /* ============================================================
-   ПРОКРУТКА К ПЕРВОЙ ОШИБКЕ
+   SCROLL TO ERROR
 ============================================================ */
 function scrollToFirstError() {
   const first = document.querySelector(".field-error");
   if (!first) return;
-
-  first.scrollIntoView({
-    behavior: "smooth",
-    block: "center"
-  });
-
+  first.scrollIntoView({ behavior: "smooth", block: "center" });
   first.style.transition = "background 0.3s";
   first.style.backgroundColor = "#ffdddd";
-
-  setTimeout(() => {
-    first.style.backgroundColor = "";
-  }, 800);
+  setTimeout(() => { first.style.backgroundColor = ""; }, 800);
 }
 
 /* ============================================================
-   DOMContentLoaded INITIALIZATION
+   DOM INIT
 ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
-  // 1. Ответственный филиал
-  if (typeof initResponsibleBranchesSelect === "function") {
-    initResponsibleBranchesSelect();
+  initResponsibleBranchesSelect();
+
+  // ВАЖНО: восстановить выбранный филиал из localStorage отдельно,
+  // т.к. он не в autoSaveFields (заполняется динамически)
+  const respSaved = localStorage.getItem("responsibleBranches");
+  const respEl = document.getElementById("responsibleBranches");
+  if (respEl && respSaved) respEl.value = respSaved;
+  if (respEl) {
+    respEl.addEventListener("change", () => {
+      localStorage.setItem("responsibleBranches", respEl.value);
+    });
   }
 
-  // 2. Языковое меню (кнопка в шапке)
-  const btn = document.getElementById("langBtn");
-  const menu = document.getElementById("langMenu");
-
-  if (btn && menu) {
-    btn.addEventListener("click", () => {
-      menu.classList.toggle("hidden");
-    });
-
-    menu.querySelectorAll("div").forEach((item) => {
-      item.addEventListener("click", () => {
-        const lang = item.dataset.lang;
-        localStorage.setItem("lang", lang);
-        btn.textContent = lang.toUpperCase() + " ▼";
-        applyTranslations(lang);
-        menu.classList.add("hidden");
-      });
-    });
-
-    const savedLang = localStorage.getItem("lang") || "ru";
-    btn.textContent = savedLang.toUpperCase() + " ▼";
-    applyTranslations(savedLang);
-  }
-
-  // 3. BUSINESS SELECTS (Типы бизнеса)
+  // BUSINESS SELECTS
   const bo = document.getElementById("businessObjectType");
   const at = document.getElementById("activityType");
 
-  if (bo && typeof businessObjects !== "undefined") {
+  if (bo) {
+    // Placeholder
+    const phOpt = document.createElement("option");
+    phOpt.value = "";
+    phOpt.textContent = "— выбрать —";
+    bo.appendChild(phOpt);
+
     businessObjects.forEach((v) => {
       const opt = document.createElement("option");
       opt.value = v;
       opt.textContent = v;
       bo.appendChild(opt);
     });
-
     const savedBO = localStorage.getItem("businessObjectType");
     if (savedBO) bo.value = savedBO;
   }
 
-  if (at && typeof activityTypes !== "undefined") {
+  if (at) {
+    const phOpt = document.createElement("option");
+    phOpt.value = "";
+    phOpt.textContent = "— выбрать —";
+    at.appendChild(phOpt);
+
     activityTypes.forEach((v) => {
       const opt = document.createElement("option");
       opt.value = v;
       opt.textContent = v;
       at.appendChild(opt);
     });
-
     const savedAT = localStorage.getItem("activityType");
     if (savedAT) at.value = savedAT;
   }
 
-  // 4. DISTRICTS / UGNS
+  // DISTRICTS
   const districtSelect = document.getElementById("district");
   const ugnsInput = document.getElementById("ugnsCode");
 
-  if (districtSelect && ugnsInput && typeof districtsData !== "undefined") {
+  if (districtSelect && ugnsInput) {
     districtsData.forEach((d) => {
       const opt = document.createElement("option");
       opt.value = d.code;
@@ -790,7 +659,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const savedDistrict = localStorage.getItem("district");
     const savedUgns = localStorage.getItem("ugnsCode");
-
     if (savedDistrict) {
       districtSelect.value = savedDistrict;
       ugnsInput.value = savedUgns || savedDistrict;
@@ -804,114 +672,81 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 5. POS MODEL
+  // POS MODEL
   const posModel = document.getElementById("posModel");
   if (posModel) {
     const savedPos = localStorage.getItem("posModel");
     if (savedPos) posModel.value = savedPos;
-
     posModel.addEventListener("change", () => {
       localStorage.setItem("posModel", posModel.value);
     });
   }
 
-  // 6. TRADE ADDRESS -> AUTO DISTRICT
+  // ККМ Toggle + POS → KKM model linkage (Фаза 1)
+  initKkmToggle();
+  initPosModelLinkage();
+
+  // TRADE ADDRESS → AUTO DISTRICT
   const tradeAddress = document.getElementById("tradeAddress");
   if (tradeAddress) {
-    const handleAddressUpdate = () => {
-      if (typeof updateDistrictFromAddress === "function") {
-        updateDistrictFromAddress(tradeAddress.value);
-      }
-    };
-
-    tradeAddress.addEventListener("blur", handleAddressUpdate);
-    tradeAddress.addEventListener("change", handleAddressUpdate);
-
-    if (tradeAddress.value) {
-      handleAddressUpdate();
-    }
+    const handle = () => updateDistrictFromAddress(tradeAddress.value);
+    tradeAddress.addEventListener("blur", handle);
+    tradeAddress.addEventListener("change", handle);
+    if (tradeAddress.value) handle();
   }
 
-  // 7. LEAFLET MAPS
+  // LEAFLET MAPS
   if (typeof initMap === "function") {
     initMap("legalMap", "legalAddress", "legalLat", "legalLon");
     initMap("tradeMap", "tradeAddress", "tradeLat", "tradeLon");
   }
 
-  // 8. CBS INTEGRATION
-  if (typeof initCbsIntegration === "function") {
-    initCbsIntegration();
-  }
+  // CBS
+  initCbsIntegration();
 
-  // 9. КНОПКА ОЧИСТКИ ФОРМЫ
+  // CLEAR
   const clearBtn = document.getElementById("clearForm");
   if (clearBtn) {
     clearBtn.addEventListener("click", () => {
-      if (confirm("Очистить все поля формы?")) {
-        if (typeof clearFormFields === "function") {
-          clearFormFields();
-        } else {
-          localStorage.clear();
-          location.reload();
-        }
-      }
+      if (confirm("Очистить все поля формы?")) clearFormFields();
     });
   }
 
-  // 10. Подпись
-  if (typeof initSignaturePadForPdf === "function") {
-    initSignaturePadForPdf();
-  }
+  // SIGNATURE
+  initSignaturePadForPdf();
 
-  // 11. GPS
-  if (typeof initGpsLocation === "function") {
-    initGpsLocation();
-  }
+  // GPS
+  initGpsLocation();
 
-  // 12. PDF
-  if (typeof initPdfExportForPrint === "function") {
-    initPdfExportForPrint();
-  }
+  // PRINT
+  initPdfExportForPrint();
 });
 
 /* ============================================================
-   LEAFLET MAP + REVERSE GEOCODING
+   LEAFLET MAP + REVERSE GEOCODING (с debounce)
 ============================================================ */
 function formatNominatimAddress(data) {
-  if (!data || !data.address) {
-    return data?.display_name || "";
-  }
+  if (!data || !data.address) return data?.display_name || "";
 
   const a = data.address;
   const parts = [];
 
-  // Город
   let city = a.city || a.town || a.village || "";
   if (city) {
     city = city
       .replace(/^(г\.|город|гор\.|г|city)\s*/i, "")
       .replace(/\s*(город|г\.)$/i, "")
       .trim();
-
     city = city.replace(/^город\s+/i, "").trim();
-
-    if (
-      city.toLowerCase() === "бишкек" ||
-      city.toLowerCase() === "город бишкек"
-    ) {
+    if (city.toLowerCase() === "бишкек" || city.toLowerCase() === "город бишкек") {
       city = "Бишкек";
     }
-
     parts.push("г. " + city);
   }
 
-  // Район
   if (a.city_district) parts.push(a.city_district);
-
-  // Ж/м
   if (a.suburb) parts.push(a.suburb);
 
-  // Улица + дом
   let street = a.road || "";
   const house = a.house_number || "";
 
@@ -920,14 +755,8 @@ function formatNominatimAddress(data) {
       .replace(/^(ул\.?|улица|str\.?)\s*/i, "")
       .replace(/\s+(улица|street)$/i, "")
       .trim();
-
-    street = street.replace(
-      /^([А-ЯЁ][а-яё]+)\s+([А-ЯЁ][а-яё]+)$/u,
-      "$2 $1"
-    );
-
+    street = street.replace(/^([А-ЯЁ][а-яё]+)\s+([А-ЯЁ][а-яё]+)$/u, "$2 $1");
     street = street.replace(/\s+улица$/i, "");
-
     parts.push("ул. " + street + (house ? ", " + house : ""));
   }
 
@@ -937,31 +766,13 @@ function formatNominatimAddress(data) {
   return parts.join(", ");
 }
 
-function parseAddressFull(address) {
-  const result = {
-    city: "",
-    street: "",
-    building: ""
+// Простой debounce-хелпер
+function debounce(fn, wait) {
+  let t;
+  return function(...args) {
+    clearTimeout(t);
+    t = setTimeout(() => fn.apply(this, args), wait);
   };
-
-  if (!address) return result;
-
-  const cityMatch = address.match(/г\.\s*([^,]+)/i);
-  if (cityMatch) {
-    result.city = cityMatch[1].trim();
-  }
-
-  const streetMatch = address.match(/ул\.\s*([^,]+)/i);
-  if (streetMatch) {
-    result.street = streetMatch[1].trim();
-  }
-
-  const buildingMatch = address.match(/,\s*(\d+[A-Za-zА-Яа-я]?)/);
-  if (buildingMatch) {
-    result.building = buildingMatch[1].trim();
-  }
-
-  return result;
 }
 
 function initMap(mapId, addressInputId, latInputId, lonInputId) {
@@ -975,7 +786,6 @@ function initMap(mapId, addressInputId, latInputId, lonInputId) {
   const savedLon = parseFloat(localStorage.getItem(lonInputId) || defaultLon);
 
   const map = L.map(mapId).setView([savedLat, savedLon], 13);
-
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
     attribution: "© OpenStreetMap"
@@ -983,10 +793,36 @@ function initMap(mapId, addressInputId, latInputId, lonInputId) {
 
   const marker = L.marker([savedLat, savedLon], { draggable: true }).addTo(map);
 
+  // Внутренний reverse geocoder, без debounce
+  function doReverseGeocode(lat, lon) {
+    const addrEl = document.getElementById(addressInputId);
+    if (!addrEl) return;
+
+    fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ru`
+    )
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data) return;
+        const pretty = formatNominatimAddress(data);
+        const text = pretty || data.display_name || "";
+        if (text) {
+          addrEl.value = text;
+          localStorage.setItem(addressInputId, text);
+          if (addressInputId === "tradeAddress") {
+            updateDistrictFromAddress(text);
+          }
+        }
+      })
+      .catch(() => {});
+  }
+
+  // Debounced версия — 1.5 сек, чтобы не дёргать Nominatim при каждом перетаскивании
+  const debouncedReverse = debounce(doReverseGeocode, 1500);
+
   function updateFields(lat, lon, doReverse = true) {
     const latEl = document.getElementById(latInputId);
     const lonEl = document.getElementById(lonInputId);
-    const addrEl = document.getElementById(addressInputId);
 
     if (latEl) {
       latEl.value = lat.toFixed(6);
@@ -997,27 +833,8 @@ function initMap(mapId, addressInputId, latInputId, lonInputId) {
       localStorage.setItem(lonInputId, lon.toFixed(6));
     }
 
-    if (doReverse && addrEl) {
-      fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ru`
-      )
-        .then((r) => r.json())
-        .then((data) => {
-          if (!data) return;
-
-          const pretty = formatNominatimAddress(data);
-          const text = pretty || data.display_name || "";
-
-          if (text) {
-            addrEl.value = text;
-            localStorage.setItem(addressInputId, text);
-
-            if (addressInputId === "tradeAddress") {
-              updateDistrictFromAddress(text);
-            }
-          }
-        })
-        .catch(() => {});
+    if (doReverse) {
+      debouncedReverse(lat, lon);
     }
   }
 
@@ -1035,69 +852,15 @@ function initMap(mapId, addressInputId, latInputId, lonInputId) {
 }
 
 /* ============================================================
-   PDF + ПОДПИСЬ
+   PDF FILL + PRINT
 ============================================================ */
-const SLK_ENDPOINT_PDF = ""; // если понадобится отдельный endpoint
-
 function getPdfFieldValue(id) {
   const el = document.getElementById(id);
   return el ? (el.value || el.textContent || "").trim() : "";
 }
 
-/* Сбор данных для логирования/архива (опционально) */
-function collectPdfFormData() {
-  return {
-    company: {
-      name: getPdfFieldValue("companyName"),
-      bin: getPdfFieldValue("companyBin"),
-      head: getPdfFieldValue("companyHead"),
-      manager: getPdfFieldValue("manager"),
-      description: getPdfFieldValue("description"),
-      lkLogin: getPdfFieldValue("lkLogin"),
-      lkPassword: getPdfFieldValue("lkPassword"),
-      clientStatus: getPdfFieldValue("clientStatus")
-    },
-    contacts: {
-      phone: getPdfFieldValue("phone"),
-      email: getPdfFieldValue("email")
-    },
-    pos: {
-      model: getPdfFieldValue("posModel"),
-      commissions: {
-        comm_visa_dkb: getPdfFieldValue("comm_visa_dkb"),
-        comm_bonus_dkb: getPdfFieldValue("comm_bonus_dkb"),
-        comm_visa_other: getPdfFieldValue("comm_visa_other"),
-        comm_elcart_dkb: getPdfFieldValue("comm_elcart_dkb"),
-        comm_elcart_other: getPdfFieldValue("comm_elcart_other"),
-        comm_mc_dkb: getPdfFieldValue("comm_mc_dkb"),
-        comm_mc_other: getPdfFieldValue("comm_mc_other")
-      },
-      discount_10: getPdfFieldValue("discount_10")
-    },
-    region: {
-      district: getPdfFieldValue("district"),
-      ugnsCode: getPdfFieldValue("ugnsCode"),
-      legalAddress: getPdfFieldValue("legalAddress"),
-      legalLat: getPdfFieldValue("legalLat"),
-      legalLon: getPdfFieldValue("legalLon"),
-      tradeAddress: getPdfFieldValue("tradeAddress"),
-      tradeLat: getPdfFieldValue("tradeLat"),
-      tradeLon: getPdfFieldValue("tradeLon")
-    },
-    business: {
-      objectType: getPdfFieldValue("businessObjectType"),
-      activityType: getPdfFieldValue("activityType")
-    },
-    signature: getPdfFieldValue("signatureData"),
-    meta: {
-      createdAt: new Date().toISOString(),
-      userAgent: navigator.userAgent
-    }
-  };
-}
-
-/* Заполнение скрытого шаблона PDF */
 function fillPdfTemplateForPrint() {
+  // POS-документ
   const pairs = [
     ["companyName", "pdf_companyName"],
     ["companyBin", "pdf_companyBin"],
@@ -1123,7 +886,6 @@ function fillPdfTemplateForPrint() {
     dest.textContent = value;
   });
 
-  // Район + УГНС
   const districtSelect = document.getElementById("district");
   const ugnsCode = document.getElementById("ugnsCode");
   const pdfDistrictUgns = document.getElementById("pdf_district_ugns");
@@ -1135,7 +897,6 @@ function fillPdfTemplateForPrint() {
     pdfDistrictUgns.textContent = [districtText, ugns].filter(Boolean).join(" / ");
   }
 
-  // Комиссии
   const commMap = [
     ["comm_visa_dkb", "pdf_comm_visa_dkb"],
     ["comm_bonus_dkb", "pdf_comm_bonus_dkb"],
@@ -1154,7 +915,6 @@ function fillPdfTemplateForPrint() {
     dest.textContent = v ? v.replace(".", ",") : "";
   });
 
-  // Скидка
   const discount10 = document.getElementById("discount_10");
   const pdfDiscount10 = document.getElementById("pdf_discount_10");
   if (pdfDiscount10) {
@@ -1162,7 +922,6 @@ function fillPdfTemplateForPrint() {
     pdfDiscount10.textContent = v ? v.replace(".", ",") : "";
   }
 
-  // Дата заявки → pdf_date
   const appDateInput = document.querySelector('input[name="applicationDate"]');
   const pdfDate = document.getElementById("pdf_date");
   if (pdfDate && appDateInput && appDateInput.value) {
@@ -1179,88 +938,204 @@ function fillPdfTemplateForPrint() {
     }
   }
 
-  // Подпись
   const sigData = getPdfFieldValue("signatureData");
   const pdfSigImg = document.getElementById("pdf_signature");
-  if (pdfSigImg && sigData) {
-    pdfSigImg.src = sigData;
+  if (pdfSigImg) {
+    if (sigData) {
+      pdfSigImg.src = sigData;
+      pdfSigImg.style.display = "";
+    } else {
+      pdfSigImg.removeAttribute("src");
+      pdfSigImg.style.display = "none";
+    }
   }
 }
 
-/* Обработчик кнопки "Сохранить PDF" */
+/* ============================================================
+   ЗАПОЛНЕНИЕ KKM-ШАБЛОНА (Фаза 3)
+============================================================ */
+function fillKkmTemplateForPrint() {
+  const set = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = (value || "").trim();
+  };
+
+  set("kkm_companyName", getFieldValue("companyName"));
+  set("kkm_companyBin", getFieldValue("companyBin"));
+  set("kkm_legalAddress", getFieldValue("legalAddress"));
+
+  // Место налоговой регистрации = район + код УГНС
+  const districtSelect = document.getElementById("district");
+  const districtText = districtSelect
+    ? (districtSelect.options[districtSelect.selectedIndex]?.text || "")
+    : "";
+  set("kkm_taxAuthority",
+    [districtText, getFieldValue("ugnsCode")].filter(Boolean).join(" / "));
+
+  set("kkm_phone", getFieldValue("phone"));
+  set("kkm_companyHeadInn", getFieldValue("companyHeadInn"));
+  set("kkm_companyHead", getFieldValue("companyHead"));
+  set("kkm_companyHead2", getFieldValue("companyHead"));
+  set("kkm_headFio", getFieldValue("companyHead"));
+
+  set("kkm_tradeAddress", getFieldValue("tradeAddress"));
+
+  // Статус НДС — переводим код в человекочитаемое название
+  const vatLabels = {
+    "vat": "Плательщик НДС",
+    "singleTax": "Единый налог",
+    "simplified": "Упрощённая система",
+    "patent": "Патент",
+    "none": "Без регистрации НДС"
+  };
+  set("kkm_vatStatus", vatLabels[getFieldValue("vatStatus")] || "");
+
+  set("kkm_taxRates", getFieldValue("taxRates"));
+  set("kkm_objectName", getFieldValue("objectName"));
+  set("kkm_businessObjectType", getFieldValue("businessObjectType"));
+
+  const subjectLabels = {
+    "goods": "Товар",
+    "service": "Услуга",
+    "work": "Работа",
+    "mixed": "Товар + услуга"
+  };
+  set("kkm_paymentSubject", subjectLabels[getFieldValue("paymentSubject")] || "");
+
+  set("kkm_activityType", getFieldValue("activityType"));
+
+  const serial = getFieldValue("kkmSerialNumber");
+  const version = getFieldValue("kkmVersion");
+  set("kkm_serialAndVersion", [serial, version].filter(Boolean).join(" / "));
+
+  set("kkm_kkmModel", getFieldValue("kkmModel"));
+  set("kkm_rnm", getFieldValue("kkmRnm"));
+  set("kkm_fn", getFieldValue("kkmFn"));
+  set("kkm_reason", getFieldValue("kkmReason"));
+  set("kkm_email", getFieldValue("email"));
+
+  // Индекс + координаты в одну строку
+  const postal = getFieldValue("postalCode");
+  const lat = getFieldValue("tradeLat");
+  const lon = getFieldValue("tradeLon");
+  const coordStr = [
+    postal ? postal : "",
+    lat ? `широта: ${lat}` : "",
+    lon ? `долгота: ${lon}` : ""
+  ].filter(Boolean).join(", ");
+  set("kkm_postalAndCoords", coordStr);
+
+  // Логин + пароль
+  const login = getFieldValue("lkLogin");
+  const pass = getFieldValue("lkPassword");
+  set("kkm_lkCreds", [login, pass].filter(Boolean).join("   "));
+
+  // Подпись
+  const sigData = getPdfFieldValue("signatureData");
+  const kkmSig = document.getElementById("kkm_signature");
+  if (kkmSig) {
+    if (sigData) {
+      kkmSig.src = sigData;
+      kkmSig.style.display = "";
+    } else {
+      kkmSig.removeAttribute("src");
+      kkmSig.style.display = "none";
+    }
+  }
+}
+
+/* ============================================================
+   ПЕЧАТЬ
+   - Сначала POS
+   - Если выбрано "С ККМ" → после печати POS confirm("Печатать ККМ?")
+   - Если Да → второе окно с шаблоном ККМ
+============================================================ */
+function openPrintWindow(templateId, classToAdd) {
+  const tpl = document.getElementById(templateId);
+  if (!tpl) {
+    alert("Шаблон " + templateId + " не найден!");
+    return null;
+  }
+
+  const win = window.open("", "_blank");
+  if (!win) {
+    alert("Разрешите всплывающие окна для печати.");
+    return null;
+  }
+
+  win.document.write(`
+    <!doctype html>
+    <html><head><meta charset="utf-8"><title>Demir POS Form</title>
+    <style>
+      body { margin: 0; padding: 0; font-family: 'Times New Roman', serif; }
+      @page { size: A4; margin: 12mm; }
+    </style>
+    </head><body></body></html>
+  `);
+  win.document.close();
+
+  const clone = tpl.cloneNode(true);
+  clone.style.display = "block";
+  clone.style.width = "800px";
+  clone.style.margin = "0 auto";
+  win.document.body.appendChild(clone);
+
+  return win;
+}
+
 function initPdfExportForPrint() {
   const btn = document.getElementById("savePdf");
   if (!btn) return;
 
   btn.addEventListener("click", async () => {
-    // 1. Проверка обязательных полей
     if (!validatePdfRequiredFields()) return;
 
-    // 2. Сбор SLK JSON
-    if (typeof collectFormDataForSLK !== "function") {
-      console.error("collectFormDataForSLK() отсутствует!");
-      alert("Ошибка: collectFormDataForSLK() не найдена");
-      return;
-    }
-
-    const slkPayload = collectFormDataForSLK();
-    console.log("SLK JSON →", JSON.stringify(slkPayload, null, 2));
-
-    // 3. Отправка в SLK
+    // Заготовка SLK JSON — пока только в консоль
     try {
-      await sendToSLK(slkPayload);
-    } catch (err) {
-      console.error("Ошибка отправки в SLK:", err);
+      const slkPayload = collectFormDataForSLK();
+      console.log("SLK JSON (отправка отключена):", JSON.stringify(slkPayload, null, 2));
+    } catch (e) {
+      console.warn("Не удалось собрать SLK JSON:", e);
     }
 
-    // (опционально) Логируем состав PDF
-    const pdfData = collectPdfFormData();
-    console.log("PDF JSON (локально):", pdfData);
-
-    // 4. Заполнение PDF шаблона
+    // Заполняем шаблоны
     fillPdfTemplateForPrint();
 
-    // 5. Печать
-    const pdfElement = document.getElementById("pdfDocument");
-    if (!pdfElement) {
-      alert("PDF шаблон не найден!");
-      return;
-    }
-
-    const win = window.open("", "_blank");
-    if (!win) {
-      alert("Разрешите всплывающие окна для печати PDF.");
-      return;
-    }
-
-    win.document.write(`
-      <html>
-        <head><meta charset="utf-8"><title>Demir POS Form</title></head>
-        <body></body>
-      </html>
-    `);
-    win.document.close();
-
-    const clone = pdfElement.cloneNode(true);
-    clone.style.display = "block";
-    clone.style.width = "800px";
-    clone.style.margin = "20px auto";
-
-    win.document.body.appendChild(clone);
+    // 1) ПЕЧАТЬ POS
+    const posWin = openPrintWindow("pdfDocument", "printing-pos");
+    if (!posWin) return;
 
     setTimeout(() => {
-      win.print();
-      win.close();
-    }, 200);
+      posWin.print();
+      posWin.close();
+
+      // 2) Если выбрано "С ККМ" — спрашиваем
+      const isWithKkm = document.querySelector('input[name="terminalType"]:checked')?.value === "withKKM";
+      if (!isWithKkm) return;
+
+      const wantKkm = confirm("Документ POS отправлен на печать.\n\nПечатать заявление на ККМ?");
+      if (!wantKkm) return;
+
+      fillKkmTemplateForPrint();
+
+      const kkmWin = openPrintWindow("kkmDocument", "printing-kkm");
+      if (!kkmWin) return;
+
+      setTimeout(() => {
+        kkmWin.print();
+        kkmWin.close();
+      }, 300);
+    }, 300);
   });
 }
 
-/* Подпись на canvas */
+/* ============================================================
+   SIGNATURE PAD
+============================================================ */
 function initSignaturePadForPdf() {
   const canvas = document.getElementById("signaturePad");
   const clearBtn = document.getElementById("signatureClear");
   const hiddenInput = document.getElementById("signatureData");
-
   if (!canvas) return;
 
   const ctx = canvas.getContext("2d");
@@ -1271,10 +1146,8 @@ function initSignaturePadForPdf() {
   function resizeCanvas() {
     const rect = canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
-
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
-
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, rect.width, rect.height);
   }
@@ -1284,9 +1157,7 @@ function initSignaturePadForPdf() {
 
   function getPos(e) {
     const rect = canvas.getBoundingClientRect();
-    let clientX;
-    let clientY;
-
+    let clientX, clientY;
     if (e.touches && e.touches.length > 0) {
       clientX = e.touches[0].clientX;
       clientY = e.touches[0].clientY;
@@ -1294,18 +1165,10 @@ function initSignaturePadForPdf() {
       clientX = e.clientX;
       clientY = e.clientY;
     }
-
-    return {
-      x: clientX - rect.left,
-      y: clientY - rect.top
-    };
+    return { x: clientX - rect.left, y: clientY - rect.top };
   }
 
-  function startDraw(x, y) {
-    drawing = true;
-    lastX = x;
-    lastY = y;
-  }
+  function startDraw(x, y) { drawing = true; lastX = x; lastY = y; }
 
   function drawLine(x, y) {
     if (!drawing) return;
@@ -1323,79 +1186,53 @@ function initSignaturePadForPdf() {
   function stopDraw() {
     if (!drawing) return;
     drawing = false;
-
     const dataURL = canvas.toDataURL("image/png");
     if (hiddenInput) hiddenInput.value = dataURL;
-
-    const pdfImg = document.getElementById("pdf_signature");
-    if (pdfImg) {
-      pdfImg.src = dataURL;
-    }
   }
 
-  // мышь
   canvas.addEventListener("mousedown", (e) => {
     e.preventDefault();
     const { x, y } = getPos(e);
     startDraw(x, y);
   });
-
   canvas.addEventListener("mousemove", (e) => {
     if (!drawing) return;
     const { x, y } = getPos(e);
     drawLine(x, y);
   });
+  window.addEventListener("mouseup", stopDraw);
 
-  window.addEventListener("mouseup", () => {
-    stopDraw();
-  });
-
-  // тач
   canvas.addEventListener("touchstart", (e) => {
     e.preventDefault();
     const { x, y } = getPos(e);
     startDraw(x, y);
   });
-
   canvas.addEventListener("touchmove", (e) => {
     e.preventDefault();
     const { x, y } = getPos(e);
     drawLine(x, y);
   });
-
   canvas.addEventListener("touchend", (e) => {
     e.preventDefault();
     stopDraw();
   });
 
-  // очистка
   if (clearBtn) {
     clearBtn.addEventListener("click", () => {
       const dpr = window.devicePixelRatio || 1;
-
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.beginPath();
-
       if (hiddenInput) hiddenInput.value = "";
-
-      const pdfImg = document.getElementById("pdf_signature");
-      if (pdfImg) {
-        pdfImg.removeAttribute("src");
-        pdfImg.src = "";
-      }
-
-      drawing = false;
-      lastX = 0;
-      lastY = 0;
+      drawing = false; lastX = 0; lastY = 0;
     });
   }
 }
 
 /* ============================================================
-   ВАЛИДАЦИЯ ОБЯЗАТЕЛЬНЫХ ПОЛЕЙ ДЛЯ PDF
+   ВАЛИДАЦИЯ
+   Поля ККМ обязательны только если выбрано "С ККМ"
 ============================================================ */
 const pdfRequiredFieldLabels = {
   companyName: "Наименование юридического лица / ИП",
@@ -1418,16 +1255,24 @@ const pdfRequiredFieldLabels = {
   description: "Комментарий / описание"
 };
 
+// Поля, обязательные ТОЛЬКО при "С ККМ"
+const kkmRequiredFieldLabels = {
+  objectName: "Наименование объекта (для ККМ)",
+  vatStatus: "Статус по регистрации НДС",
+  taxRates: "Налоговые ставки",
+  paymentSubject: "Предмет расчёта",
+  postalCode: "Почтовый индекс"
+  // Заводской №, РНМ, ФН — НЕ обязательны на подаче
+  // (заполняются ЦТО / налоговой после регистрации)
+};
+
 function clearPdfValidationErrors() {
-  document
-    .querySelectorAll(".field-error")
-    .forEach((el) => el.classList.remove("field-error"));
+  document.querySelectorAll(".field-error").forEach((el) => el.classList.remove("field-error"));
 }
 
 function validateRequiredCheckboxGroups() {
   const missingGroups = [];
 
-  // Тип заявки
   const typeGroup = document.querySelectorAll('input[name="requestType"]');
   const typeSelected = Array.from(typeGroup).some((ch) => ch.checked);
   if (!typeSelected) {
@@ -1435,7 +1280,7 @@ function validateRequiredCheckboxGroups() {
     typeGroup.forEach((ch) => ch.classList.add("field-error"));
   }
 
-  // Тип POS-терминала
+  // ИЗМЕНЕНО: terminalType теперь radio
   const posGroup = document.querySelectorAll('input[name="terminalType"]');
   const posSelected = Array.from(posGroup).some((ch) => ch.checked);
   if (!posSelected) {
@@ -1443,21 +1288,25 @@ function validateRequiredCheckboxGroups() {
     posGroup.forEach((ch) => ch.classList.add("field-error"));
   }
 
-  return {
-    ok: missingGroups.length === 0,
-    missing: missingGroups
-  };
+  // ДОБАВЛЕНО: проверка cardTypes
+  const cardGroup = document.querySelectorAll('input[name="cardTypes"]');
+  const cardSelected = Array.from(cardGroup).some((ch) => ch.checked);
+  if (!cardSelected) {
+    missingGroups.push("Типы карточек (нужно выбрать хотя бы одну)");
+    cardGroup.forEach((ch) => ch.classList.add("field-error"));
+  }
+
+  return { ok: missingGroups.length === 0, missing: missingGroups };
 }
 
 function validatePdfRequiredFields() {
   clearPdfValidationErrors();
-
   const missing = [];
 
+  // Базовые обязательные
   Object.keys(pdfRequiredFieldLabels).forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
-
     const value = (el.value || el.textContent || "").trim();
     if (!value) {
       missing.push(pdfRequiredFieldLabels[id]);
@@ -1465,20 +1314,28 @@ function validatePdfRequiredFields() {
     }
   });
 
-  const cb = validateRequiredCheckboxGroups();
-  if (!cb.ok) {
-    missing.push(...cb.missing);
+  // Обязательные при "С ККМ"
+  const isWithKkm = document.querySelector('input[name="terminalType"]:checked')?.value === "withKKM";
+  if (isWithKkm) {
+    Object.keys(kkmRequiredFieldLabels).forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const value = (el.value || el.textContent || "").trim();
+      if (!value) {
+        missing.push(kkmRequiredFieldLabels[id] + " (ККМ)");
+        el.classList.add("field-error");
+      }
+    });
   }
 
+  const cb = validateRequiredCheckboxGroups();
+  if (!cb.ok) missing.push(...cb.missing);
+
   if (missing.length > 0) {
-    alert(
-      "Пожалуйста, заполните обязательные поля:\n\n- " +
-        missing.join("\n- ")
-    );
+    alert("Пожалуйста, заполните обязательные поля:\n\n- " + missing.join("\n- "));
     scrollToFirstError();
     return false;
   }
-
   return true;
 }
 
@@ -1492,7 +1349,6 @@ function clearFormFields() {
     localStorage.removeItem(id);
     const el = document.getElementById(id);
     if (!el) return;
-
     if (el.tagName === "SELECT") {
       el.selectedIndex = 0;
     } else if (el.type === "checkbox" || el.type === "radio") {
@@ -1502,63 +1358,37 @@ function clearFormFields() {
     }
   });
 
-  document
-    .querySelectorAll(".card input[type='checkbox'], .card input[type='radio']")
+  document.querySelectorAll(".card input[type='checkbox'], .card input[type='radio']")
     .forEach((el) => (el.checked = false));
 
-  [
-    "contractNumber",
-    "contractDate",
-    "applicationNumber",
-    "applicationDate",
-    "mobilePhone",
-    "workFrom",
-    "workTo"
-  ].forEach((id) => {
-    const el = document.getElementById(id);
+  // ККМ-режим сброс
+  localStorage.removeItem("terminalType");
+  body.classList.remove("kkm-active");
+
+  // Поля, не входящие в autoSaveFields
+  ["contractNumber", "contractDate", "applicationNumber", "applicationDate",
+   "mobilePhone", "workFrom", "workTo", "lkPassword"].forEach((id) => {
+    const el = document.getElementById(id) || document.querySelector(`[name="${id}"]`);
     if (el) el.value = "";
   });
 
   const resp = document.getElementById("responsibleBranches");
-  if (resp) resp.selectedIndex = 0;
+  if (resp) {
+    resp.selectedIndex = 0;
+    localStorage.removeItem("responsibleBranches");
+  }
 
+  // Подпись
   const canvas = document.getElementById("signaturePad");
   const hiddenInput = document.getElementById("signatureData");
-  const pdfImg = document.getElementById("pdf_signature");
-
   if (canvas && canvas.getContext) {
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   }
   if (hiddenInput) hiddenInput.value = "";
-  if (pdfImg) pdfImg.removeAttribute("src");
+
+  const pdfImg = document.getElementById("pdf_signature");
+  if (pdfImg) { pdfImg.removeAttribute("src"); pdfImg.style.display = "none"; }
+  const kkmImg = document.getElementById("kkm_signature");
+  if (kkmImg) { kkmImg.removeAttribute("src"); kkmImg.style.display = "none"; }
 }
-
-/* ============================================================
-   SIMPLE SPELLCHECK MOCK
-============================================================ */
-const spellPanel = document.getElementById("spellcheckPanel");
-
-function fakeSpellCheck() {
-  if (!spellPanel) return;
-  spellPanel.innerHTML = "";
-
-  const ids = ["companyName", "companyHead", "description"];
-
-  ids.forEach((id) => {
-    const el = document.getElementById(id);
-    if (!el || !el.value) return;
-
-    const words = el.value.split(/\s+/);
-
-    words.forEach((w) => {
-      if (w.length > 6 && Math.random() < 0.03) {
-        const div = document.createElement("div");
-        div.textContent = `Возможная ошибка: «${w}»`;
-        spellPanel.appendChild(div);
-      }
-    });
-  });
-}
-
-setInterval(fakeSpellCheck, 2500);

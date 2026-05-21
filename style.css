@@ -60,7 +60,6 @@ body.dark {
   color-scheme: dark;
 }
 
-/* базовые стили для любого режима */
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
                "Segoe UI", Roboto, sans-serif;
@@ -209,6 +208,39 @@ body {
 }
 
 /* ============================================================
+   CHIPS (Checkbox/Radio группы как кнопки)
+============================================================ */
+.chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-section);
+  font-size: 13px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color .15s ease, border-color .15s ease;
+}
+
+.chip:hover {
+  border-color: var(--accent);
+}
+
+.chip input {
+  margin: 0;
+  cursor: pointer;
+}
+
+/* ============================================================
    FIELDS
 ============================================================ */
 
@@ -236,7 +268,6 @@ body {
               background-color .15s ease, transform .05s ease;
 }
 
-/* FIX — делаем <select> рабочим */
 select.field-input {
   appearance: auto;
   -webkit-appearance: auto;
@@ -265,9 +296,41 @@ textarea.field-input {
   resize: vertical;
   min-height: 80px;
 }
+
 .field-error {
   border: 2px solid #e22 !important;
   background: #ffecec !important;
+}
+
+/* ============================================================
+   ККМ-ТОЛЬКО ПОЛЯ
+   По умолчанию полностью скрыты. Появляются, когда на <body>
+   добавляется класс .kkm-active (при выборе "С ККМ").
+============================================================ */
+.kkm-only {
+  display: none !important;
+}
+
+body.kkm-active .kkm-only {
+  display: grid !important;     /* для .grid контейнеров */
+}
+
+/* Для одиночных полей с классом kkm-only — flex */
+body.kkm-active label.kkm-only,
+body.kkm-active .field.kkm-only {
+  display: flex !important;
+}
+
+/* Лёгкая подсветка ККМ-полей, чтобы оператор видел, что они опциональны */
+body.kkm-active .kkm-only {
+  background: rgba(190, 44, 28, 0.03);
+  border-radius: 10px;
+  padding: 8px;
+  margin: 4px -8px;
+}
+
+body.dark.kkm-active .kkm-only {
+  background: rgba(249, 115, 98, 0.06);
 }
 
 /* ============================================================
@@ -328,7 +391,7 @@ textarea.field-input {
 }
 
 /* ============================================================
-   SPELLCHECK PANEL
+   SPELLCHECK PANEL (оставлено на всякий случай)
 ============================================================ */
 
 .spell-results {
@@ -368,6 +431,28 @@ textarea.field-input {
   transform: translateY(0);
   box-shadow: 0 4px 12px var(--primary-soft);
 }
+
+.btn.secondary {
+  background: rgba(148,163,184,0.18);
+  color: var(--text);
+  box-shadow: none;
+}
+
+.btn.secondary:hover {
+  background: rgba(148,163,184,0.28);
+  box-shadow: none;
+}
+
+.actions-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.signature-actions {
+  margin-top: 8px;
+}
+
 /* ============================================================
    SIGNATURE
 ============================================================ */
@@ -377,7 +462,7 @@ textarea.field-input {
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--bg-section);
-  height: 140px;          /* фиксируем высоту области подписи */
+  height: 140px;
   padding: 4px;
   overflow: hidden;
 }
@@ -386,9 +471,10 @@ textarea.field-input {
   width: 100%;
   height: 100%;
   display: block;
-  touch-action: none;      /* чтобы на телефоне не скроллилось */
+  touch-action: none;
   cursor: crosshair;
 }
+
 /* ============================================================
    MISC
 ============================================================ */
@@ -399,20 +485,18 @@ textarea.field-input {
   margin: 16px 0;
 }
 
-/* ============================================================
-   FOOTER
-============================================================ */
-
 .app-footer {
   text-align: center;
   font-size: 12px;
   padding: 10px;
   color: var(--text-muted);
 }
+
 /* ============================================================
-   PRINT LAYOUT — печатаем только pdfDocument
+   PRINT LAYOUT
 ============================================================ */
-#pdfDocument {
+#pdfDocument,
+#kkmDocument {
   display: none;
 }
 
@@ -422,27 +506,32 @@ textarea.field-input {
     padding: 0;
   }
 
-  /* скрываем всё */
   body * {
     visibility: hidden !important;
   }
 
-  /* показываем только PDF */
-  #pdfDocument, #pdfDocument * {
+  /* В контексте печати показываем только тот шаблон, который
+     помечен классом .printing на родителе. См. JS. */
+  body.printing-pos #pdfDocument,
+  body.printing-pos #pdfDocument * {
     visibility: visible !important;
   }
 
-  #pdfDocument {
+  body.printing-kkm #kkmDocument,
+  body.printing-kkm #kkmDocument * {
+    visibility: visible !important;
+  }
+
+  body.printing-pos #pdfDocument,
+  body.printing-kkm #kkmDocument {
     display: block !important;
     position: absolute;
     left: 0;
     top: 0;
-
-    /* НЕ ДЕЛАЕМ width:100%! */
-    width: 800px;         /* как в твоем шаблоне */
-    margin: 0 auto;       /* по центру листа */
+    width: 800px;
+    margin: 0 auto;
     padding: 0;
-    zoom: 0.85;           /* гарантирует влезание в А4 */
+    zoom: 0.85;
   }
 }
 
